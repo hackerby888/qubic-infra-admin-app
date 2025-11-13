@@ -151,10 +151,10 @@ export default function PowerManagement() {
                                     {services.map((service, index) => (
                                         <div
                                             onClick={() => toggleService(index)}
-                                            className={`cursor-pointer bg-gray-100 rounded-sm w-full px-2 py-1 ${
+                                            className={`cursor-pointer text-sm rounded-sm w-full px-2 py-1 ${
                                                 service.enabled
-                                                    ? ""
-                                                    : "opacity-50"
+                                                    ? "bg-gray-200"
+                                                    : "bg-gray-100"
                                             }`}
                                         >
                                             {service.name}

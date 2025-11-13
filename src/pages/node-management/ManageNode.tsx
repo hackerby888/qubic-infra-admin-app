@@ -219,14 +219,38 @@ export default function ManageNode() {
                     </Dialog>
                 ))}
                 <div className="mt-2">
-                    <Badge
-                        className="cursor-pointer"
-                        onClick={handleDeleteAllCommandLogs}
-                        variant="destructive"
-                    >
-                        <X size={15} className="mr-1" />
-                        Delete All Command Logs
-                    </Badge>
+                    <AlertDialog>
+                        <AlertDialogTrigger>
+                            {" "}
+                            <Badge
+                                className="cursor-pointer hover:bg-red-500 hover:text-white"
+                                variant="secondary"
+                            >
+                                <X size={15} className="mr-1" />
+                                Delete All Command Logs
+                            </Badge>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                    Are you absolutely sure?
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This action cannot be undone. This will
+                                    permanently delete all your command logs.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                    onClick={handleDeleteAllCommandLogs}
+                                    className="bg-red-500 hover:bg-red-600 cursor-pointer"
+                                >
+                                    Delete All
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
                 </div>
             </div>
             <div>
