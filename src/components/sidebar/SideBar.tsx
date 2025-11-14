@@ -78,6 +78,7 @@ export default function SideBar() {
                             <ul className="mt-4 text-sm space-y-2">
                                 {availableRoutesPublic.map((route) => (
                                     <li
+                                        key={route.path}
                                         onClick={() =>
                                             nagivateToRoute(route.path)
                                         }

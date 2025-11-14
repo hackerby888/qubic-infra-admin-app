@@ -185,7 +185,7 @@ export default function ManageNode() {
             <h3 className="text-2xl font-bold mb-4">Manage Nodes</h3>{" "}
             <div className="mb-4 rounded shadow-sm p-4 space-x-2">
                 {commandLogs?.commandLogs.map((log, index) => (
-                    <Dialog>
+                    <Dialog key={log.uuid}>
                         <DialogTrigger>
                             <div className="flex">
                                 {" "}
@@ -259,7 +259,6 @@ export default function ManageNode() {
                 </div>
                 {!error ? (
                     <Table>
-                        {" "}
                         <TableHeader>
                             <TableRow>
                                 <TableHead>
@@ -323,6 +322,7 @@ export default function ManageNode() {
                                                 : "nothing";
                                             return (
                                                 <Badge
+                                                    key={service}
                                                     variant={"outline"}
                                                     className={`${
                                                         haveDeployStatus &&

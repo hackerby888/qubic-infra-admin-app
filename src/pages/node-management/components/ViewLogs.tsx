@@ -12,6 +12,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useGeneralGet } from "@/networking/api";
 import LocalTerminal from "@/components/common/LocalTerminal";
+import RealTimeLogViewer from "@/components/common/RealTimeLogViewer";
 
 export default function ViewLogs({ server }: { server: string }) {
     let {
@@ -80,6 +81,7 @@ export default function ViewLogs({ server }: { server: string }) {
                                 </TabsList>
                                 <TabsContent value="stdout">
                                     <LocalTerminal
+                                        allowCopy={true}
                                         text={
                                             setupLogs?.deployLogs?.liteNode
                                                 ?.stdout ||
@@ -96,7 +98,12 @@ export default function ViewLogs({ server }: { server: string }) {
                                         }
                                     />
                                 </TabsContent>
-                                <TabsContent value="realtime"></TabsContent>
+                                <TabsContent value="realtime">
+                                    <RealTimeLogViewer
+                                        host={server}
+                                        service={"liteNode"}
+                                    />
+                                </TabsContent>
                             </Tabs>
                         </TabsContent>
                         <TabsContent value="bob-logs">

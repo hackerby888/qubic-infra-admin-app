@@ -154,7 +154,7 @@ export default function PowerManagement() {
                                             className={`cursor-pointer text-sm rounded-sm w-full px-2 py-1 ${
                                                 service.enabled
                                                     ? "bg-gray-200"
-                                                    : "bg-gray-100"
+                                                    : "bg-gray-100 opacity-50"
                                             }`}
                                         >
                                             {service.name}
