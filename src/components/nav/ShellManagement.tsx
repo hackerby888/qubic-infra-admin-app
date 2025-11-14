@@ -11,10 +11,14 @@ import {
     type SelectedServersState,
 } from "@/stores/selected-servers-store";
 import { useState } from "react";
-import useGeneralPost from "@/networking/api";
+import useGeneralPost, { useGeneralGet } from "@/networking/api";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
+import type { CommandLog } from "@/types/type";
 
 export default function ShellManagement() {
+    let queryClient = useQueryClient();
+
     let [command, setCommand] = useState<string>("");
     let [isOpen, setIsOpen] = useState<boolean>(false);
     const selectedStore = useSelectedServersStore() as SelectedServersState;
@@ -22,6 +26,15 @@ export default function ShellManagement() {
     let { mutate: sendCommand, isPending: isSendingCommand } = useGeneralPost({
         queryKey: ["execute-command", command],
         path: "/execute-command",
+    });
+
+    let { data: commandLogs } = useGeneralGet<{ commandLogs: CommandLog[] }>({
+        queryKey: ["command-logs"],
+        path: "/command-logs",
+        reqQuery: {
+            isStandardCommand: "false",
+            limit: "10",
+        },
     });
 
     const handleSubmitCommand = () => {
@@ -42,6 +55,7 @@ export default function ShellManagement() {
                 toast.success("Command execution initiated.");
                 setCommand("");
                 setIsOpen(false);
+                queryClient.invalidateQueries({ queryKey: ["command-logs"] });
             },
             onError: (error: any) => {
                 toast.error(
@@ -89,13 +103,18 @@ export default function ShellManagement() {
                 <div>
                     <span className="font-semibold">Recent Commands</span>
                     <ul className="mt-2 space-y-1 text-sm">
-                        <li className="p-2 bg-gray-100 rounded-sm">ls -la</li>
-                        <li className="p-2 bg-gray-100 rounded-sm">
-                            cat /var/logs/node.log
-                        </li>
-                        <li className="p-2 bg-gray-100 rounded-sm">
-                            systemctl status lite-node
-                        </li>
+                        {commandLogs?.commandLogs.map((log) => (
+                            <li
+                                onClick={() => setCommand(log.command)}
+                                className="cursor-pointer p-2 bg-gray-100 rounded-sm hover:bg-gray-200"
+                                key={log.uuid}
+                            >
+                                {log.command}{" "}
+                                <span className="text-xs text-gray-500">
+                                    {new Date(log.timestamp).toLocaleString()}
+                                </span>
+                            </li>
+                        ))}
                     </ul>
                 </div>
             </DialogContent>

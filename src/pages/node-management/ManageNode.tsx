@@ -18,7 +18,7 @@ import {
     DropdownMenuContent,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontalIcon, Trash, X } from "lucide-react";
+import { MoreHorizontalIcon, RefreshCcw, Trash, X } from "lucide-react";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -67,7 +67,15 @@ export default function ManageNode() {
         path: "/delete-all-command-logs",
     });
 
-    let { data, isPending, error } = useGeneralGet<{ servers: Server[] }>({
+    let {
+        data,
+        isPending,
+        error,
+        refetch: refetchServers,
+        isRefetching: isRefreshingServers,
+    } = useGeneralGet<{
+        servers: Server[];
+    }>({
         queryKey: ["my-servers"],
         path: "/my-servers",
     });
@@ -172,6 +180,17 @@ export default function ManageNode() {
         }
     };
 
+    const handleRefreshServers = () => {
+        if (!isRefreshingServers)
+            refetchServers()
+                .then(() => {
+                    toast.success("Servers refreshed successfully.");
+                })
+                .catch((error) => {
+                    toast.error("Failed to refresh servers: " + error.message);
+                });
+    };
+
     let commandLogStatusColorMap = {
         pending: "opacity-50",
         completed: "",
@@ -188,7 +207,6 @@ export default function ManageNode() {
                     <Dialog key={log.uuid}>
                         <DialogTrigger>
                             <div className="flex">
-                                {" "}
                                 <Badge
                                     className={`cursor-pointer ${
                                         commandLogStatusColorMap[log.status]
@@ -221,7 +239,6 @@ export default function ManageNode() {
                 <div className="mt-2">
                     <AlertDialog>
                         <AlertDialogTrigger>
-                            {" "}
                             <Badge
                                 className="cursor-pointer hover:bg-red-500 hover:text-white"
                                 variant="secondary"
@@ -254,8 +271,15 @@ export default function ManageNode() {
                 </div>
             </div>
             <div>
-                <div className="py-2">
+                <div className="py-2 space-x-1">
                     <NewServer />
+                    <Button
+                        onClick={handleRefreshServers}
+                        variant={"ghost"}
+                        className="cursor-pointer"
+                    >
+                        <RefreshCcw size={20} />
+                    </Button>
                 </div>
                 {!error ? (
                     <Table>

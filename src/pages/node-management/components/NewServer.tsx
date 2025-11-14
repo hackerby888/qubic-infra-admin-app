@@ -91,8 +91,8 @@ export default function NewServer() {
                     bobNode: false,
                 });
             },
-            onError: () => {
-                toast.error("Failed to add servers. Please try again.");
+            onError: (error) => {
+                toast.error("Failed to add servers. Error: " + error.message);
             },
         });
     };

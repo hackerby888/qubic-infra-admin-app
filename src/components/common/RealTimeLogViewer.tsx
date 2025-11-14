@@ -54,7 +54,7 @@ export default function RealTimeLogViewer({
                     </Button>
                 </div>
             )}
-            <LocalTerminal text={renderLogs} />
+            <LocalTerminal text={logs} />
         </div>
     );
 }
