@@ -50,7 +50,7 @@ export default function LiteNodeTable({
                     return (
                         <TableRow
                             className={`${
-                                !isNodeActive && "bg-red-100 hover:bg-red-200"
+                                !nodeAlive && "bg-red-100 hover:bg-red-200"
                             }`}
                             key={stat.server}
                         >
@@ -59,7 +59,10 @@ export default function LiteNodeTable({
                             </TableCell>
                             <TableCell>{stat.server} </TableCell>
                             <TableCell>
-                                <FlashText value={stat.tick.toString()} />
+                                <FlashText
+                                    noFlash={!nodeAlive}
+                                    value={stat.tick.toString()}
+                                />
                             </TableCell>
                             <TableCell>{stat.alignedVotes}</TableCell>
                             <TableCell>{stat.misalignedVotes}</TableCell>

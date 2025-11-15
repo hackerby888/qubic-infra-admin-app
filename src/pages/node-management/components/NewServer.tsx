@@ -28,6 +28,7 @@ function isValidIPv4(ip: string) {
 }
 
 export default function NewServer() {
+    let [isOpen, setIsOpen] = useState(false);
     let [serverIps, setServerIps] = useState("");
     let [username, setUsername] = useState("");
     let [password, setPassword] = useState("");
@@ -90,6 +91,7 @@ export default function NewServer() {
                     liteNode: false,
                     bobNode: false,
                 });
+                setIsOpen(false);
             },
             onError: (error) => {
                 toast.error("Failed to add servers. Error: " + error.message);
@@ -112,7 +114,7 @@ export default function NewServer() {
     };
 
     return (
-        <Dialog>
+        <Dialog open={isOpen} onOpenChange={(value) => setIsOpen(value)}>
             <DialogTrigger asChild>
                 <Button variant={"outline"} className="cursor-pointer">
                     <Plus /> New Server

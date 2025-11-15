@@ -80,7 +80,7 @@ export default function ManageNode() {
         path: "/my-servers",
     });
     let { data: commandLogs } = useGeneralGet<{ commandLogs: CommandLog[] }>({
-        queryKey: ["command-logs"],
+        queryKey: ["command-logs", "all"],
         path: "/command-logs",
     });
 
@@ -113,7 +113,7 @@ export default function ManageNode() {
     const locallyRemoveAllCommandLogs = () => {
         if (data) {
             queryClient.setQueryData<{ commandLogs: CommandLog[] }>(
-                ["command-logs"],
+                ["command-logs", "all"],
                 {
                     commandLogs: [],
                 }
@@ -136,7 +136,7 @@ export default function ManageNode() {
     const locallyRemoveCommandLog = (uuid: string) => {
         if (data) {
             queryClient.setQueryData<{ commandLogs: CommandLog[] }>(
-                ["command-logs"],
+                ["command-logs", "all"],
                 {
                     commandLogs:
                         commandLogs?.commandLogs.filter(
