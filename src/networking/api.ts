@@ -65,12 +65,14 @@ export default function useGeneralPost({
     queryKey,
     path,
     reqQuery,
+    method = "POST",
 }: {
     queryKey: any[];
     path: string;
     reqQuery?: {
         [key: string]: any;
     };
+    method?: "POST" | "PUT" | "DELETE";
 }) {
     return useMutation({
         mutationKey: queryKey,
@@ -84,7 +86,7 @@ export default function useGeneralPost({
                 reqQueryString = "_=blank";
             }
             let res = await fetch(`${API_SERVER}${path}?${reqQueryString}`, {
-                method: "POST",
+                method: method,
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: "Bearer " + MyStorage.getLoginCredential(),

@@ -1,8 +1,7 @@
 import { useGeneralGet } from "@/networking/api";
-import type { BobNodeTickInfo, LiteNodeTickInfo } from "@/types/type";
+import type { ServersStatus } from "@/types/type";
 import { isNodeActive } from "@/utils/common";
 import NodeStatus from "../home/components/NodeStatus";
-
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { MyStorage } from "@/utils/storage";
 import { AlertCircleIcon } from "lucide-react";
@@ -13,13 +12,11 @@ import BobNodeTable from "../home/components/BobNodeTable";
 export default function MyNodes() {
     let operatorToken = MyStorage.getLoginCredential();
     let operatorInfo = MyStorage.decodeTokenPayload(operatorToken || "");
-    let { data, error, isLoading } = useGeneralGet<{
-        statuses: {
-            liteNodes: LiteNodeTickInfo[];
-            bobNodes: BobNodeTickInfo[];
-        };
-    }>({
-        queryKey: ["general-stats", operatorInfo?.username || ""],
+    let { data, error, isLoading } = useGeneralGet<ServersStatus>({
+        queryKey: [
+            "servers-status",
+            operatorInfo?.username || "no-valid-operator",
+        ],
         path: "/servers-status",
         refetchInterval: 1000,
         reqQuery: {
@@ -84,38 +81,55 @@ export default function MyNodes() {
                         })}
                     </div>
                     <div className="status-table mt-5">
-                        <Tabs defaultValue="lite-node" className="w-full">
-                            <TabsList>
-                                <TabsTrigger
-                                    className="cursor-pointer"
-                                    value="lite-node"
-                                >
-                                    Lite Node
-                                </TabsTrigger>
-                                <TabsTrigger
-                                    className="cursor-pointer"
-                                    value="bob-node"
-                                >
-                                    Bob Node
-                                </TabsTrigger>
-                            </TabsList>
-                            <TabsContent value="lite-node">
-                                <LiteNodeTable
-                                    isLoading={isLoading}
-                                    sortedLiteNodeStatuses={
-                                        sortedLiteNodeStatuses || []
-                                    }
-                                />
-                            </TabsContent>
-                            <TabsContent value="bob-node">
-                                <BobNodeTable
-                                    isLoading={isLoading}
-                                    sortedBobNodeStatuses={
-                                        sortedBobNodeStatuses || []
-                                    }
-                                />
-                            </TabsContent>
-                        </Tabs>
+                        {!error ? (
+                            <Tabs defaultValue="lite-node" className="w-full">
+                                <TabsList>
+                                    <TabsTrigger
+                                        className="cursor-pointer"
+                                        value="lite-node"
+                                    >
+                                        Lite Node
+                                    </TabsTrigger>
+                                    <TabsTrigger
+                                        className="cursor-pointer"
+                                        value="bob-node"
+                                    >
+                                        Bob Node
+                                    </TabsTrigger>
+                                </TabsList>
+                                <TabsContent value="lite-node">
+                                    <LiteNodeTable
+                                        operatorInfo={operatorInfo!}
+                                        isLoading={isLoading}
+                                        sortedLiteNodeStatuses={
+                                            sortedLiteNodeStatuses || []
+                                        }
+                                    />
+                                </TabsContent>
+                                <TabsContent value="bob-node">
+                                    <BobNodeTable
+                                        isLoading={isLoading}
+                                        sortedBobNodeStatuses={
+                                            sortedBobNodeStatuses || []
+                                        }
+                                        operatorInfo={operatorInfo!}
+                                    />
+                                </TabsContent>
+                            </Tabs>
+                        ) : (
+                            <Alert variant="destructive">
+                                <AlertCircleIcon />
+                                <AlertTitle className="font-bold">
+                                    Error
+                                </AlertTitle>
+                                <AlertDescription>
+                                    {`Failed to load your nodes: ${
+                                        (error as any)?.message ||
+                                        "Unknown error"
+                                    }`}
+                                </AlertDescription>
+                            </Alert>
+                        )}
                     </div>
                 </>
             ) : (

@@ -91,13 +91,44 @@ export default function DeployManagement() {
     };
 
     const handleDeploy = () => {
+        if (selectedStore.selectedServers.length === 0) {
+            return toast.error(
+                "Please select at least one server to deploy the epoch."
+            );
+        }
+
+        let peersArray = peers.split(",").map((p) => p.trim());
+        for (let peer of peersArray) {
+            if (currentService === "liteNode") {
+                // The peer should be an IP address
+                let ipPortRegex =
+                    /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?):([0-9]{1,5})$/;
+                if (!ipPortRegex.test(peer)) {
+                    return toast.error(
+                        `Invalid peer address for lite node: ${peer}`
+                    );
+                }
+            } else {
+                // The peer should be in the format of bob:ip:port or BM:ip:port[:passcode]
+                let bobRegex =
+                    /^bob:(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?):([0-9]{1,5})$/;
+                let bmRegex =
+                    /^BM:(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?):([0-9]{1,5})(:[\w-]+)?$/;
+                if (!bobRegex.test(peer) && !bmRegex.test(peer)) {
+                    return toast.error(
+                        `Invalid peer address for bob node: ${peer}`
+                    );
+                }
+            }
+        }
+
         let body = {
             servers: selectedStore.selectedServers,
             service: currentService,
             tag: tag,
             extraData: {
                 epochFile: epochFile,
-                peers: peers.split(",").map((p) => p.trim()),
+                peers: peersArray,
             },
         };
         deploy(body as any, {

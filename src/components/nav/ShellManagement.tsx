@@ -5,7 +5,7 @@ import {
     InputGroupInput,
 } from "@/components/ui/input-group";
 import { Button } from "@/components/ui/button";
-import { SquareTerminal, Terminal } from "lucide-react";
+import { CornerDownLeft, SquareTerminal, Terminal } from "lucide-react";
 import {
     useSelectedServersStore,
     type SelectedServersState,
@@ -76,23 +76,29 @@ export default function ShellManagement() {
             </DialogTrigger>
             <DialogContent className="min-w-1/2">
                 <div className="flex items-center justify-center mt-4">
-                    <InputGroup className="rounded-none">
-                        <InputGroupInput
-                            value={command}
-                            onChange={(e) => setCommand(e.target.value)}
-                            className="rounded-none"
-                            placeholder="Enter your commands"
-                        />
-                        <InputGroupAddon>
-                            <Terminal />
-                        </InputGroupAddon>
-                    </InputGroup>
+                    <div className="w-full flex flex-col">
+                        {/* <span className="text-sm text-gray-600 border border-b-0 w-fit rounded-t-sm px-4 py-1">
+                            $ Bash
+                        </span> */}
+                        <InputGroup className="rounded-none">
+                            <InputGroupInput
+                                value={command}
+                                onChange={(e) => setCommand(e.target.value)}
+                                className="rounded-none"
+                                placeholder="Enter your commands"
+                            />
+                            <InputGroupAddon>
+                                <Terminal />
+                            </InputGroupAddon>
+                        </InputGroup>
+                    </div>
                     {!isSendingCommand ? (
                         <Button
                             onClick={handleSubmitCommand}
-                            className="ml-3 cursor-pointer"
+                            className="ml-3 cursor-pointer text-sm"
                         >
                             RUN
+                            <CornerDownLeft />
                         </Button>
                     ) : (
                         <Button className="ml-3 cursor-pointer" disabled>

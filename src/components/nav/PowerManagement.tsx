@@ -14,6 +14,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
+
 import { useState } from "react";
 import {
     useSelectedServersStore,
@@ -21,7 +22,9 @@ import {
 } from "@/stores/selected-servers-store";
 import useGeneralPost from "@/networking/api";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 export default function PowerManagement() {
+    let queryClient = useQueryClient();
     const availableCommands = {
         shutdown: {
             label: "Shutdown",
@@ -97,6 +100,9 @@ export default function PowerManagement() {
                     { name: "Bob Node", enabled: false },
                 ]);
                 toggleOpen(command, false);
+                queryClient.invalidateQueries({
+                    queryKey: ["command-logs", "all"],
+                });
             },
             onError: () => {
                 toast.error(

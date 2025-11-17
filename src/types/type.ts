@@ -8,6 +8,7 @@ export interface LiteNodeTickInfo {
     initialTick: number;
     lastUpdated: number;
     lastTickChanged: number;
+    isPrivate: boolean;
 }
 
 export interface BobNodeTickInfo {
@@ -21,6 +22,7 @@ export interface BobNodeTickInfo {
     initialTick: number;
     lastUpdated: number;
     lastTickChanged: number;
+    isPrivate: boolean;
 }
 
 export interface GithubTag {
@@ -38,10 +40,16 @@ export interface User {
     username: string;
     passwordHash: string;
     role: "admin" | "operator";
+    insertedAt: number;
 }
 
 export type ServiceType = "liteNode" | "bobNode" | "null";
-export type NodeStatus = "setting_up" | "active" | "error";
+export type NodeStatus =
+    | "setting_up"
+    | "active"
+    | "error"
+    | "stopped"
+    | "restarting";
 
 export interface Server {
     server: string;
@@ -82,4 +90,12 @@ export interface CommandLog {
     timestamp: number;
     status: "pending" | "completed" | "failed";
     uuid: string;
+    duration: number;
+}
+
+export interface ServersStatus {
+    statuses: {
+        liteNodes: LiteNodeTickInfo[];
+        bobNodes: BobNodeTickInfo[];
+    };
 }

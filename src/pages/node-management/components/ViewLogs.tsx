@@ -1,7 +1,6 @@
 import { SquareTerminal } from "lucide-react";
 import {
     Dialog,
-    DialogClose,
     DialogContent,
     DialogDescription,
     DialogFooter,
@@ -15,11 +14,7 @@ import LocalTerminal from "@/components/common/LocalTerminal";
 import RealTimeLogViewer from "@/components/common/RealTimeLogViewer";
 
 export default function ViewLogs({ server }: { server: string }) {
-    let {
-        data: setupLogs,
-        isPending: isSetupLogsLoading,
-        error: setupLogsError,
-    } = useGeneralGet<{
+    let { data: setupLogs, isPending: isSetupLogsLoading } = useGeneralGet<{
         setupLogs: {
             stdout: string;
             stderr: string;
@@ -138,7 +133,13 @@ export default function ViewLogs({ server }: { server: string }) {
                                         }
                                     />
                                 </TabsContent>
-                                <TabsContent value="realtime"></TabsContent>
+                                <TabsContent value="realtime">
+                                    {" "}
+                                    <RealTimeLogViewer
+                                        host={server}
+                                        service={"bobNode"}
+                                    />
+                                </TabsContent>
                             </Tabs>
                         </TabsContent>
                         <TabsContent value="setup">

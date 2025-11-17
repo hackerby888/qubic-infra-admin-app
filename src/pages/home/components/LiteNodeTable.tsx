@@ -8,32 +8,52 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import type { LiteNodeTickInfo } from "@/types/type";
+import type { LiteNodeTickInfo, User } from "@/types/type";
 import { format } from "timeago.js";
 import { badgeOperatorColor, calculateTimeDiffInSeconds } from "../common/util";
 import { Checkbox } from "@/components/ui/checkbox";
 import { isNodeActive } from "@/utils/common";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
+import VisibilityChanger from "../common/VisibilityChanger";
+import { Info } from "lucide-react";
 
 export default function LiteNodeTable({
     isLoading,
     sortedLiteNodeStatuses,
+    operatorInfo,
 }: {
     isLoading: boolean;
     sortedLiteNodeStatuses: LiteNodeTickInfo[];
+    operatorInfo?: User;
 }) {
     return (
         <Table>
             <TableHeader>
                 <TableRow>
-                    <TableHead>
+                    {/* <TableHead>
                         <Checkbox />
-                    </TableHead>
+                    </TableHead> */}
                     <TableHead>Node</TableHead>
                     <TableHead>Tick</TableHead>
                     <TableHead>Align</TableHead>
                     <TableHead>Missalign</TableHead>
                     <TableHead>Duration</TableHead>
                     <TableHead>Last Update</TableHead>
+                    <TableHead className="">
+                        <Tooltip>
+                            <TooltipTrigger className="flex items-center gap-1">
+                                Visibility <Info size={12} />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                Private = only operator can see the node; Public
+                                = everyone can see the node
+                            </TooltipContent>
+                        </Tooltip>
+                    </TableHead>
                     <TableHead>Operator</TableHead>
                 </TableRow>
             </TableHeader>
@@ -54,9 +74,9 @@ export default function LiteNodeTable({
                             }`}
                             key={stat.server}
                         >
-                            <TableCell>
+                            {/* <TableCell>
                                 <Checkbox />
-                            </TableCell>
+                            </TableCell> */}
                             <TableCell>{stat.server} </TableCell>
                             <TableCell>
                                 <FlashText
@@ -70,6 +90,13 @@ export default function LiteNodeTable({
                                 {calculateTimeDiffInSeconds(stat.lastUpdated)}s
                             </TableCell>
                             <TableCell>{format(stat.lastUpdated)}</TableCell>
+                            <TableCell>
+                                <VisibilityChanger
+                                    service="liteNode"
+                                    stat={stat}
+                                    operatorInfo={operatorInfo}
+                                />
+                            </TableCell>
                             <TableCell>
                                 <Badge
                                     className={`${badgeOperatorColor(

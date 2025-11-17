@@ -13,7 +13,7 @@ export default function Home() {
             bobNodes: BobNodeTickInfo[];
         };
     }>({
-        queryKey: ["general-stats"],
+        queryKey: ["servers-status"],
         path: "/servers-status",
         refetchInterval: 1000,
     });

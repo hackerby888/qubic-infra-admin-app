@@ -16,6 +16,10 @@ import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import useGeneralPost from "@/networking/api";
 import { hashSHA256 } from "@/utils/crypto";
 import { toast } from "sonner";
+import {
+    useLoginReloadStore,
+    type LoginReloadState,
+} from "@/stores/login-reload-store";
 
 export default function LoginButton() {
     let operatorToken = MyStorage.getLoginCredential();
@@ -28,6 +32,7 @@ export default function LoginButton() {
 
     const forceRerender = () => setTick((tick) => tick + 1);
 
+    const loginReload = useLoginReloadStore() as LoginReloadState;
     let { mutate: doLogin, isPending } = useGeneralPost({
         queryKey: ["login"],
         path: "/login",
@@ -45,11 +50,18 @@ export default function LoginButton() {
                 // Close dialog or give feedback
                 toast.success("Login successful!");
                 setOpen(false);
+                loginReload.triggerReload();
             },
             onError: (error: any) => {
                 toast.error("Login failed: " + error.message);
             },
         });
+    };
+
+    const handleLogout = () => {
+        MyStorage.clearLoginCredential();
+        forceRerender();
+        loginReload.triggerReload();
     };
 
     return (
@@ -132,10 +144,7 @@ export default function LoginButton() {
                     <DialogFooter>
                         {isLoggedIn ? (
                             <Button
-                                onClick={() => {
-                                    MyStorage.clearLoginCredential();
-                                    forceRerender();
-                                }}
+                                onClick={() => handleLogout()}
                                 className="cursor-pointer"
                                 variant="destructive"
                             >

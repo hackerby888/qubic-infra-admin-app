@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/table";
 import NewServer from "./components/NewServer";
 import useGeneralPost, { useGeneralGet } from "@/networking/api";
-import type { CommandLog, Server } from "@/types/type";
+import type { CommandLog, NodeStatus, Server } from "@/types/type";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import {
@@ -45,7 +45,12 @@ import {
     DialogDescription,
 } from "@/components/ui/dialog";
 import LocalTerminal from "@/components/common/LocalTerminal";
-
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { millisToSeconds } from "@/utils/common";
 function tripText(text: string, maxLength: number) {
     if (text.length <= maxLength) {
         return text;
@@ -89,11 +94,12 @@ export default function ManageNode() {
         path: "/delete-server",
     });
 
-    let bgColorMap: { [key: string]: string } = {
-        nothing: "",
+    let bgColorMap: Record<NodeStatus, string> = {
         active: "bg-blue-500",
         error: "bg-red-500",
         setting_up: "bg-yellow-500",
+        stopped: "bg-gray-500",
+        restarting: "bg-purple-500",
     };
 
     const handleDeleteAllCommandLogs = () => {
@@ -203,7 +209,7 @@ export default function ManageNode() {
         <div className="p-4">
             <h3 className="text-2xl font-bold mb-4">Manage Nodes</h3>{" "}
             <div className="mb-4 rounded shadow-sm p-4 space-x-2">
-                {commandLogs?.commandLogs.map((log, index) => (
+                {commandLogs?.commandLogs.map((log) => (
                     <Dialog key={log.uuid}>
                         <DialogTrigger>
                             <div className="flex">
@@ -211,7 +217,7 @@ export default function ManageNode() {
                                     className={`cursor-pointer ${
                                         commandLogStatusColorMap[log.status]
                                     }`}
-                                    variant={"outline"}
+                                    variant={"secondary"}
                                 >
                                     {tripText(log.command, 20)}
                                     <span
@@ -220,7 +226,7 @@ export default function ManageNode() {
                                             handleDeleteCommandLog(log.uuid);
                                         }}
                                     >
-                                        <X size={15} />
+                                        <X className="" size={15} />
                                     </span>
                                 </Badge>
                             </div>
@@ -232,6 +238,21 @@ export default function ManageNode() {
                                     View the logs of your node here.
                                 </DialogDescription>
                             </DialogHeader>
+                            <div className="bg-gray-100 w-full rounded-sm px-2 py-2 text-sm text-gray-700 mb-2">
+                                {log.command}{" "}
+                                <span className="text-xs text-gray-500">
+                                    {new Date(log.timestamp).toLocaleString()} -{" "}
+                                    <b
+                                        className={`${
+                                            log.status === "failed" &&
+                                            "text-red-500"
+                                        }`}
+                                    >
+                                        {log.status} (
+                                        {millisToSeconds(log.duration)} seconds)
+                                    </b>
+                                </span>
+                            </div>
                             <LocalTerminal text={log.stdout} />
                         </DialogContent>
                     </Dialog>
@@ -241,7 +262,7 @@ export default function ManageNode() {
                         <AlertDialogTrigger>
                             <Badge
                                 className="cursor-pointer hover:bg-red-500 hover:text-white"
-                                variant="secondary"
+                                variant="default"
                             >
                                 <X size={15} className="mr-1" />
                                 Delete All Command Logs
@@ -345,20 +366,31 @@ export default function ManageNode() {
                                                   ]
                                                 : "nothing";
                                             return (
-                                                <Badge
-                                                    key={service}
-                                                    variant={"outline"}
-                                                    className={`${
-                                                        haveDeployStatus &&
-                                                        bgColorMap[status]
-                                                    } ${
-                                                        !haveDeployStatus
-                                                            ? "opacity-50"
-                                                            : "text-white"
-                                                    }`}
-                                                >
-                                                    {service}
-                                                </Badge>
+                                                <Tooltip>
+                                                    <TooltipTrigger>
+                                                        <Badge
+                                                            key={service}
+                                                            variant={"outline"}
+                                                            className={`${
+                                                                haveDeployStatus &&
+                                                                bgColorMap[
+                                                                    status as keyof typeof bgColorMap
+                                                                ]
+                                                            } ${
+                                                                !haveDeployStatus
+                                                                    ? "opacity-50"
+                                                                    : "text-white"
+                                                            }`}
+                                                        >
+                                                            {service}
+                                                        </Badge>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        {haveDeployStatus
+                                                            ? `Status: ${status}`
+                                                            : `No status available`}
+                                                    </TooltipContent>
+                                                </Tooltip>
                                             );
                                         })}
                                     </TableCell>

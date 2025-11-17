@@ -19,10 +19,6 @@ export default function RealTimeLogViewer({
             "serviceLogUpdate",
             (data: { service: ServiceType; log: string }) => {
                 if (data.service === service) {
-                    console.log(
-                        "Received log data:",
-                        data.log.replaceAll("\n", "\\n")
-                    );
                     setLogs((text) => text + data.log);
                 }
             }
@@ -40,10 +36,6 @@ export default function RealTimeLogViewer({
         setIsSubscribed(true);
         toast.info("Please wait, loading logs...");
     };
-
-    let renderLogs = logs.replaceAll("\n\n", "\\n\\n");
-    renderLogs = renderLogs.replaceAll("\n", "");
-    renderLogs = renderLogs.replaceAll("\\n", "\n");
 
     return (
         <div className="relative">

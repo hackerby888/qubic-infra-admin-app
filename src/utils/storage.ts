@@ -23,4 +23,9 @@ export const MyStorage = {
             return null;
         }
     },
+
+    getUserInfo(): User | null {
+        let token = this.getLoginCredential();
+        return this.decodeTokenPayload(token);
+    },
 };

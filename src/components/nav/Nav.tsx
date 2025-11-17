@@ -5,6 +5,11 @@ import PowerManagement from "@/components/nav/PowerManagement";
 import DeployManagement from "@/components/nav/DeployManagement";
 import ShellManagement from "@/components/nav/ShellManagement";
 import { useLocation } from "react-router";
+import { MyStorage } from "@/utils/storage";
+import {
+    useLoginReloadStore,
+    type LoginReloadState,
+} from "@/stores/login-reload-store";
 
 function getPathsFromLocation(paths: string) {
     return paths.split("/").filter((path) => path !== "");
@@ -21,9 +26,17 @@ function normlizePathName(path: string) {
 }
 
 export default function Nav() {
+    const loginReload = useLoginReloadStore() as LoginReloadState;
     let location = useLocation();
     let paths = getPathsFromLocation(location.pathname);
     let totalPaths = paths.length;
+    let isLoggedIn = MyStorage.decodeTokenPayload(
+        MyStorage.getLoginCredential() || ""
+    )
+        ? true
+        : false;
+
+    console.log(loginReload.reloadFlag);
     return (
         <nav className="w-full pl-2 py-3 border-b border-gray-200 flex justify-between">
             <div className="flex items-center">
@@ -72,12 +85,18 @@ export default function Nav() {
                 </span>
             </div>
             <div className="flex items-center pr-5">
-                <div className="tools flex space-x-4 mr-4">
-                    <PowerManagement />
-                    <DeployManagement />
-                    <ShellManagement />
-                </div>
-                <div className="w-1 h-1 bg-blue-400 mr-3"></div>
+                {isLoggedIn ? (
+                    <>
+                        <div className="tools flex space-x-4 mr-4">
+                            <PowerManagement />
+                            <DeployManagement />
+                            <ShellManagement />
+                        </div>
+                        <div className="w-1 h-1 bg-blue-400 mr-3"></div>
+                    </>
+                ) : (
+                    <></>
+                )}
                 <LoginButton />
             </div>
         </nav>
