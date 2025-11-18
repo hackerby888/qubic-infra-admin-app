@@ -1,10 +1,9 @@
 import "./App.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes, useLocation } from "react-router";
+import { BrowserRouter, Route, Routes } from "react-router";
 import Home from "./pages/home/Home";
-import { SidebarProvider, SidebarTrigger } from "./components/ui/sidebar";
+import { SidebarProvider } from "./components/ui/sidebar";
 import SideBar from "./components/sidebar/SideBar";
-import LoginButton from "./components/login/Login";
 import Nav from "./components/nav/Nav";
 import Operator from "./pages/operator-management/Operator";
 import MyNodes from "./pages/node-management/MyNodes";

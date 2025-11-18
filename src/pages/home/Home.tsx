@@ -7,7 +7,7 @@ import NodeStatus from "./components/NodeStatus";
 import { isNodeActive } from "@/utils/common";
 
 export default function Home() {
-    let { data, error, isLoading } = useGeneralGet<{
+    let { data, isLoading } = useGeneralGet<{
         statuses: {
             liteNodes: LiteNodeTickInfo[];
             bobNodes: BobNodeTickInfo[];
@@ -58,7 +58,7 @@ export default function Home() {
             <h3 className="text-2xl font-bold mb-4">Overview</h3>
             <div className="flex space-x-4">
                 {" "}
-                {Object.entries(totalNodes).map(([nodeType, total]) => {
+                {Object.entries(totalNodes).map(([nodeType]) => {
                     let validNodeType = nodeType as NodeType;
                     return (
                         <NodeStatus

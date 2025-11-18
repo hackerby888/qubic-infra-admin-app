@@ -67,7 +67,7 @@ export default function MyNodes() {
                 <>
                     <div className="flex space-x-4">
                         {" "}
-                        {Object.entries(totalNodes).map(([nodeType, total]) => {
+                        {Object.entries(totalNodes).map(([nodeType]) => {
                             let validNodeType = nodeType as NodeType;
                             return (
                                 <NodeStatus

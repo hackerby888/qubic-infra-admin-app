@@ -11,7 +11,6 @@ import {
 import type { BobNodeTickInfo, User } from "@/types/type";
 import { format } from "timeago.js";
 import { badgeOperatorColor } from "../common/util";
-import { Checkbox } from "@/components/ui/checkbox";
 import { isNodeActive } from "@/utils/common";
 import {
     Tooltip,
@@ -65,7 +64,7 @@ export default function BobNodeTable({
                         </TableCell>
                     </TableRow>
                 )}
-                {sortedBobNodeStatuses?.map((stat, idx) => {
+                {sortedBobNodeStatuses?.map((stat) => {
                     let nodeAlive = isNodeActive(stat.lastUpdated);
                     return (
                         <TableRow

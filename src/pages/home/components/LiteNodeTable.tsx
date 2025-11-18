@@ -11,7 +11,6 @@ import {
 import type { LiteNodeTickInfo, User } from "@/types/type";
 import { format } from "timeago.js";
 import { badgeOperatorColor, calculateTimeDiffInSeconds } from "../common/util";
-import { Checkbox } from "@/components/ui/checkbox";
 import { isNodeActive } from "@/utils/common";
 import {
     Tooltip,
@@ -65,7 +64,7 @@ export default function LiteNodeTable({
                         </TableCell>
                     </TableRow>
                 )}
-                {sortedLiteNodeStatuses?.map((stat, idx) => {
+                {sortedLiteNodeStatuses?.map((stat) => {
                     let nodeAlive = isNodeActive(stat.lastUpdated);
                     return (
                         <TableRow

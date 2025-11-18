@@ -1,16 +1,4 @@
-import {
-    ChevronUp,
-    Github,
-    House,
-    LaptopMinimal,
-    Search,
-    UserRoundPlus,
-} from "lucide-react";
-import {
-    Collapsible,
-    CollapsibleContent,
-    CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { House, LaptopMinimal, Search, UserRoundPlus } from "lucide-react";
 import {
     Sidebar,
     SidebarContent,
@@ -32,18 +20,6 @@ import {
 } from "@/stores/login-reload-store";
 
 const availableRoutesPublic = [{ name: "Home", path: "/", icon: House }];
-const availableRoutesPrivate = [
-    {
-        name: "Node Management",
-        path: "/node-management",
-        icon: LaptopMinimal,
-    },
-    {
-        name: "Github Workflow",
-        path: "/github-workflow",
-        icon: Github,
-    },
-];
 
 export default function SideBar() {
     const loginReload = useLoginReloadStore() as LoginReloadState;
@@ -67,7 +43,7 @@ export default function SideBar() {
                     {" "}
                     <div className="px-3 py-3">
                         <div className="flex">
-                            <div className="w-10 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-sm"></div>
+                            <div className="w-10 bg-linear-to-r from-cyan-500 to-blue-500 rounded-sm"></div>
                             <div className="flex flex-col justify-center align-middle pl-2">
                                 <span className="text-sm font-semibold">
                                     Qubic Network Nodes

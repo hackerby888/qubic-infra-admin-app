@@ -48,11 +48,7 @@ export default function DeployManagement() {
     let [epochFile, setEpochFile] = useState<string>("");
     let [peers, setPeers] = useState<string>("");
 
-    let {
-        data: tags,
-        error: tagsError,
-        isLoading: tagsLoading,
-    } = useGeneralGet<GithubTag[]>({
+    let { data: tags, isLoading: tagsLoading } = useGeneralGet<GithubTag[]>({
         queryKey: ["github-tags", currentService],
         path: "/github-tags",
         refetchInterval: 60000,
