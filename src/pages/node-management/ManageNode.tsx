@@ -395,14 +395,23 @@ export default function ManageNode() {
                                         })}
                                     </TableCell>
                                     <TableCell>
-                                        <Badge
-                                            className={
-                                                bgColorMap[serverInfo.status]
-                                            }
-                                            variant={"default"}
-                                        >
-                                            {serverInfo.status}
-                                        </Badge>
+                                        <Tooltip>
+                                            <TooltipTrigger>
+                                                <Badge
+                                                    className={
+                                                        bgColorMap[
+                                                            serverInfo.status
+                                                        ]
+                                                    }
+                                                    variant={"default"}
+                                                >
+                                                    {serverInfo.status}
+                                                </Badge>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                {`Overall node status: ${serverInfo.status}`}
+                                            </TooltipContent>
+                                        </Tooltip>
                                     </TableCell>
                                     <TableCell>
                                         <DropdownMenu modal={false}>
