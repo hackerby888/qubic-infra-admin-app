@@ -51,8 +51,16 @@ export type NodeStatus =
     | "stopped"
     | "restarting";
 
+export interface IpInfo {
+    country: string;
+    region: string;
+    city: string;
+    isp: string;
+}
+
 export interface Server {
     server: string;
+    ipInfo?: IpInfo;
     operator: string;
     username: string;
     password: string;

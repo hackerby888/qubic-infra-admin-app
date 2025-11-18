@@ -344,7 +344,15 @@ export default function ManageNode() {
                                             )}
                                         />
                                     </TableCell>
-                                    <TableCell>{serverInfo.server}</TableCell>
+                                    <TableCell>
+                                        {serverInfo.server}{" "}
+                                        <Badge
+                                            className="ml-1"
+                                            variant="outline"
+                                        >
+                                            {serverInfo.ipInfo?.country}
+                                        </Badge>
+                                    </TableCell>
                                     <TableCell>
                                         {serverInfo.os || "N/A"}
                                     </TableCell>
