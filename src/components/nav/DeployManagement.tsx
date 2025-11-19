@@ -96,23 +96,50 @@ export default function DeployManagement() {
         let peersArray = peers.split(",").map((p) => p.trim());
         for (let peer of peersArray) {
             if (currentService === "liteNode") {
-                // The peer should be an IP address
-                let ipPortRegex =
-                    /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?):([0-9]{1,5})$/;
-                if (!ipPortRegex.test(peer)) {
+                // The peer should be an IP address (v4) only (dont use regex expression for simplicity)
+                let ipSplits = peer.split(".");
+                if (
+                    ipSplits.length !== 4 ||
+                    ipSplits.some((segment) => {
+                        let num = Number(segment);
+                        return isNaN(num) || num < 0 || num > 255;
+                    })
+                ) {
                     return toast.error(
                         `Invalid peer address for lite node: ${peer}`
                     );
                 }
             } else {
                 // The peer should be in the format of bob:ip:port or BM:ip:port[:passcode]
-                let bobRegex =
-                    /^bob:(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?):([0-9]{1,5})$/;
-                let bmRegex =
-                    /^BM:(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?):([0-9]{1,5})(:[\w-]+)?$/;
-                if (!bobRegex.test(peer) && !bmRegex.test(peer)) {
+                let parts = peer.split(":");
+                if (parts.length < 3) {
                     return toast.error(
-                        `Invalid peer address for bob node: ${peer}`
+                        `Invalid peer format for bob node: ${peer}`
+                    );
+                }
+                let type = parts[0];
+                let ip = parts[1];
+                let port = Number(parts[2]);
+                if (type !== "bob" && type !== "BM") {
+                    return toast.error(
+                        `Invalid peer type for bob node: ${peer}`
+                    );
+                }
+                let ipSplits = ip.split(".");
+                if (
+                    ipSplits.length !== 4 ||
+                    ipSplits.some((segment) => {
+                        let num = Number(segment);
+                        return isNaN(num) || num < 0 || num > 255;
+                    })
+                ) {
+                    return toast.error(
+                        `Invalid IP address in peer for bob node: ${peer}`
+                    );
+                }
+                if (isNaN(port) || port <= 0 || port > 65535) {
+                    return toast.error(
+                        `Invalid port in peer for bob node: ${peer}`
                     );
                 }
             }
