@@ -41,6 +41,7 @@ export interface User {
     passwordHash: string;
     role: "admin" | "operator";
     insertedAt: number;
+    currentsshPrivateKey?: string;
 }
 
 export type ServiceType = "liteNode" | "bobNode" | "null";
@@ -87,6 +88,7 @@ export interface Server {
             stderr: string;
         };
     };
+    sshPrivateKey: string;
 }
 
 export interface CommandLog {
