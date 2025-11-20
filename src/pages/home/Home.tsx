@@ -56,7 +56,7 @@ export default function Home() {
     return (
         <div className="p-4">
             <h3 className="text-2xl font-bold mb-4">Overview</h3>
-            <div className="flex space-x-4">
+            <div className="flex space-x-4 flex-col md:flex-row">
                 {" "}
                 {Object.entries(totalNodes).map(([nodeType]) => {
                     let validNodeType = nodeType as NodeType;

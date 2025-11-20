@@ -50,7 +50,7 @@ export default function Nav() {
                     style={{ width: "0.5px" }}
                     className="bg-gray-300 h-5"
                 ></div>
-                <span className="ml-3 text-sm flex">
+                <span className="ml-3 text-sm md:flex hidden">
                     {totalPaths === 0 ? (
                         <span className="cursor-pointer hover:underline">
                             Home

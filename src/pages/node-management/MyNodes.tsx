@@ -65,7 +65,7 @@ export default function MyNodes() {
             <h3 className="text-2xl font-bold mb-4">My Nodes</h3>
             {shouldRender ? (
                 <>
-                    <div className="flex space-x-4">
+                    <div className="flex space-x-4 flex-col md:flex-row">
                         {" "}
                         {Object.entries(totalNodes).map(([nodeType]) => {
                             let validNodeType = nodeType as NodeType;

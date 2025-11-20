@@ -52,7 +52,7 @@ export default function ViewLogs({ server }: { server: string }) {
                         View the logs of your node here.
                     </DialogDescription>
                 </DialogHeader>
-                <div>
+                <div className="w-full">
                     <Tabs defaultValue="lite-logs">
                         <TabsList>
                             <TabsTrigger value="lite-logs">
@@ -63,7 +63,7 @@ export default function ViewLogs({ server }: { server: string }) {
                         </TabsList>
                         <TabsContent value="lite-logs">
                             <Tabs defaultValue="stdout">
-                                <TabsList>
+                                <TabsList className="max-w-80 md:max-w-full overflow-x-auto">
                                     <TabsTrigger value="stdout">
                                         Deploy Standard Output
                                     </TabsTrigger>
@@ -91,6 +91,7 @@ export default function ViewLogs({ server }: { server: string }) {
                                                 ?.stderr ||
                                             "No lite node logs available."
                                         }
+                                        allowCopy={true}
                                     />
                                 </TabsContent>
                                 <TabsContent value="realtime">
@@ -101,10 +102,10 @@ export default function ViewLogs({ server }: { server: string }) {
                                 </TabsContent>
                             </Tabs>
                         </TabsContent>
-                        <TabsContent value="bob-logs">
+                        <TabsContent value="bob-logs" className="">
                             {" "}
-                            <Tabs defaultValue="stdout">
-                                <TabsList>
+                            <Tabs defaultValue="stdout" className="">
+                                <TabsList className="max-w-80 md:max-w-full overflow-x-auto">
                                     <TabsTrigger value="stdout">
                                         Deploy Standard Output
                                     </TabsTrigger>
@@ -122,6 +123,7 @@ export default function ViewLogs({ server }: { server: string }) {
                                                 ?.stdout ||
                                             "No lite node logs available."
                                         }
+                                        allowCopy={true}
                                     />
                                 </TabsContent>
                                 <TabsContent value="stderr">
@@ -131,6 +133,7 @@ export default function ViewLogs({ server }: { server: string }) {
                                                 ?.stderr ||
                                             "No lite node logs available."
                                         }
+                                        allowCopy={true}
                                     />
                                 </TabsContent>
                                 <TabsContent value="realtime">
@@ -156,22 +159,20 @@ export default function ViewLogs({ server }: { server: string }) {
                                         </TabsTrigger>
                                     </TabsList>
                                     <TabsContent value="stdout">
-                                        {" "}
-                                        <div className="w-full bg-gray-100 p-4 text-sm rounded h-96 overflow-x-scroll">
-                                            <div className="overflow-auto whitespace-pre-line">
-                                                {setupLogs?.setupLogs.stdout ||
-                                                    "No setup logs available."}
-                                            </div>
-                                        </div>
+                                        <LocalTerminal
+                                            text={
+                                                setupLogs?.setupLogs.stdout ||
+                                                "No logs found"
+                                            }
+                                        />
                                     </TabsContent>
                                     <TabsContent value="stderr">
-                                        {" "}
-                                        <div className="w-full bg-gray-100 p-4 text-sm rounded h-96 overflow-x-scroll">
-                                            <div className="overflow-auto whitespace-pre-line">
-                                                {setupLogs?.setupLogs.stderr ||
-                                                    "No setup logs available."}
-                                            </div>
-                                        </div>
+                                        <LocalTerminal
+                                            text={
+                                                setupLogs?.setupLogs.stderr ||
+                                                "No logs found"
+                                            }
+                                        />
                                     </TabsContent>
                                 </Tabs>
                             )}
