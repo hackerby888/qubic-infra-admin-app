@@ -1,5 +1,6 @@
 export interface LiteNodeTickInfo {
     server: string;
+    ipInfo: IpInfo;
     operator: string;
     tick: number;
     epoch: number;
@@ -13,6 +14,7 @@ export interface LiteNodeTickInfo {
 
 export interface BobNodeTickInfo {
     server: string;
+    ipInfo: IpInfo;
     operator: string;
     currentProcessingEpoch: number;
     currentFetchingTick: number;

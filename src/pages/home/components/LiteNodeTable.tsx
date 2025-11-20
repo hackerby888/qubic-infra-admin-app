@@ -76,7 +76,17 @@ export default function LiteNodeTable({
                             {/* <TableCell>
                                 <Checkbox />
                             </TableCell> */}
-                            <TableCell>{stat.server} </TableCell>
+                            <TableCell>
+                                {stat.server}{" "}
+                                <Badge
+                                    className="ml-1"
+                                    variant={
+                                        nodeAlive ? "outline" : "secondary"
+                                    }
+                                >
+                                    {stat.ipInfo?.country}
+                                </Badge>
+                            </TableCell>
                             <TableCell>
                                 <FlashText
                                     noFlash={!nodeAlive}

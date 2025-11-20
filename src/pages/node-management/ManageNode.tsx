@@ -51,6 +51,8 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { millisToSeconds } from "@/utils/common";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 function tripText(text: string, maxLength: number) {
     if (text.length <= maxLength) {
         return text;
@@ -84,7 +86,11 @@ export default function ManageNode() {
         queryKey: ["my-servers"],
         path: "/my-servers",
     });
-    let { data: commandLogs } = useGeneralGet<{ commandLogs: CommandLog[] }>({
+    let {
+        data: commandLogs,
+        isFetching: isFetchingCommandsLogs,
+        error: fetchingCommandsLogsError,
+    } = useGeneralGet<{ commandLogs: CommandLog[] }>({
         queryKey: ["command-logs", "all"],
         path: "/command-logs",
     });
@@ -257,6 +263,25 @@ export default function ManageNode() {
                         </DialogContent>
                     </Dialog>
                 ))}
+                {isFetchingCommandsLogs && (
+                    <div>
+                        <Skeleton className="h-4 w-40 mr-2 inline-block" />
+                        <Skeleton className="h-4 w-20 mr-2 inline-block" />
+                        <Skeleton className="h-4 w-20 mr-2 inline-block" />
+                        <Skeleton className="h-4 w-30 mr-2 inline-block" />
+                    </div>
+                )}
+                {fetchingCommandsLogsError && (
+                    <Alert variant={"destructive"}>
+                        <AlertTitle>
+                            Error, something went wrong while fetching command
+                            logs.
+                        </AlertTitle>
+                        <AlertDescription>
+                            {fetchingCommandsLogsError.message}
+                        </AlertDescription>
+                    </Alert>
+                )}
                 <div className="mt-2">
                     <AlertDialog>
                         <AlertDialogTrigger>
