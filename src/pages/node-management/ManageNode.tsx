@@ -88,7 +88,7 @@ export default function ManageNode() {
     });
     let {
         data: commandLogs,
-        isFetching: isFetchingCommandsLogs,
+        isLoading: isLoadingCommandsLogs,
         error: fetchingCommandsLogsError,
     } = useGeneralGet<{ commandLogs: CommandLog[] }>({
         queryKey: ["command-logs", "all"],
@@ -263,7 +263,7 @@ export default function ManageNode() {
                         </DialogContent>
                     </Dialog>
                 ))}
-                {isFetchingCommandsLogs && (
+                {isLoadingCommandsLogs && (
                     <div>
                         <Skeleton className="h-4 w-40 mr-2 inline-block" />
                         <Skeleton className="h-4 w-20 mr-2 inline-block" />
