@@ -54,7 +54,10 @@ export default function SideBar() {
 
                         <div className="mt-4">
                             <InputGroup>
-                                <InputGroupInput placeholder="Search..." />
+                                <InputGroupInput
+                                    autoFocus={false}
+                                    placeholder="Search..."
+                                />
                                 <InputGroupAddon>
                                     <Search />
                                 </InputGroupAddon>

@@ -49,7 +49,11 @@ export default function DeployManagement() {
     let [epochFile, setEpochFile] = useState<string>("");
     let [peers, setPeers] = useState<string>("");
 
-    let { data: tags, isLoading: tagsLoading } = useGeneralGet<GithubTag[]>({
+    let {
+        data: tags,
+        isLoading: tagsLoading,
+        isFetching: isTagsFetching,
+    } = useGeneralGet<GithubTag[]>({
         queryKey: ["github-tags", currentService],
         path: "/github-tags",
         refetchInterval: 60000,
@@ -75,7 +79,7 @@ export default function DeployManagement() {
             } as any,
             {
                 onSuccess: (tags: GithubTag[]) => {
-                    toast.success("Refreshed GitHub tags...");
+                    toast.success("Refreshed GitHub tags");
                     queryClient.setQueryData(["github-tags"], tags);
                 },
                 onError: (error) => {
@@ -227,7 +231,9 @@ export default function DeployManagement() {
                                             Version
                                         </FieldLabel>
                                         <div className="flex space-x-2">
-                                            {!tagsLoading ? (
+                                            {!(
+                                                tagsLoading || isTagsFetching
+                                            ) ? (
                                                 <Select
                                                     value={tag}
                                                     onValueChange={setTag}
@@ -326,7 +332,9 @@ export default function DeployManagement() {
                                             Version
                                         </FieldLabel>
                                         <div className="flex space-x-2">
-                                            {!tagsLoading ? (
+                                            {!(
+                                                tagsLoading || isTagsFetching
+                                            ) ? (
                                                 <Select
                                                     value={tag}
                                                     onValueChange={setTag}
