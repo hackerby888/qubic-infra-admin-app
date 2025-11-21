@@ -193,8 +193,8 @@ export default function DeployManagement() {
                 <DialogHeader>
                     <DialogTitle>Deploy New Epoch</DialogTitle>
                     <DialogDescription>
-                        Deploy a new epoch to selected nodes via Github
-                        Workflow.
+                        Deploy a new epoch to selected nodes using automated
+                        systems.
                     </DialogDescription>
                 </DialogHeader>
                 <div className="mt-4">
@@ -216,7 +216,7 @@ export default function DeployManagement() {
                             {/* <FieldLabel htmlFor="version">
                                 Selected Servers
                             </FieldLabel> */}
-                            <div className="space-x-2">
+                            <div className="space-x-2 space-y-2">
                                 {selectedStore.selectedServers.map((server) => {
                                     return (
                                         <span
