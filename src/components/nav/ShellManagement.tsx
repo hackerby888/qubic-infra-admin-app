@@ -16,6 +16,10 @@ import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import type { CommandLog } from "@/types/type";
 
+const QUICKS_COMMANDS_MAP = {
+    "F8/SaveSnapShot (Lite Node)": "f8/savesnapshot:lite",
+};
+
 export default function ShellManagement() {
     let queryClient = useQueryClient();
 
@@ -33,7 +37,7 @@ export default function ShellManagement() {
         path: "/command-logs",
         reqQuery: {
             isStandardCommand: "false",
-            limit: "10",
+            limit: "7",
         },
     });
 
@@ -105,6 +109,24 @@ export default function ShellManagement() {
                             Running...
                         </Button>
                     )}
+                </div>
+                <div>
+                    <span className="font-semibold">Quick Commands</span>
+                    <ul className="mt-2 space-y-1 text-sm">
+                        {Object.entries(QUICKS_COMMANDS_MAP).map(
+                            ([label, cmd]) => (
+                                <li>
+                                    <Button
+                                        onClick={() => setCommand(cmd)}
+                                        variant={"outline"}
+                                        className="cursor-pointer text-[12px]"
+                                    >
+                                        {label}
+                                    </Button>
+                                </li>
+                            )
+                        )}
+                    </ul>
                 </div>
                 <div>
                     <span className="font-semibold">Recent Commands</span>

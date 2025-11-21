@@ -53,6 +53,7 @@ import {
 import { millisToSeconds } from "@/utils/common";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 function tripText(text: string, maxLength: number) {
     if (text.length <= maxLength) {
         return text;
@@ -259,7 +260,28 @@ export default function ManageNode() {
                                     </b>
                                 </span>
                             </div>
-                            <LocalTerminal text={log.stdout} />
+                            <Tabs defaultValue="stdout">
+                                <TabsList>
+                                    <TabsTrigger
+                                        className="cursor-pointer"
+                                        value="stdout"
+                                    >
+                                        stdout
+                                    </TabsTrigger>
+                                    <TabsTrigger
+                                        className="cursor-pointer"
+                                        value="stderr"
+                                    >
+                                        stderr
+                                    </TabsTrigger>
+                                </TabsList>
+                                <TabsContent value="stdout">
+                                    <LocalTerminal text={log.stdout} />
+                                </TabsContent>
+                                <TabsContent value="stderr">
+                                    <LocalTerminal text={log.stderr} />
+                                </TabsContent>
+                            </Tabs>
                         </DialogContent>
                     </Dialog>
                 ))}

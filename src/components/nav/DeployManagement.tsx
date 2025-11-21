@@ -36,6 +36,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { Badge } from "../ui/badge";
+import { Skeleton } from "../ui/skeleton";
 
 export default function DeployManagement() {
     let queryClient = useQueryClient();
@@ -172,13 +173,12 @@ export default function DeployManagement() {
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger>
-                {" "}
                 <Rocket
                     className="cursor-pointer hover:text-blue-500"
                     size={20}
                 />
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="overflow-y-auto max-h-[90vh] w-full sm:w-[500px]">
                 <DialogHeader>
                     <DialogTitle>Deploy New Epoch</DialogTitle>
                     <DialogDescription>
@@ -262,7 +262,7 @@ export default function DeployManagement() {
                                                     </SelectContent>
                                                 </Select>
                                             ) : (
-                                                <div></div>
+                                                <Skeleton className="h-10 w-full" />
                                             )}
                                             <Button
                                                 onClick={handleRefreshTags}
@@ -361,7 +361,7 @@ export default function DeployManagement() {
                                                     </SelectContent>
                                                 </Select>
                                             ) : (
-                                                <div></div>
+                                                <Skeleton className="h-10 w-full" />
                                             )}
                                             <Button
                                                 onClick={handleRefreshTags}
