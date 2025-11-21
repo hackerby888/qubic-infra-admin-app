@@ -98,7 +98,17 @@ export default function DeployManagement() {
             );
         }
 
-        let peersArray = peers.split(",").map((p) => p.trim());
+        let peersArray = peers
+            .split(",")
+            .map((p) =>
+                p
+                    .trim()
+                    .split(":")
+                    .map((s) => s.trim())
+                    .join(":")
+            )
+            .filter((p) => p.length > 0);
+
         for (let peer of peersArray) {
             if (currentService === "liteNode") {
                 // The peer should be an IP address (v4) only (dont use regex expression for simplicity)
