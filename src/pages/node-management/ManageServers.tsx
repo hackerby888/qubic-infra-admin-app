@@ -61,7 +61,7 @@ function tripText(text: string, maxLength: number) {
     return text.slice(0, maxLength) + "...";
 }
 
-export default function ManageNode() {
+export default function ManageServers() {
     const queryClient = useQueryClient();
 
     const selectedStore = useSelectedServersStore() as SelectedServersState;
@@ -214,7 +214,7 @@ export default function ManageNode() {
 
     return (
         <div className="p-4">
-            <h3 className="text-2xl font-bold mb-4">Manage Nodes</h3>{" "}
+            <h3 className="text-2xl font-bold mb-4">Manage Servers</h3>{" "}
             <div className="mb-4 rounded shadow-sm p-4 space-x-2 max-h-1/3 overflow-y-auto">
                 {commandLogs?.commandLogs.map((log) => (
                     <Dialog key={log.uuid}>

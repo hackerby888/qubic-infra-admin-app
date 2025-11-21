@@ -8,8 +8,8 @@ import Nav from "./components/nav/Nav";
 import Operator from "./pages/operator-management/Operator";
 import MyNodes from "./pages/node-management/MyNodes";
 import { Toaster } from "@/components/ui/sonner";
-import ManageNode from "./pages/node-management/ManageNode";
 import Auth from "./pages/node-management/Auth";
+import ManageServers from "./pages/node-management/ManageServers";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -40,8 +40,8 @@ function App() {
                                                 element={<MyNodes />}
                                             />
                                             <Route
-                                                path="manage-nodes"
-                                                element={<ManageNode />}
+                                                path="manage-servers"
+                                                element={<ManageServers />}
                                             />
                                             <Route
                                                 path="auth"

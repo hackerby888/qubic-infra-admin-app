@@ -18,6 +18,7 @@ import type { CommandLog } from "@/types/type";
 
 const QUICKS_COMMANDS_MAP = {
     "F8/SaveSnapShot (Lite Node)": "f8/savesnapshot:lite",
+    "F10/ClearMemory (Lite Node)": "f10/clearmemory:lite",
 };
 
 export default function ShellManagement() {
@@ -109,7 +110,7 @@ export default function ShellManagement() {
                 </div>
                 <div>
                     <span className="font-semibold">Quick Commands</span>
-                    <ul className="mt-2 space-y-1 text-sm">
+                    <ul className="mt-2 space-y-1 text-sm flex space-x-1">
                         {Object.entries(QUICKS_COMMANDS_MAP).map(
                             ([label, cmd]) => (
                                 <li>

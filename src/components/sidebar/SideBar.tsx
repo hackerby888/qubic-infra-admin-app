@@ -38,9 +38,8 @@ export default function SideBar() {
     return (
         <Sidebar className="">
             <SidebarHeader />
-            <SidebarContent>
+            <SidebarContent className={`${isLoggedIn && "bg-white"}`}>
                 <SidebarGroup>
-                    {" "}
                     <div className="px-3 py-3">
                         <div className="flex">
                             <div className="w-10 bg-linear-to-r from-cyan-500 to-blue-500 rounded-sm"></div>
@@ -53,7 +52,7 @@ export default function SideBar() {
                         </div>
 
                         <div className="mt-4">
-                            <InputGroup>
+                            <InputGroup autoFocus={false}>
                                 <InputGroupInput
                                     autoFocus={false}
                                     placeholder="Search..."
@@ -146,8 +145,8 @@ export default function SideBar() {
                                                 path: "/my-nodes",
                                             },
                                             {
-                                                label: "Manage Nodes",
-                                                path: "/manage-nodes",
+                                                label: "Manage Servers",
+                                                path: "/manage-servers",
                                             },
                                             {
                                                 label: "Authentication",
