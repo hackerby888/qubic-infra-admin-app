@@ -73,10 +73,7 @@ export default function ShellManagement() {
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger>
                 {" "}
-                <SquareTerminal
-                    className="cursor-pointer hover:text-blue-500"
-                    size={20}
-                />
+                <SquareTerminal className="cursor-pointer" size={20} />
             </DialogTrigger>
             <DialogContent className="min-w-1/2">
                 <div className="flex items-center justify-center mt-4">

@@ -38,18 +38,18 @@ export default function Nav() {
 
     console.log(loginReload.reloadFlag);
     return (
-        <nav className="w-full pl-2 py-3 border-b border-gray-200 flex justify-between">
+        <nav
+            className={`w-full pl-2 py-3 border-b border-gray-200 flex justify-between ${
+                isLoggedIn && "bg-nav-gradient text-white"
+            }`}
+        >
             <div className="flex items-center">
-                <div className="p-2 rounded-sm hover:bg-gray-100 cursor-pointer flex w-fit">
-                    <SidebarTrigger>
-                        {" "}
+                <div className="p-2 rounded-sm cursor-pointer flex w-fit">
+                    <SidebarTrigger className="cursor-pointer">
                         <PanelLeftClose className="text-black" size={20} />
                     </SidebarTrigger>
                 </div>
-                <div
-                    style={{ width: "0.5px" }}
-                    className="bg-gray-300 h-5"
-                ></div>
+                <div style={{ width: "0.5px" }} className="bg-white h-5"></div>
                 <span className="ml-3 text-sm md:flex hidden">
                     {totalPaths === 0 ? (
                         <span className="cursor-pointer hover:underline">
@@ -64,8 +64,12 @@ export default function Nav() {
                                     <span
                                         className={`${
                                             index != totalPaths - 1 &&
-                                            "text-gray-600"
-                                        } cursor-pointer hover:underline`}
+                                            "font-semibold"
+                                        } cursor-pointer hover:underline ${
+                                            isLoggedIn
+                                                ? "text-white"
+                                                : "text-gray-600"
+                                        }`}
                                         key={pathClean}
                                     >
                                         {pathClean}{" "}
@@ -74,7 +78,11 @@ export default function Nav() {
                                         <ChevronRight
                                             className={`${
                                                 index != totalPaths - 1 &&
-                                                "text-gray-600"
+                                                "font-semibold"
+                                            } ${
+                                                isLoggedIn
+                                                    ? "text-white"
+                                                    : "text-gray-600"
                                             }`}
                                             size={15}
                                         />
@@ -92,7 +100,7 @@ export default function Nav() {
                             <DeployManagement />
                             <ShellManagement />
                         </div>
-                        <div className="w-1 h-1 bg-blue-400 mr-3"></div>
+                        <div className="w-1 h-1 bg-white mr-3"></div>
                     </>
                 ) : (
                     <></>

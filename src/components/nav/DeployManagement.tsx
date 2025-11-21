@@ -177,10 +177,7 @@ export default function DeployManagement() {
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger>
-                <Rocket
-                    className="cursor-pointer hover:text-blue-500"
-                    size={20}
-                />
+                <Rocket className="cursor-pointer" size={20} />
             </DialogTrigger>
             <DialogContent className="overflow-y-auto max-h-[90vh] w-full sm:w-[500px]">
                 <DialogHeader>

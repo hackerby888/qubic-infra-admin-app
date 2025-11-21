@@ -115,14 +115,11 @@ export default function PowerManagement() {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Power
-                    className="cursor-pointer hover:text-blue-500"
-                    size={20}
-                />
+                <Power className="cursor-pointer hover:font-bold" size={20} />
             </DropdownMenuTrigger>
             <DropdownMenuContent className="flex flex-col">
                 {Object.entries(availableCommands).map(([key, commandData]) => (
-                    <div className="border-b     border-b-gray-100 py-2 flex items-center text-sm font-semibold cursor-pointer p-1 hover:bg-gray-100">
+                    <div className="border-b border-b-gray-100 py-2 flex items-center text-sm font-semibold cursor-pointer p-1 hover:bg-gray-100">
                         <Dialog
                             open={isOpenObj[key as CommandType]}
                             onOpenChange={(value) =>
