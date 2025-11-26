@@ -73,9 +73,6 @@ export default function LiteNodeTable({
                             }`}
                             key={stat.server}
                         >
-                            {/* <TableCell>
-                                <Checkbox />
-                            </TableCell> */}
                             <TableCell>
                                 {stat.server}{" "}
                                 <Badge
@@ -86,6 +83,12 @@ export default function LiteNodeTable({
                                 >
                                     {stat.ipInfo?.country}
                                 </Badge>
+                                {!nodeAlive && (
+                                    <Badge className="ml-1" variant="secondary">
+                                        Last tick changed:{" "}
+                                        {format(stat.lastTickChanged)}
+                                    </Badge>
+                                )}
                             </TableCell>
                             <TableCell>
                                 <FlashText

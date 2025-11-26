@@ -86,6 +86,12 @@ export default function BobNodeTable({
                                 >
                                     {stat.ipInfo?.country}
                                 </Badge>
+                                {!nodeAlive && (
+                                    <Badge className="ml-1" variant="secondary">
+                                        Last tick changed:{" "}
+                                        {format(stat.lastTickChanged)}
+                                    </Badge>
+                                )}
                             </TableCell>
                             <TableCell>
                                 <FlashText
