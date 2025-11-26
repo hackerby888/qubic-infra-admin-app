@@ -65,7 +65,7 @@ export default function LiteNodeTable({
                     </TableRow>
                 )}
                 {sortedLiteNodeStatuses?.map((stat) => {
-                    let nodeAlive = isNodeActive(stat.lastUpdated);
+                    let nodeAlive = isNodeActive(stat.lastTickChanged);
                     return (
                         <TableRow
                             className={`${

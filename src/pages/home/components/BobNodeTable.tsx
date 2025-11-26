@@ -65,7 +65,7 @@ export default function BobNodeTable({
                     </TableRow>
                 )}
                 {sortedBobNodeStatuses?.map((stat) => {
-                    let nodeAlive = isNodeActive(stat.lastUpdated);
+                    let nodeAlive = isNodeActive(stat.lastTickChanged);
                     return (
                         <TableRow
                             className={`${
