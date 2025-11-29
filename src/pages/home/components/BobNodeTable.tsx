@@ -96,14 +96,18 @@ export default function BobNodeTable({
                             <TableCell>
                                 <FlashText
                                     noFlash={!nodeAlive}
-                                    value={stat.currentFetchingTick.toString()}
+                                    value={stat.currentFetchingTick.toLocaleString()}
                                 />
                             </TableCell>
-                            <TableCell>{stat.currentFetchingLogTick}</TableCell>
                             <TableCell>
-                                {stat.currentVerifyLoggingTick}
+                                {stat.currentFetchingLogTick.toLocaleString()}
                             </TableCell>
-                            <TableCell>{stat.currentIndexingTick}</TableCell>
+                            <TableCell>
+                                {stat.currentVerifyLoggingTick.toLocaleString()}
+                            </TableCell>
+                            <TableCell>
+                                {stat.currentIndexingTick.toLocaleString()}
+                            </TableCell>
                             <TableCell>{format(stat.lastUpdated)}</TableCell>
                             <TableCell>
                                 <VisibilityChanger

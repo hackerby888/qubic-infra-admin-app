@@ -93,7 +93,7 @@ export default function LiteNodeTable({
                             <TableCell>
                                 <FlashText
                                     noFlash={!nodeAlive}
-                                    value={stat.tick.toString()}
+                                    value={stat.tick.toLocaleString()}
                                 />
                             </TableCell>
                             <TableCell>{stat.alignedVotes}</TableCell>
