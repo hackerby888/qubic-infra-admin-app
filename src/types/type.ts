@@ -8,6 +8,7 @@ export interface LiteNodeTickInfo {
     misalignedVotes: number;
     initialTick: number;
     lastUpdated: number;
+    mainAuxStatus: number;
     lastTickChanged: number;
     isPrivate: boolean;
 }
