@@ -54,6 +54,7 @@ import { millisToSeconds } from "@/utils/common";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useEffect } from "react";
 function tripText(text: string, maxLength: number) {
     if (text.length <= maxLength) {
         return text;
@@ -160,11 +161,13 @@ export default function ManageServers() {
         }
     };
 
-    const handleDeleteServer = (server: string) => {
-        deleteServer({ server } as unknown as void, {
+    const handleDeleteServers = (servers: string[]) => {
+        deleteServer({ servers: servers } as unknown as void, {
             onSuccess: () => {
                 toast.success("Server deleted successfully");
-                locallyRemoveServer(server);
+                for (let server of servers) {
+                    locallyRemoveServer(server);
+                }
             },
             onError: (error) => {
                 toast.error("Failed to delete server: " + error.message);
@@ -211,6 +214,25 @@ export default function ManageServers() {
     };
 
     console.log("Servers data:", error);
+
+    useEffect(() => {
+        const handleKey = (e: any) => {
+            if (e.key === "Delete" || e.keyCode === 46) {
+                if (
+                    window.confirm(
+                        "Are you sure you want to delete the selected servers?"
+                    ) &&
+                    selectedStore.selectedServers.length > 0
+                ) {
+                    console.log(selectedStore.selectedServers);
+                    handleDeleteServers(selectedStore.selectedServers);
+                }
+            }
+        };
+
+        window.addEventListener("keydown", handleKey);
+        return () => window.removeEventListener("keydown", handleKey);
+    }, [selectedStore.selectedServers]);
 
     return (
         <div className="p-4">
@@ -526,8 +548,10 @@ export default function ManageServers() {
                                                                 </AlertDialogCancel>
                                                                 <AlertDialogAction
                                                                     onClick={() =>
-                                                                        handleDeleteServer(
-                                                                            serverInfo.server
+                                                                        handleDeleteServers(
+                                                                            [
+                                                                                serverInfo.server,
+                                                                            ]
                                                                         )
                                                                     }
                                                                     className="bg-red-500 hover:bg-red-600 cursor-pointer"
