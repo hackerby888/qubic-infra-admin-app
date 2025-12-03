@@ -11,7 +11,7 @@ import {
 import type { LiteNodeTickInfo, User } from "@/types/type";
 import { format } from "timeago.js";
 import { badgeOperatorColor, calculateTimeDiffInSeconds } from "../common/util";
-import { isNodeActive } from "@/utils/common";
+import { isNodeActive, mainAuxStatusToString } from "@/utils/common";
 import {
     Tooltip,
     TooltipContent,
@@ -67,59 +67,76 @@ export default function LiteNodeTable({
                 {sortedLiteNodeStatuses?.map((stat) => {
                     let nodeAlive = isNodeActive(stat.lastTickChanged);
                     return (
-                        <TableRow
-                            className={`${
-                                !nodeAlive && "bg-red-100 hover:bg-red-200"
-                            }`}
-                            key={stat.server}
-                        >
-                            <TableCell>
-                                {stat.server}{" "}
-                                <Badge
-                                    className="ml-1"
-                                    variant={
-                                        nodeAlive ? "outline" : "secondary"
-                                    }
-                                >
-                                    {stat.ipInfo?.country}
-                                </Badge>
-                                {!nodeAlive && (
-                                    <Badge className="ml-1" variant="secondary">
-                                        Last tick changed:{" "}
-                                        {format(stat.lastTickChanged)}
+                        <>
+                            <TableRow
+                                className={`${
+                                    !nodeAlive && "bg-red-100 hover:bg-red-200"
+                                }`}
+                                key={stat.server}
+                            >
+                                <TableCell>
+                                    {stat.server}{" "}
+                                    {operatorInfo && (
+                                        <Badge className="ml-1 bg-blue-600">
+                                            {mainAuxStatusToString(
+                                                stat.mainAuxStatus
+                                            )}
+                                        </Badge>
+                                    )}
+                                    <Badge
+                                        className="ml-1"
+                                        variant={
+                                            nodeAlive ? "outline" : "secondary"
+                                        }
+                                    >
+                                        {stat.ipInfo?.country}
                                     </Badge>
-                                )}
-                            </TableCell>
-                            <TableCell>
-                                <FlashText
-                                    noFlash={!nodeAlive}
-                                    value={stat.tick.toLocaleString()}
-                                />
-                            </TableCell>
-                            <TableCell>{stat.alignedVotes}</TableCell>
-                            <TableCell>{stat.misalignedVotes}</TableCell>
-                            <TableCell>
-                                {calculateTimeDiffInSeconds(stat.lastUpdated)}s
-                            </TableCell>
-                            <TableCell>{format(stat.lastUpdated)}</TableCell>
-                            <TableCell>
-                                <VisibilityChanger
-                                    service="liteNode"
-                                    stat={stat}
-                                    operatorInfo={operatorInfo}
-                                />
-                            </TableCell>
-                            <TableCell>
-                                <Badge
-                                    className={`${badgeOperatorColor(
-                                        stat.operator
-                                    )}`}
-                                    variant="secondary"
-                                >
-                                    {stat.operator}
-                                </Badge>
-                            </TableCell>
-                        </TableRow>
+                                    {!nodeAlive && (
+                                        <Badge
+                                            className="ml-1"
+                                            variant="secondary"
+                                        >
+                                            Last tick changed:{" "}
+                                            {format(stat.lastTickChanged)}
+                                        </Badge>
+                                    )}
+                                </TableCell>
+                                <TableCell>
+                                    <FlashText
+                                        noFlash={!nodeAlive}
+                                        value={stat.tick.toLocaleString()}
+                                    />
+                                </TableCell>
+                                <TableCell>{stat.alignedVotes}</TableCell>
+                                <TableCell>{stat.misalignedVotes}</TableCell>
+                                <TableCell>
+                                    {calculateTimeDiffInSeconds(
+                                        stat.lastUpdated
+                                    )}
+                                    s
+                                </TableCell>
+                                <TableCell>
+                                    {format(stat.lastUpdated)}
+                                </TableCell>
+                                <TableCell>
+                                    <VisibilityChanger
+                                        service="liteNode"
+                                        stat={stat}
+                                        operatorInfo={operatorInfo}
+                                    />
+                                </TableCell>
+                                <TableCell>
+                                    <Badge
+                                        className={`${badgeOperatorColor(
+                                            stat.operator
+                                        )}`}
+                                        variant="secondary"
+                                    >
+                                        {stat.operator}
+                                    </Badge>
+                                </TableCell>
+                            </TableRow>
+                        </>
                     );
                 })}
             </TableBody>

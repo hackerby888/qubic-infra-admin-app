@@ -37,6 +37,7 @@ import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { Badge } from "../ui/badge";
 import { Skeleton } from "../ui/skeleton";
+import { Textarea } from "../ui/textarea";
 
 export default function DeployManagement() {
     let queryClient = useQueryClient();
@@ -48,6 +49,8 @@ export default function DeployManagement() {
     let [tag, setTag] = useState<string>("");
     let [epochFile, setEpochFile] = useState<string>("");
     let [peers, setPeers] = useState<string>("");
+    let [ids, setIds] = useState<string>("");
+    let [mode, setMode] = useState<string>("aux");
 
     let {
         data: tags,
@@ -160,6 +163,12 @@ export default function DeployManagement() {
             }
         }
 
+        let mainAuxStatus: number =
+            {
+                main: 3,
+                aux: 0,
+            }[mode] || 0;
+
         let body = {
             servers: selectedStore.selectedServers,
             service: currentService,
@@ -167,6 +176,11 @@ export default function DeployManagement() {
             extraData: {
                 epochFile: epochFile,
                 peers: peersArray,
+                mainAuxStatus,
+                ids: ids
+                    .split(",")
+                    .map((id) => id.trim())
+                    .filter((id) => id.length === 55),
             },
         };
         deploy(body as any, {
@@ -183,6 +197,13 @@ export default function DeployManagement() {
             },
         });
     };
+
+    let totalIdsAdded = ids
+        .split(",")
+        .filter((id) => id.trim().length === 55).length;
+    let isThereInvalidId = ids
+        .split(",")
+        .some((id) => id.trim().length > 0 && id.trim().length !== 55);
 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -287,6 +308,62 @@ export default function DeployManagement() {
                                         </div>
                                         <FieldDescription>
                                             Select the version to deploy.
+                                        </FieldDescription>
+                                    </Field>
+                                    <Field>
+                                        {" "}
+                                        <FieldLabel htmlFor="epoch-file">
+                                            MAIN/aux status
+                                        </FieldLabel>
+                                        <Tabs
+                                            onValueChange={(val) =>
+                                                setMode(val)
+                                            }
+                                            value={mode}
+                                        >
+                                            <TabsList>
+                                                <TabsTrigger value="aux">
+                                                    aux
+                                                </TabsTrigger>
+                                                <TabsTrigger value="main">
+                                                    MAIN
+                                                </TabsTrigger>
+                                            </TabsList>
+                                            <TabsContent value="main">
+                                                <div className="w-full">
+                                                    <div className="mb-2 text-sm w-full text-gray-800">
+                                                        <span>Added</span>
+                                                        <Badge className="ml-1 text-[11px]">
+                                                            +{totalIdsAdded}
+                                                        </Badge>
+                                                        <span className="ml-1">
+                                                            IDs
+                                                        </span>
+                                                    </div>
+                                                    {isThereInvalidId && (
+                                                        <div className="mb-2 text-sm w-full text-red-600">
+                                                            Some seeds are
+                                                            invalid. Each seed
+                                                            should be exactly 55
+                                                            characters.
+                                                        </div>
+                                                    )}
+                                                    <Textarea
+                                                        spellCheck={false}
+                                                        value={ids}
+                                                        onChange={(e) =>
+                                                            setIds(
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                        placeholder="Your computor seeds (comma separated)"
+                                                    />
+                                                </div>
+                                            </TabsContent>
+                                            <TabsContent value="aux"></TabsContent>
+                                        </Tabs>
+                                        <FieldDescription>
+                                            Select the node status to deploy
                                         </FieldDescription>
                                     </Field>
                                     <Field>
