@@ -65,6 +65,7 @@ export interface IpInfo {
 export interface Server {
     server: string;
     ipInfo?: IpInfo;
+    alias?: string;
     operator: string;
     username: string;
     password: string;
