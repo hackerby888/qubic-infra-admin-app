@@ -508,205 +508,221 @@ export default function ManageServers() {
                                         </TableCell>
                                     </TableRow>
                                 ) : null}
-                                {data?.servers.map((serverInfo) => (
-                                    <TableRow key={serverInfo.server}>
-                                        <TableCell>
-                                            <Checkbox
-                                                onCheckedChange={() =>
-                                                    handleCheckboxChange(
+                                {data?.servers.map((serverInfo) => {
+                                    // Determine if the server is tracking only (no OS and active status, because we skip the setup)
+                                    let isTrackingOnly =
+                                        !serverInfo.os &&
+                                        serverInfo.status === "active";
+                                    return (
+                                        <TableRow key={serverInfo.server}>
+                                            <TableCell>
+                                                <Checkbox
+                                                    onCheckedChange={() =>
+                                                        handleCheckboxChange(
+                                                            serverInfo.server
+                                                        )
+                                                    }
+                                                    checked={selectedStore.selectedServers.includes(
                                                         serverInfo.server
-                                                    )
-                                                }
-                                                checked={selectedStore.selectedServers.includes(
-                                                    serverInfo.server
-                                                )}
-                                            />
-                                        </TableCell>
-                                        <TableCell>
-                                            <div
-                                                onClick={() =>
-                                                    handleOpenDialogAlias(
-                                                        serverInfo.server,
-                                                        serverInfo.alias
-                                                    )
-                                                }
-                                                className="cursor-pointer w-full flex items-center space-x-2"
-                                            >
-                                                <div className="flex items-center space-x-2 w-full">
-                                                    {serverInfo.alias ||
-                                                        "Unknown"}
-                                                </div>
-                                                <Pencil size={13} />
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            {serverInfo.server}{" "}
-                                            <Badge
-                                                className="ml-1"
-                                                variant="outline"
-                                            >
-                                                {serverInfo.ipInfo?.country}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell>
-                                            {serverInfo.os || "N/A"}
-                                        </TableCell>
-                                        <TableCell>
-                                            {serverInfo.cpu || "N/A"}
-                                        </TableCell>
-                                        <TableCell>
-                                            {serverInfo.ram || "N/A"}
-                                        </TableCell>
-                                        <TableCell className="space-x-1">
-                                            {serverInfo.services.map(
-                                                (service) => {
-                                                    let haveDeployStatus =
-                                                        serverInfo.deployStatus &&
-                                                        service in
-                                                            serverInfo.deployStatus;
-                                                    let status =
-                                                        haveDeployStatus
-                                                            ? serverInfo.deployStatus![
-                                                                  service as keyof typeof serverInfo.deployStatus
-                                                              ]
-                                                            : "nothing";
-                                                    return (
-                                                        <Tooltip>
-                                                            <TooltipTrigger>
-                                                                <Badge
-                                                                    key={
-                                                                        service
-                                                                    }
-                                                                    variant={
-                                                                        "outline"
-                                                                    }
-                                                                    className={`${
-                                                                        haveDeployStatus &&
-                                                                        bgColorMap[
-                                                                            status as keyof typeof bgColorMap
-                                                                        ]
-                                                                    } ${
-                                                                        !haveDeployStatus
-                                                                            ? "opacity-50"
-                                                                            : "text-white"
-                                                                    }`}
-                                                                >
-                                                                    {service}
-                                                                </Badge>
-                                                            </TooltipTrigger>
-                                                            <TooltipContent>
-                                                                {haveDeployStatus
-                                                                    ? `Status: ${status}`
-                                                                    : `No status available`}
-                                                            </TooltipContent>
-                                                        </Tooltip>
-                                                    );
-                                                }
-                                            )}
-                                        </TableCell>
-                                        <TableCell>
-                                            <Tooltip>
-                                                <TooltipTrigger>
-                                                    <Badge
-                                                        className={
-                                                            bgColorMap[
-                                                                serverInfo
-                                                                    .status
-                                                            ]
-                                                        }
-                                                        variant={"default"}
-                                                    >
-                                                        {serverInfo.status}
-                                                    </Badge>
-                                                </TooltipTrigger>
-                                                <TooltipContent>
-                                                    {`Overall node status: ${serverInfo.status}`}
-                                                </TooltipContent>
-                                            </Tooltip>
-                                        </TableCell>
-                                        <TableCell>
-                                            <DropdownMenu modal={false}>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button
-                                                        className="cursor-pointer"
-                                                        variant="outline"
-                                                        aria-label="Open menu"
-                                                        size="icon-sm"
-                                                    >
-                                                        <MoreHorizontalIcon />
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent
-                                                    className="w-40"
-                                                    align="end"
+                                                    )}
+                                                />
+                                            </TableCell>
+                                            <TableCell>
+                                                <div
+                                                    onClick={() =>
+                                                        handleOpenDialogAlias(
+                                                            serverInfo.server,
+                                                            serverInfo.alias
+                                                        )
+                                                    }
+                                                    className="cursor-pointer w-full flex items-center space-x-2"
                                                 >
-                                                    <div className="text-[13px]">
-                                                        <ViewLogs
-                                                            server={
-                                                                serverInfo.server
-                                                            }
-                                                        />
-                                                        <AlertDialog>
-                                                            <AlertDialogTrigger
-                                                                asChild
-                                                            >
-                                                                <div className="text-red-500 pl-2 flex items-center py-1 cursor-pointer hover:bg-gray-100">
-                                                                    <Trash
-                                                                        size={
-                                                                            20
-                                                                        }
-                                                                    />
-                                                                    <span className="ml-1">
-                                                                        Delete
-                                                                    </span>
-                                                                </div>
-                                                            </AlertDialogTrigger>
-                                                            <AlertDialogContent>
-                                                                <AlertDialogHeader>
-                                                                    <AlertDialogTitle>
-                                                                        Are you
-                                                                        absolutely
-                                                                        sure?
-                                                                    </AlertDialogTitle>
-                                                                    <AlertDialogDescription>
-                                                                        This
-                                                                        action
-                                                                        cannot
-                                                                        be
-                                                                        undone.
-                                                                        This
-                                                                        will
-                                                                        permanently
-                                                                        delete
-                                                                        your
-                                                                        server.
-                                                                    </AlertDialogDescription>
-                                                                </AlertDialogHeader>
-                                                                <AlertDialogFooter>
-                                                                    <AlertDialogCancel>
-                                                                        Cancel
-                                                                    </AlertDialogCancel>
-                                                                    <AlertDialogAction
-                                                                        onClick={() =>
-                                                                            handleDeleteServers(
-                                                                                [
-                                                                                    serverInfo.server,
-                                                                                ]
-                                                                            )
-                                                                        }
-                                                                        className="bg-red-500 hover:bg-red-600 cursor-pointer"
-                                                                    >
-                                                                        Delete
-                                                                    </AlertDialogAction>
-                                                                </AlertDialogFooter>
-                                                            </AlertDialogContent>
-                                                        </AlertDialog>
+                                                    <div className="flex items-center space-x-2 w-full">
+                                                        {serverInfo.alias ||
+                                                            "Unknown"}
                                                     </div>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
+                                                    <Pencil size={13} />
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                {serverInfo.server}{" "}
+                                                <Badge
+                                                    className="ml-1"
+                                                    variant="outline"
+                                                >
+                                                    {serverInfo.ipInfo?.country}
+                                                </Badge>
+                                                {isTrackingOnly && (
+                                                    <Badge className="ml-1 bg-indigo-500">
+                                                        Tracking Only
+                                                    </Badge>
+                                                )}
+                                            </TableCell>
+                                            <TableCell>
+                                                {serverInfo.os || "N/A"}
+                                            </TableCell>
+                                            <TableCell>
+                                                {serverInfo.cpu || "N/A"}
+                                            </TableCell>
+                                            <TableCell>
+                                                {serverInfo.ram || "N/A"}
+                                            </TableCell>
+                                            <TableCell className="space-x-1">
+                                                {serverInfo.services.map(
+                                                    (service) => {
+                                                        let haveDeployStatus =
+                                                            serverInfo.deployStatus &&
+                                                            service in
+                                                                serverInfo.deployStatus;
+                                                        let status =
+                                                            haveDeployStatus
+                                                                ? serverInfo.deployStatus![
+                                                                      service as keyof typeof serverInfo.deployStatus
+                                                                  ]
+                                                                : "nothing";
+                                                        return (
+                                                            <Tooltip>
+                                                                <TooltipTrigger>
+                                                                    <Badge
+                                                                        key={
+                                                                            service
+                                                                        }
+                                                                        variant={
+                                                                            "outline"
+                                                                        }
+                                                                        className={`${
+                                                                            haveDeployStatus &&
+                                                                            bgColorMap[
+                                                                                status as keyof typeof bgColorMap
+                                                                            ]
+                                                                        } ${
+                                                                            !haveDeployStatus
+                                                                                ? "opacity-50"
+                                                                                : "text-white"
+                                                                        }`}
+                                                                    >
+                                                                        {
+                                                                            service
+                                                                        }
+                                                                    </Badge>
+                                                                </TooltipTrigger>
+                                                                <TooltipContent>
+                                                                    {haveDeployStatus
+                                                                        ? `Status: ${status}`
+                                                                        : `No status available`}
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                        );
+                                                    }
+                                                )}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Tooltip>
+                                                    <TooltipTrigger>
+                                                        <Badge
+                                                            className={
+                                                                bgColorMap[
+                                                                    serverInfo
+                                                                        .status
+                                                                ]
+                                                            }
+                                                            variant={"default"}
+                                                        >
+                                                            {serverInfo.status}
+                                                        </Badge>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        {`Overall node status: ${serverInfo.status}`}
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TableCell>
+                                            <TableCell>
+                                                <DropdownMenu modal={false}>
+                                                    <DropdownMenuTrigger
+                                                        asChild
+                                                    >
+                                                        <Button
+                                                            className="cursor-pointer"
+                                                            variant="outline"
+                                                            aria-label="Open menu"
+                                                            size="icon-sm"
+                                                        >
+                                                            <MoreHorizontalIcon />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent
+                                                        className="w-40"
+                                                        align="end"
+                                                    >
+                                                        <div className="text-[13px]">
+                                                            <ViewLogs
+                                                                server={
+                                                                    serverInfo.server
+                                                                }
+                                                            />
+                                                            <AlertDialog>
+                                                                <AlertDialogTrigger
+                                                                    asChild
+                                                                >
+                                                                    <div className="text-red-500 pl-2 flex items-center py-1 cursor-pointer hover:bg-gray-100">
+                                                                        <Trash
+                                                                            size={
+                                                                                20
+                                                                            }
+                                                                        />
+                                                                        <span className="ml-1">
+                                                                            Delete
+                                                                        </span>
+                                                                    </div>
+                                                                </AlertDialogTrigger>
+                                                                <AlertDialogContent>
+                                                                    <AlertDialogHeader>
+                                                                        <AlertDialogTitle>
+                                                                            Are
+                                                                            you
+                                                                            absolutely
+                                                                            sure?
+                                                                        </AlertDialogTitle>
+                                                                        <AlertDialogDescription>
+                                                                            This
+                                                                            action
+                                                                            cannot
+                                                                            be
+                                                                            undone.
+                                                                            This
+                                                                            will
+                                                                            permanently
+                                                                            delete
+                                                                            your
+                                                                            server.
+                                                                        </AlertDialogDescription>
+                                                                    </AlertDialogHeader>
+                                                                    <AlertDialogFooter>
+                                                                        <AlertDialogCancel>
+                                                                            Cancel
+                                                                        </AlertDialogCancel>
+                                                                        <AlertDialogAction
+                                                                            onClick={() =>
+                                                                                handleDeleteServers(
+                                                                                    [
+                                                                                        serverInfo.server,
+                                                                                    ]
+                                                                                )
+                                                                            }
+                                                                            className="bg-red-500 hover:bg-red-600 cursor-pointer"
+                                                                        >
+                                                                            Delete
+                                                                        </AlertDialogAction>
+                                                                    </AlertDialogFooter>
+                                                                </AlertDialogContent>
+                                                            </AlertDialog>
+                                                        </div>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })}
                             </TableBody>
                         </Table>
                     ) : (
