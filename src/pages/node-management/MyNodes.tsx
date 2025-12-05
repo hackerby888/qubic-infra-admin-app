@@ -98,13 +98,45 @@ export default function MyNodes() {
                                     </TabsTrigger>
                                 </TabsList>
                                 <TabsContent value="lite-node">
-                                    <LiteNodeTable
-                                        operatorInfo={operatorInfo!}
-                                        isLoading={isLoading}
-                                        sortedLiteNodeStatuses={
-                                            sortedLiteNodeStatuses || []
-                                        }
-                                    />
+                                    <Tabs
+                                        defaultValue="lite-all"
+                                        className="w-full"
+                                    >
+                                        <TabsList>
+                                            <TabsTrigger
+                                                className="cursor-pointer"
+                                                value="lite-all"
+                                            >
+                                                All
+                                            </TabsTrigger>
+                                            <TabsTrigger
+                                                className="cursor-pointer"
+                                                value="lite-mining"
+                                            >
+                                                Mining Nodes
+                                            </TabsTrigger>
+                                        </TabsList>
+                                        <TabsContent value="lite-all">
+                                            <LiteNodeTable
+                                                operatorInfo={operatorInfo!}
+                                                isLoading={isLoading}
+                                                sortedLiteNodeStatuses={
+                                                    sortedLiteNodeStatuses || []
+                                                }
+                                            />
+                                        </TabsContent>
+                                        <TabsContent value="lite-mining">
+                                            <LiteNodeTable
+                                                operatorInfo={operatorInfo!}
+                                                isLoading={isLoading}
+                                                sortedLiteNodeStatuses={
+                                                    sortedLiteNodeStatuses?.filter(
+                                                        (s) => s.groupId !== ""
+                                                    ) || []
+                                                }
+                                            />
+                                        </TabsContent>
+                                    </Tabs>
                                 </TabsContent>
                                 <TabsContent value="bob-node">
                                     <BobNodeTable

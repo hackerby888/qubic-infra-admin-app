@@ -12,6 +12,7 @@ export interface LiteNodeTickInfo {
     mainAuxStatus: number;
     lastTickChanged: number;
     isPrivate: boolean;
+    groupId: string;
 }
 
 export interface BobNodeTickInfo {
