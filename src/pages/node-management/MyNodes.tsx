@@ -51,7 +51,7 @@ export default function MyNodes() {
         .sort((a, b) => b.tick - a.tick);
     let sortedBobNodeStatuses = data?.statuses.bobNodes
         .slice()
-        .sort((a, b) => b.currentProcessingEpoch - a.currentProcessingEpoch);
+        .sort((a, b) => b.currentFetchingTick - a.currentFetchingTick);
 
     type NodeType = keyof typeof totalNodes;
     let titleNameFromNodeType = {
