@@ -37,7 +37,9 @@ export default function NewServer() {
     let [serverIps, setServerIps] = useState("");
     let [username, setUsername] = useState("");
     let [password, setPassword] = useState("");
-    let [authType, setAuthType] = useState<"password" | "sshKey">("password");
+    let [authType, setAuthType] = useState<"password" | "sshKey" | "tracking">(
+        "password"
+    );
     let [services, setServices] = useState<{
         liteNode: boolean;
         bobNode: boolean;
@@ -63,7 +65,7 @@ export default function NewServer() {
                 toast.error("Username and Password cannot be empty.");
                 return;
             }
-        } else {
+        } else if (authType === "sshKey") {
             if (!username) {
                 toast.error("Username cannot be empty.");
                 return;
@@ -181,8 +183,14 @@ export default function NewServer() {
                                             <HardDrive />
                                         </InputGroupAddon>
                                     </InputGroup>
-                                    <InputGroup className="w-1/2">
+                                    <InputGroup
+                                        className={`w-1/2 ${
+                                            authType === "tracking" &&
+                                            "opacity-0"
+                                        }`}
+                                    >
                                         <InputGroupInput
+                                            disabled={authType === "tracking"}
                                             onChange={(e) =>
                                                 handleInputChange(
                                                     e,
@@ -190,17 +198,26 @@ export default function NewServer() {
                                                 )
                                             }
                                             value={username}
-                                            className="w-full"
+                                            className={`w-full`}
                                             placeholder="username"
                                         />
                                         <InputGroupAddon>
                                             <User />
                                         </InputGroupAddon>
                                     </InputGroup>
-                                    <InputGroup className="w-1/2">
+                                    <InputGroup
+                                        className={`w-1/2 ${
+                                            (authType === "tracking" ||
+                                                authType === "sshKey") &&
+                                            "opacity-0"
+                                        }`}
+                                    >
                                         <InputGroupInput
                                             type="password"
-                                            disabled={authType === "sshKey"}
+                                            disabled={
+                                                authType === "sshKey" ||
+                                                authType === "tracking"
+                                            }
                                             onChange={(e) =>
                                                 handleInputChange(
                                                     e,
@@ -220,9 +237,9 @@ export default function NewServer() {
                                     <Label className="w-fit hover:bg-accent/50 flex items-start gap-3 rounded-lg border p-3 has-[[aria-checked=true]]:border-blue-600 has-[[aria-checked=true]]:bg-blue-50 dark:has-[[aria-checked=true]]:border-blue-900 dark:has-[[aria-checked=true]]:bg-blue-950">
                                         <Checkbox
                                             checked={authType === "password"}
-                                            onCheckedChange={() =>
-                                                setAuthType("password")
-                                            }
+                                            onCheckedChange={() => {
+                                                setAuthType("password");
+                                            }}
                                             className="data-[state=checked]:border-blue-600 data-[state=checked]:bg-blue-600 data-[state=checked]:text-white dark:data-[state=checked]:border-blue-700 dark:data-[state=checked]:bg-blue-700"
                                         />
                                         <div className="grid gap-1.5 font-normal">
@@ -235,9 +252,10 @@ export default function NewServer() {
                                     <Label className="w-fit hover:bg-accent/50 flex items-start gap-3 rounded-lg border p-3 has-[[aria-checked=true]]:border-blue-600 has-[[aria-checked=true]]:bg-blue-50 dark:has-[[aria-checked=true]]:border-blue-900 dark:has-[[aria-checked=true]]:bg-blue-950">
                                         <Checkbox
                                             checked={authType === "sshKey"}
-                                            onCheckedChange={() =>
-                                                setAuthType("sshKey")
-                                            }
+                                            onCheckedChange={() => {
+                                                setAuthType("sshKey");
+                                                setPassword("");
+                                            }}
                                             className="data-[state=checked]:border-blue-600 data-[state=checked]:bg-blue-600 data-[state=checked]:text-white dark:data-[state=checked]:border-blue-700 dark:data-[state=checked]:bg-blue-700"
                                         />
                                         <div className="grid gap-1.5 font-normal">
@@ -255,6 +273,28 @@ export default function NewServer() {
                                                 </Link>{" "}
                                                 to authenticate with these
                                                 servers.
+                                            </p>
+                                        </div>
+                                    </Label>
+                                    <Label className="w-fit hover:bg-accent/50 flex items-start gap-3 rounded-lg border p-3 has-[[aria-checked=true]]:border-blue-600 has-[[aria-checked=true]]:bg-blue-50 dark:has-[[aria-checked=true]]:border-blue-900 dark:has-[[aria-checked=true]]:bg-blue-950">
+                                        <Checkbox
+                                            checked={authType === "tracking"}
+                                            onCheckedChange={() => {
+                                                setAuthType("tracking");
+                                                setUsername("");
+                                                setPassword("");
+                                            }}
+                                            className="data-[state=checked]:border-blue-600 data-[state=checked]:bg-blue-600 data-[state=checked]:text-white dark:data-[state=checked]:border-blue-700 dark:data-[state=checked]:bg-blue-700"
+                                        />
+                                        <div className="grid gap-1.5 font-normal">
+                                            <p className="text-sm leading-none font-medium">
+                                                No Authentication (Tracking
+                                                Only)
+                                            </p>
+                                            <p className="text-muted-foreground text-sm">
+                                                We will only track node status
+                                                on this server (no setup/deploy
+                                                will be done).
                                             </p>
                                         </div>
                                     </Label>
