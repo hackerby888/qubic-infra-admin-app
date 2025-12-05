@@ -8,7 +8,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import type { LiteNodeTickInfo, User } from "@/types/type";
+import type { LiteNodeTickInfo, Server, User } from "@/types/type";
 import { format } from "timeago.js";
 import { badgeOperatorColor, calculateTimeDiffInSeconds } from "../common/util";
 import { isNodeActive, mainAuxStatusToString } from "@/utils/common";
@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/tooltip";
 import VisibilityChanger from "../common/VisibilityChanger";
 import { Info } from "lucide-react";
+import { useGeneralGet } from "@/networking/api";
 
 export default function LiteNodeTable({
     isLoading,
@@ -29,6 +30,23 @@ export default function LiteNodeTable({
     sortedLiteNodeStatuses: LiteNodeTickInfo[];
     operatorInfo?: User;
 }) {
+    let { data: serversData } = useGeneralGet<{
+        servers: Server[];
+    }>({
+        queryKey: ["my-servers"],
+        path: "/my-servers",
+        enabled: !!operatorInfo,
+    });
+
+    const aliasMap: Record<string, string> = {};
+    if (serversData && serversData.servers) {
+        serversData.servers.forEach((server) => {
+            if (server.alias) {
+                aliasMap[server.server] = server.alias;
+            }
+        });
+    }
+
     return (
         <Table>
             <TableHeader>
@@ -36,6 +54,7 @@ export default function LiteNodeTable({
                     {/* <TableHead>
                         <Checkbox />
                     </TableHead> */}
+                    {operatorInfo && <TableHead>Alias</TableHead>}
                     <TableHead>Node</TableHead>
                     <TableHead>Tick</TableHead>
                     <TableHead>Align</TableHead>
@@ -74,6 +93,11 @@ export default function LiteNodeTable({
                                 }`}
                                 key={stat.server}
                             >
+                                {operatorInfo && (
+                                    <TableCell>
+                                        {aliasMap[stat.server] || "N/A"}
+                                    </TableCell>
+                                )}
                                 <TableCell>
                                     {stat.server}{" "}
                                     {operatorInfo && (

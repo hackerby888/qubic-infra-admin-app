@@ -1,5 +1,6 @@
 export interface LiteNodeTickInfo {
     server: string;
+    alias?: string;
     ipInfo: IpInfo;
     operator: string;
     tick: number;
@@ -15,6 +16,7 @@ export interface LiteNodeTickInfo {
 
 export interface BobNodeTickInfo {
     server: string;
+    alias?: string;
     ipInfo: IpInfo;
     operator: string;
     currentProcessingEpoch: number;

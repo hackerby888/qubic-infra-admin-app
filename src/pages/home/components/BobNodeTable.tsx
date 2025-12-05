@@ -8,7 +8,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import type { BobNodeTickInfo, User } from "@/types/type";
+import type { BobNodeTickInfo, Server, User } from "@/types/type";
 import { format } from "timeago.js";
 import { badgeOperatorColor } from "../common/util";
 import { isNodeActive } from "@/utils/common";
@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Info } from "lucide-react";
 import VisibilityChanger from "../common/VisibilityChanger";
+import { useGeneralGet } from "@/networking/api";
 export default function BobNodeTable({
     isLoading,
     sortedBobNodeStatuses,
@@ -28,13 +29,28 @@ export default function BobNodeTable({
     sortedBobNodeStatuses: BobNodeTickInfo[];
     operatorInfo?: User;
 }) {
+    let { data: serversData } = useGeneralGet<{
+        servers: Server[];
+    }>({
+        queryKey: ["my-servers"],
+        path: "/my-servers",
+        enabled: !!operatorInfo,
+    });
+
+    const aliasMap: Record<string, string> = {};
+    if (serversData && serversData.servers) {
+        serversData.servers.forEach((server) => {
+            if (server.alias) {
+                aliasMap[server.server] = server.alias;
+            }
+        });
+    }
+
     return (
         <Table>
             <TableHeader>
                 <TableRow>
-                    {/* <TableHead>
-                        <Checkbox />
-                    </TableHead> */}
+                    {operatorInfo && <TableHead>Alias</TableHead>}
                     <TableHead>Node</TableHead>
                     <TableHead>Tick</TableHead>
                     <TableHead>Log Tick</TableHead>
@@ -73,9 +89,11 @@ export default function BobNodeTable({
                             }`}
                             key={stat.server}
                         >
-                            {/* <TableCell>
-                                <Checkbox />
-                            </TableCell> */}
+                            {operatorInfo && (
+                                <TableCell>
+                                    {aliasMap[stat.server] || "N/A"}
+                                </TableCell>
+                            )}
                             <TableCell>
                                 {stat.server}{" "}
                                 <Badge
