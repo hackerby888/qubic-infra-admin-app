@@ -78,18 +78,22 @@ export default function ViewLogs({ server }: { server: string }) {
                                     <LocalTerminal
                                         allowCopy={true}
                                         text={
-                                            setupLogs?.deployLogs?.liteNode
-                                                ?.stdout ||
-                                            "No lite node logs available."
+                                            isSetupLogsLoading
+                                                ? "Loading..."
+                                                : setupLogs?.deployLogs
+                                                      ?.liteNode?.stdout ||
+                                                  "No lite node logs available."
                                         }
                                     />
                                 </TabsContent>
                                 <TabsContent value="stderr">
                                     <LocalTerminal
                                         text={
-                                            setupLogs?.deployLogs?.liteNode
-                                                ?.stderr ||
-                                            "No lite node logs available."
+                                            isSetupLogsLoading
+                                                ? "Loading..."
+                                                : setupLogs?.deployLogs
+                                                      ?.liteNode?.stderr ||
+                                                  "No lite node logs available."
                                         }
                                         allowCopy={true}
                                     />
@@ -119,9 +123,11 @@ export default function ViewLogs({ server }: { server: string }) {
                                 <TabsContent value="stdout">
                                     <LocalTerminal
                                         text={
-                                            setupLogs?.deployLogs?.bobNode
-                                                ?.stdout ||
-                                            "No lite node logs available."
+                                            isSetupLogsLoading
+                                                ? "Loading..."
+                                                : setupLogs?.deployLogs?.bobNode
+                                                      ?.stdout ||
+                                                  "No lite node logs available."
                                         }
                                         allowCopy={true}
                                     />
@@ -129,9 +135,11 @@ export default function ViewLogs({ server }: { server: string }) {
                                 <TabsContent value="stderr">
                                     <LocalTerminal
                                         text={
-                                            setupLogs?.deployLogs?.bobNode
-                                                ?.stderr ||
-                                            "No lite node logs available."
+                                            isSetupLogsLoading
+                                                ? "Loading..."
+                                                : setupLogs?.deployLogs?.bobNode
+                                                      ?.stderr ||
+                                                  "No lite node logs available."
                                         }
                                         allowCopy={true}
                                     />
