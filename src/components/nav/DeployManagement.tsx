@@ -32,12 +32,18 @@ import {
     useSelectedServersStore,
     type SelectedServersState,
 } from "@/stores/selected-servers-store";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { Badge } from "../ui/badge";
 import { Skeleton } from "../ui/skeleton";
 import { Textarea } from "../ui/textarea";
+import {
+    InputGroup,
+    InputGroupAddon,
+    InputGroupButton,
+    InputGroupInput,
+} from "../ui/input-group";
 
 export default function DeployManagement() {
     let queryClient = useQueryClient();
@@ -70,11 +76,63 @@ export default function DeployManagement() {
         queryKey: ["refresh-github-tags", currentService],
         path: "/refresh-github-tags",
     });
+    let {
+        data: randomPeers,
+        refetch: fetchRandomPeers,
+        isPending: isFetchingRandomPeers,
+    } = useGeneralGet<
+        | {
+              peers: string[];
+          }
+        | {
+              litePeers: string[];
+              bobPeers: string[];
+          }
+    >({
+        queryKey: ["random-peers", currentService],
+        path: "/random-peers",
+        reqQuery: {
+            service: currentService,
+        },
+    });
 
     let { mutate: deploy, isPending: isDeploying } = useGeneralPost({
         queryKey: ["deploy"],
         path: "/deploy",
     });
+
+    const handleFetchRandomPeers = () => {
+        fetchRandomPeers().then(() => {
+            if (currentService === "liteNode") {
+                setPeers((randomPeers as { peers: string[] })?.peers.join(","));
+                toast.success("Fetched random peers successfully");
+                return;
+            } else if (currentService === "bobNode") {
+                let fetchedPeers = randomPeers as {
+                    litePeers: string[];
+                    bobPeers: string[];
+                };
+                let targetPeers: string = "";
+                if (fetchedPeers.litePeers.length > 0) {
+                    targetPeers += fetchedPeers.litePeers
+                        .map((peer) => `BM:${peer}:21841:0-0-0-0`)
+                        .join(",");
+                }
+                if (fetchedPeers.bobPeers.length > 0) {
+                    targetPeers += ",";
+                    targetPeers += fetchedPeers.bobPeers
+                        .map((peer) => `bob:${peer}:21842`)
+                        .join(",");
+                }
+                setPeers(targetPeers);
+                toast.success("Fetched random peers successfully");
+                return;
+            } else {
+                toast.error("Unknown service type for fetching peers");
+                return;
+            }
+        });
+    };
 
     const handleRefreshTags = () => {
         refreshGithubTags(
@@ -199,6 +257,13 @@ export default function DeployManagement() {
             },
         });
     };
+
+    useEffect(() => {
+        setTag("");
+        setEpochFile("");
+        setPeers("");
+        setIds("");
+    }, [currentService]);
 
     let totalIdsAdded = ids
         .split(",")
@@ -392,15 +457,36 @@ export default function DeployManagement() {
                                         <FieldLabel htmlFor="peers">
                                             Peers
                                         </FieldLabel>
-                                        <Input
-                                            onChange={(e) =>
-                                                setPeers(e.target.value)
-                                            }
-                                            value={peers}
-                                            id="peers"
-                                            type="text"
-                                            placeholder="Peers"
-                                        />
+                                        <InputGroup>
+                                            <InputGroupInput
+                                                onChange={(e) =>
+                                                    setPeers(e.target.value)
+                                                }
+                                                value={peers}
+                                                placeholder="Peers"
+                                            />
+                                            <InputGroupAddon align="inline-end">
+                                                {!isFetchingRandomPeers ? (
+                                                    <InputGroupButton
+                                                        onClick={() =>
+                                                            handleFetchRandomPeers()
+                                                        }
+                                                        className="cursor-pointer"
+                                                        variant="secondary"
+                                                    >
+                                                        Auto fetch peers
+                                                    </InputGroupButton>
+                                                ) : (
+                                                    <InputGroupButton
+                                                        disabled={true}
+                                                        className="cursor-pointer"
+                                                        variant="secondary"
+                                                    >
+                                                        Fetching...
+                                                    </InputGroupButton>
+                                                )}
+                                            </InputGroupAddon>
+                                        </InputGroup>
                                         <FieldDescription>
                                             Comma separated list of peer
                                             addresses (eg. 1.2.3.4,8.8.8.8)
@@ -519,15 +605,36 @@ export default function DeployManagement() {
                                         <FieldLabel htmlFor="peers">
                                             Peers
                                         </FieldLabel>
-                                        <Input
-                                            onChange={(e) =>
-                                                setPeers(e.target.value)
-                                            }
-                                            value={peers}
-                                            id="peers"
-                                            type="text"
-                                            placeholder="Peers"
-                                        />
+                                        <InputGroup>
+                                            <InputGroupInput
+                                                onChange={(e) =>
+                                                    setPeers(e.target.value)
+                                                }
+                                                value={peers}
+                                                placeholder="Peers"
+                                            />
+                                            <InputGroupAddon align="inline-end">
+                                                {!isFetchingRandomPeers ? (
+                                                    <InputGroupButton
+                                                        onClick={() =>
+                                                            handleFetchRandomPeers()
+                                                        }
+                                                        className="cursor-pointer"
+                                                        variant="secondary"
+                                                    >
+                                                        Auto fetch peers
+                                                    </InputGroupButton>
+                                                ) : (
+                                                    <InputGroupButton
+                                                        disabled={true}
+                                                        className="cursor-pointer"
+                                                        variant="secondary"
+                                                    >
+                                                        Fetching...
+                                                    </InputGroupButton>
+                                                )}
+                                            </InputGroupAddon>
+                                        </InputGroup>
                                         <FieldDescription className="space-y-1">
                                             <div>
                                                 Command separated peers,
