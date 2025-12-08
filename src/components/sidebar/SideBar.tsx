@@ -47,7 +47,7 @@ export default function SideBar() {
                                 <span className="text-sm font-semibold">
                                     Qubic Network Nodes
                                 </span>
-                                <span className="text-sm">Adminstration</span>
+                                <span className="text-sm">Global</span>
                             </div>
                         </div>
 
