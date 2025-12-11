@@ -16,9 +16,13 @@ import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import type { CommandLog } from "@/types/type";
 
-const QUICKS_COMMANDS_MAP = {
+const LITE_COMMANDS_MAP = {
     "F8/SaveSnapShot (Lite Node)": "f8/savesnapshot:lite",
     "F10/ClearMemory (Lite Node)": "f10/clearmemory:lite",
+};
+
+const BOB_COMMANDS_MAP = {
+    "PlaceBinary (Bob Node)": "placebinary:bob::<url>",
 };
 
 export default function ShellManagement() {
@@ -111,7 +115,22 @@ export default function ShellManagement() {
                 <div>
                     <span className="font-semibold">Quick Commands</span>
                     <ul className="mt-2 space-y-1 text-sm flex space-x-1">
-                        {Object.entries(QUICKS_COMMANDS_MAP).map(
+                        {Object.entries(LITE_COMMANDS_MAP).map(
+                            ([label, cmd]) => (
+                                <li>
+                                    <Button
+                                        onClick={() => setCommand(cmd)}
+                                        variant={"outline"}
+                                        className="cursor-pointer text-[12px]"
+                                    >
+                                        {label}
+                                    </Button>
+                                </li>
+                            )
+                        )}
+                    </ul>
+                    <ul className="mt-2 space-y-1 text-sm flex space-x-1">
+                        {Object.entries(BOB_COMMANDS_MAP).map(
                             ([label, cmd]) => (
                                 <li>
                                     <Button

@@ -58,6 +58,8 @@ export default function DeployManagement() {
     let [ids, setIds] = useState<string>("");
     let [mode, setMode] = useState<string>("aux");
     let [ramMode, setRamMode] = useState<string>("16GB");
+    let [customBinary, setCustomBinary] = useState<string>("");
+    let [isSelectTagOpen, setIsSelectTagOpen] = useState<boolean>(false);
 
     let {
         data: tags,
@@ -100,6 +102,13 @@ export default function DeployManagement() {
         queryKey: ["deploy"],
         path: "/deploy",
     });
+
+    const handleOnKeyDownCustomBinary = (e: React.KeyboardEvent) => {
+        if (e.key === "Enter") {
+            setIsSelectTagOpen(false);
+            setTag(customBinary);
+        }
+    };
 
     const handleFetchRandomPeers = () => {
         fetchRandomPeers().then(() => {
@@ -495,11 +504,10 @@ export default function DeployManagement() {
                                 </FieldGroup>
                             </FieldSet>
                         </TabsContent>
-                        <TabsContent value="bobNode">
+                        <TabsContent className="w-full" value="bobNode">
                             <FieldSet className="mt-4">
                                 <FieldGroup>
                                     <Field>
-                                        {" "}
                                         <FieldLabel htmlFor="version">
                                             Version
                                         </FieldLabel>
@@ -508,10 +516,14 @@ export default function DeployManagement() {
                                                 tagsLoading || isTagsFetching
                                             ) ? (
                                                 <Select
+                                                    open={isSelectTagOpen}
+                                                    onOpenChange={
+                                                        setIsSelectTagOpen
+                                                    }
                                                     value={tag}
                                                     onValueChange={setTag}
                                                 >
-                                                    <SelectTrigger className="w-full">
+                                                    <SelectTrigger className="w-11/12">
                                                         <SelectValue placeholder="Version" />
                                                     </SelectTrigger>
                                                     <SelectContent>
@@ -519,6 +531,41 @@ export default function DeployManagement() {
                                                             <SelectLabel>
                                                                 Version
                                                             </SelectLabel>
+                                                            <Input
+                                                                value={
+                                                                    customBinary
+                                                                }
+                                                                onKeyDown={(
+                                                                    e
+                                                                ) =>
+                                                                    handleOnKeyDownCustomBinary(
+                                                                        e
+                                                                    )
+                                                                }
+                                                                onChange={(e) =>
+                                                                    setCustomBinary(
+                                                                        e.target
+                                                                            .value
+                                                                    )
+                                                                }
+                                                                placeholder="Custom binary"
+                                                                className="my-2"
+                                                            />
+                                                            {customBinary && (
+                                                                <SelectItem
+                                                                    className="hidden"
+                                                                    key={
+                                                                        customBinary
+                                                                    }
+                                                                    value={
+                                                                        customBinary
+                                                                    }
+                                                                >
+                                                                    {
+                                                                        customBinary
+                                                                    }
+                                                                </SelectItem>
+                                                            )}
                                                             {tags?.map(
                                                                 (tag) => {
                                                                     return (
