@@ -59,6 +59,7 @@ export default function DeployManagement() {
     let [mode, setMode] = useState<string>("aux");
     let [ramMode, setRamMode] = useState<string>("16GB");
     let [customBinary, setCustomBinary] = useState<string>("");
+    let [bobConfig, setBobConfig] = useState<string>("");
     let [isSelectTagOpen, setIsSelectTagOpen] = useState<boolean>(false);
 
     let {
@@ -95,6 +96,7 @@ export default function DeployManagement() {
         path: "/random-peers",
         reqQuery: {
             service: currentService,
+            litePeers: currentService == "liteNode" ? 4 : 2,
         },
     });
 
@@ -252,6 +254,16 @@ export default function DeployManagement() {
                 ramMode: ramMode,
             },
         };
+        let jsonBobConfig = {};
+        if (currentService === "bobNode" && bobConfig.trim().length > 0) {
+            try {
+                jsonBobConfig = JSON.parse(bobConfig);
+            } catch (e) {
+                return toast.error("Invalid JSON format for bob config");
+            }
+            (body.extraData as any).bobConfig = jsonBobConfig;
+        }
+        console.log("Deploy body:", body);
         deploy(body as any, {
             onSuccess: () => {
                 // Reset all
@@ -711,6 +723,16 @@ export default function DeployManagement() {
                                                     bob:192.168.1.1:21842,BM:127.0.0.2:21841:1-2-3-4
                                                 </li>
                                             </ul>
+                                        </FieldDescription>
+                                        <FieldDescription className="space-y-1">
+                                            <div>Advanced</div>
+                                            <Textarea
+                                                value={bobConfig}
+                                                onChange={(e) =>
+                                                    setBobConfig(e.target.value)
+                                                }
+                                                placeholder="custom bob config (json)"
+                                            />
                                         </FieldDescription>
                                     </Field>
                                 </FieldGroup>

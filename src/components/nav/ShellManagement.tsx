@@ -23,6 +23,8 @@ const LITE_COMMANDS_MAP = {
 
 const BOB_COMMANDS_MAP = {
     "PlaceBinary (Bob Node)": "placebinary:bob::<url>",
+    "Restart Kvrocks (Bob Node)": "restartkvrocks:bob",
+    "Restart Keydb (Bob Node)": "restartkeydb:bob",
 };
 
 export default function ShellManagement() {
