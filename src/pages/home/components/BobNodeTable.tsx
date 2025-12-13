@@ -61,7 +61,7 @@ export default function BobNodeTable({
                                 className="cursor-pointer w-full flex items-center space-x-2"
                             >
                                 <span className="w-full">Alias</span>{" "}
-                                <ArrowDownZA size={17} />
+                                {onChangeSorting && <ArrowDownZA size={17} />}
                             </div>
                         </TableHead>
                     )}
@@ -74,7 +74,7 @@ export default function BobNodeTable({
                             className="cursor-pointer w-full flex items-center space-x-2"
                         >
                             <span className="w-full">Node</span>{" "}
-                            <ArrowDownZA size={17} />
+                            {onChangeSorting && <ArrowDownZA size={17} />}
                         </div>
                     </TableHead>
                     <TableHead>Tick</TableHead>
