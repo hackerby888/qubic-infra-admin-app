@@ -1,5 +1,5 @@
 import { useGeneralGet } from "@/networking/api";
-import type { ServersStatus } from "@/types/type";
+import type { Server, ServersStatus } from "@/types/type";
 import { isNodeActive } from "@/utils/common";
 import NodeStatus from "../home/components/NodeStatus";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -8,10 +8,19 @@ import { AlertCircleIcon } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import LiteNodeTable from "../home/components/LiteNodeTable";
 import BobNodeTable from "../home/components/BobNodeTable";
+import { useState } from "react";
 
 export default function MyNodes() {
     let operatorToken = MyStorage.getLoginCredential();
     let operatorInfo = MyStorage.decodeTokenPayload(operatorToken || "");
+    let { data: serversData } = useGeneralGet<{
+        servers: Server[];
+    }>({
+        queryKey: ["my-servers"],
+        path: "/my-servers",
+        enabled: !!operatorInfo,
+    });
+
     let { data, error, isLoading } = useGeneralGet<ServersStatus>({
         queryKey: [
             "servers-status",
@@ -22,6 +31,13 @@ export default function MyNodes() {
         reqQuery: {
             operator: operatorInfo?.username || "",
         },
+    });
+    let [currentSortedColumn, setCurrentSortedColumn] = useState<{
+        column: string;
+        direction: "asc" | "desc";
+    }>({
+        column: "alias",
+        direction: "asc",
     });
 
     let totalNodes = {
@@ -46,12 +62,62 @@ export default function MyNodes() {
     };
 
     // Clone and sort statuses by tick
+    const aliasMap: Record<string, string> = {};
+    if (serversData && serversData.servers) {
+        serversData.servers.forEach((server) => {
+            if (server.alias) {
+                aliasMap[server.server] = server.alias;
+            }
+        });
+    }
     let sortedLiteNodeStatuses = data?.statuses.liteNodes
         .slice()
-        .sort((a, b) => b.tick - a.tick);
-    let sortedBobNodeStatuses = data?.statuses.bobNodes
-        .slice()
-        .sort((a, b) => b.currentFetchingTick - a.currentFetchingTick);
+        .sort((a, b) => {
+            let direction: "asc" | "desc" =
+                currentSortedColumn.direction === "asc" ? "desc" : "asc";
+
+            let aValue = (a as any)[currentSortedColumn.column] || "";
+            let bValue = (b as any)[currentSortedColumn.column] || "";
+            if (currentSortedColumn.column === "alias") {
+                aValue = aliasMap[a.server] || "";
+                bValue = aliasMap[b.server] || "";
+            }
+            if (aValue < bValue) return direction === "asc" ? -1 : 1;
+            if (aValue > bValue) return direction === "asc" ? 1 : -1;
+            return 0;
+        });
+    let sortedBobNodeStatuses = data?.statuses.bobNodes.slice().sort((a, b) => {
+        let direction: "asc" | "desc" =
+            currentSortedColumn.direction === "asc" ? "desc" : "asc";
+
+        let aValue = (a as any)[currentSortedColumn.column] || "";
+        let bValue = (b as any)[currentSortedColumn.column] || "";
+        if (currentSortedColumn.column === "alias") {
+            aValue = aliasMap[a.server] || "";
+            bValue = aliasMap[b.server] || "";
+        }
+        if (aValue < bValue) return direction === "asc" ? -1 : 1;
+        if (aValue > bValue) return direction === "asc" ? 1 : -1;
+        return 0;
+    });
+
+    const onLiteNodeTableChangeSorting = (column: string) => {
+        let newDirection: "asc" | "desc" = "asc";
+        if (currentSortedColumn.column === column) {
+            newDirection =
+                currentSortedColumn.direction === "asc" ? "desc" : "asc";
+        }
+        setCurrentSortedColumn({ column, direction: newDirection });
+    };
+
+    const onBobNodeTableChangeSorting = (column: string) => {
+        let newDirection: "asc" | "desc" = "asc";
+        if (currentSortedColumn.column === column) {
+            newDirection =
+                currentSortedColumn.direction === "asc" ? "desc" : "asc";
+        }
+        setCurrentSortedColumn({ column, direction: newDirection });
+    };
 
     type NodeType = keyof typeof totalNodes;
     let titleNameFromNodeType = {
@@ -118,6 +184,9 @@ export default function MyNodes() {
                                         </TabsList>
                                         <TabsContent value="lite-all">
                                             <LiteNodeTable
+                                                onChangeSorting={
+                                                    onLiteNodeTableChangeSorting
+                                                }
                                                 operatorInfo={operatorInfo!}
                                                 isLoading={isLoading}
                                                 sortedLiteNodeStatuses={
@@ -127,6 +196,9 @@ export default function MyNodes() {
                                         </TabsContent>
                                         <TabsContent value="lite-mining">
                                             <LiteNodeTable
+                                                onChangeSorting={
+                                                    onLiteNodeTableChangeSorting
+                                                }
                                                 operatorInfo={operatorInfo!}
                                                 isLoading={isLoading}
                                                 sortedLiteNodeStatuses={
@@ -140,6 +212,9 @@ export default function MyNodes() {
                                 </TabsContent>
                                 <TabsContent value="bob-node">
                                     <BobNodeTable
+                                        onChangeSorting={
+                                            onBobNodeTableChangeSorting
+                                        }
                                         isLoading={isLoading}
                                         sortedBobNodeStatuses={
                                             sortedBobNodeStatuses || []

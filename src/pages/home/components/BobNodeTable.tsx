@@ -17,17 +17,19 @@ import {
     TooltipContent,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Info } from "lucide-react";
+import { ArrowDownZA, Info } from "lucide-react";
 import VisibilityChanger from "../common/VisibilityChanger";
 import { useGeneralGet } from "@/networking/api";
 export default function BobNodeTable({
     isLoading,
     sortedBobNodeStatuses,
     operatorInfo,
+    onChangeSorting,
 }: {
     isLoading: boolean;
     sortedBobNodeStatuses: BobNodeTickInfo[];
     operatorInfo?: User;
+    onChangeSorting?: (column: string) => void;
 }) {
     let { data: serversData } = useGeneralGet<{
         servers: Server[];
@@ -50,8 +52,31 @@ export default function BobNodeTable({
         <Table>
             <TableHeader>
                 <TableRow>
-                    {operatorInfo && <TableHead>Alias</TableHead>}
-                    <TableHead>Node</TableHead>
+                    {operatorInfo && (
+                        <TableHead>
+                            <div
+                                onClick={() =>
+                                    onChangeSorting && onChangeSorting("alias")
+                                }
+                                className="cursor-pointer w-full flex items-center space-x-2"
+                            >
+                                <span className="w-full">Alias</span>{" "}
+                                <ArrowDownZA size={17} />
+                            </div>
+                        </TableHead>
+                    )}
+                    <TableHead>
+                        {" "}
+                        <div
+                            onClick={() =>
+                                onChangeSorting && onChangeSorting("server")
+                            }
+                            className="cursor-pointer w-full flex items-center space-x-2"
+                        >
+                            <span className="w-full">Node</span>{" "}
+                            <ArrowDownZA size={17} />
+                        </div>
+                    </TableHead>
                     <TableHead>Tick</TableHead>
                     <TableHead>Log Tick</TableHead>
                     <TableHead>Verify Tick</TableHead>

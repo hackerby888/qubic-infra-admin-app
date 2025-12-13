@@ -18,7 +18,14 @@ import {
     DropdownMenuContent,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontalIcon, Pencil, RefreshCcw, Trash, X } from "lucide-react";
+import {
+    ArrowDownZA,
+    MoreHorizontalIcon,
+    Pencil,
+    RefreshCcw,
+    Trash,
+    X,
+} from "lucide-react";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -75,6 +82,13 @@ export default function ManageServers() {
     }>({
         server: "",
         alias: "",
+    });
+    let [currentSortedColumn, setCurrentSortedColumn] = useState<{
+        column: string;
+        direction: "asc" | "desc";
+    }>({
+        column: "alias",
+        direction: "asc",
     });
 
     let { mutate: deleteCommandLog } = useGeneralPost({
@@ -277,6 +291,22 @@ export default function ManageServers() {
     };
 
     console.log("Servers data:", error);
+
+    const handleChangeSorting = (column: string) => {
+        let direction: "asc" | "desc" =
+            currentSortedColumn.direction === "asc" ? "desc" : "asc";
+        setCurrentSortedColumn({ column, direction });
+        let sortedServers = [...(data?.servers || [])].sort((a, b) => {
+            let aValue = (a as any)[column] || "";
+            let bValue = (b as any)[column] || "";
+            if (aValue < bValue) return direction === "asc" ? -1 : 1;
+            if (aValue > bValue) return direction === "asc" ? 1 : -1;
+            return 0;
+        });
+        queryClient.setQueryData<{ servers: Server[] }>(["my-servers"], {
+            servers: sortedServers,
+        });
+    };
 
     useEffect(() => {
         const handleKey = (e: any) => {
@@ -490,8 +520,33 @@ export default function ManageServers() {
                                             }
                                         />
                                     </TableHead>
-                                    <TableHead>Alias</TableHead>
-                                    <TableHead>Server</TableHead>
+                                    <TableHead>
+                                        <div
+                                            onClick={() =>
+                                                handleChangeSorting("alias")
+                                            }
+                                            className="cursor-pointer w-full flex items-center space-x-2"
+                                        >
+                                            <span className="w-full">
+                                                Alias
+                                            </span>{" "}
+                                            <ArrowDownZA size={17} />
+                                        </div>
+                                    </TableHead>
+                                    <TableHead>
+                                        {" "}
+                                        <div
+                                            onClick={() =>
+                                                handleChangeSorting("server")
+                                            }
+                                            className="cursor-pointer w-full flex items-center space-x-2"
+                                        >
+                                            <span className="w-full">
+                                                Server
+                                            </span>{" "}
+                                            <ArrowDownZA size={17} />
+                                        </div>
+                                    </TableHead>
                                     <TableHead>OS</TableHead>
                                     <TableHead>CPU</TableHead>
                                     <TableHead>RAM</TableHead>

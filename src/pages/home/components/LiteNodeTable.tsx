@@ -18,17 +18,19 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip";
 import VisibilityChanger from "../common/VisibilityChanger";
-import { Info } from "lucide-react";
+import { ArrowDownZA, Info } from "lucide-react";
 import { useGeneralGet } from "@/networking/api";
 
 export default function LiteNodeTable({
     isLoading,
     sortedLiteNodeStatuses,
     operatorInfo,
+    onChangeSorting,
 }: {
     isLoading: boolean;
     sortedLiteNodeStatuses: LiteNodeTickInfo[];
     operatorInfo?: User;
+    onChangeSorting?: (column: string) => void;
 }) {
     let { data: serversData } = useGeneralGet<{
         servers: Server[];
@@ -51,12 +53,43 @@ export default function LiteNodeTable({
         <Table>
             <TableHeader>
                 <TableRow>
-                    {/* <TableHead>
-                        <Checkbox />
-                    </TableHead> */}
-                    {operatorInfo && <TableHead>Alias</TableHead>}
-                    <TableHead>Node</TableHead>
-                    <TableHead>Tick</TableHead>
+                    {operatorInfo && (
+                        <TableHead>
+                            <div
+                                onClick={() =>
+                                    onChangeSorting && onChangeSorting("alias")
+                                }
+                                className="cursor-pointer w-full flex items-center space-x-2"
+                            >
+                                <span className="w-full">Alias</span>{" "}
+                                <ArrowDownZA size={17} />
+                            </div>
+                        </TableHead>
+                    )}
+                    <TableHead>
+                        {" "}
+                        <div
+                            onClick={() =>
+                                onChangeSorting && onChangeSorting("server")
+                            }
+                            className="cursor-pointer w-full flex items-center space-x-2"
+                        >
+                            <span className="w-full">Node</span>{" "}
+                            <ArrowDownZA size={17} />
+                        </div>
+                    </TableHead>
+                    <TableHead>
+                        {" "}
+                        <div
+                            onClick={() =>
+                                onChangeSorting && onChangeSorting("tick")
+                            }
+                            className="cursor-pointer w-full flex items-center space-x-2"
+                        >
+                            <span className="w-full">Tick</span>{" "}
+                            <ArrowDownZA size={17} />
+                        </div>
+                    </TableHead>
                     <TableHead>Align</TableHead>
                     <TableHead>Missalign</TableHead>
                     <TableHead>Duration</TableHead>
