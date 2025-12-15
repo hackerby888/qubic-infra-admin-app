@@ -1,4 +1,4 @@
-import { RefreshCw, Rocket } from "lucide-react";
+import { ChevronsUpDown, RefreshCw, Rocket } from "lucide-react";
 import {
     Dialog,
     DialogContent,
@@ -44,6 +44,11 @@ import {
     InputGroupButton,
     InputGroupInput,
 } from "../ui/input-group";
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from "../ui/collapsible";
 
 export default function DeployManagement() {
     let queryClient = useQueryClient();
@@ -60,6 +65,7 @@ export default function DeployManagement() {
     let [ramMode, setRamMode] = useState<string>("16GB");
     let [customBinary, setCustomBinary] = useState<string>("");
     let [bobConfig, setBobConfig] = useState<string>("");
+    let [loggingPasscode, setLoggingPasscode] = useState<string>("0-0-0-0");
     let [isSelectTagOpen, setIsSelectTagOpen] = useState<boolean>(false);
 
     let {
@@ -233,6 +239,23 @@ export default function DeployManagement() {
             }
         }
 
+        // check logging passcode format
+        let passcodeParts = loggingPasscode.split("-");
+        if (passcodeParts.length !== 4) {
+            return toast.error(
+                "Logging passcode must be in the format X-X-X-X"
+            );
+        } else if (
+            passcodeParts.some((part) => {
+                let num = Number(part);
+                return isNaN(num);
+            })
+        ) {
+            return toast.error(
+                "Each part of logging passcode must be a number"
+            );
+        }
+
         let mainAuxStatus: number =
             {
                 main: 3,
@@ -252,6 +275,7 @@ export default function DeployManagement() {
                     .map((id) => id.trim())
                     .filter((id) => id.length === 55),
                 ramMode: ramMode,
+                loggingPasscode: loggingPasscode,
             },
         };
         let jsonBobConfig = {};
@@ -513,6 +537,40 @@ export default function DeployManagement() {
                                             addresses (eg. 1.2.3.4,8.8.8.8)
                                         </FieldDescription>
                                     </Field>
+
+                                    <Collapsible className="p-2 shadow-sm border rounded-md">
+                                        <CollapsibleTrigger>
+                                            <span className="cursor-pointer font-semibold text-[14px]">
+                                                Advanced
+                                                <ChevronsUpDown
+                                                    className="inline-block ml-1 mb-1"
+                                                    size={14}
+                                                />
+                                            </span>
+                                        </CollapsibleTrigger>
+                                        <CollapsibleContent className="pt-2">
+                                            <Field>
+                                                <FieldLabel>
+                                                    Logging Passcode
+                                                </FieldLabel>
+                                                <Input
+                                                    value={loggingPasscode}
+                                                    onChange={(e) =>
+                                                        setLoggingPasscode(
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    type="text"
+                                                    placeholder="Logging passcode"
+                                                />
+                                                <FieldDescription>
+                                                    Optional passcode to secure
+                                                    logging access (default is
+                                                    0-0-0-0)
+                                                </FieldDescription>
+                                            </Field>
+                                        </CollapsibleContent>
+                                    </Collapsible>
                                 </FieldGroup>
                             </FieldSet>
                         </TabsContent>
@@ -724,17 +782,39 @@ export default function DeployManagement() {
                                                 </li>
                                             </ul>
                                         </FieldDescription>
-                                        <FieldDescription className="space-y-1">
-                                            <div>Advanced</div>
-                                            <Textarea
-                                                value={bobConfig}
-                                                onChange={(e) =>
-                                                    setBobConfig(e.target.value)
-                                                }
-                                                placeholder="custom bob config (json)"
-                                            />
-                                        </FieldDescription>
                                     </Field>
+                                    <Collapsible className="p-2 shadow-sm border rounded-md">
+                                        <CollapsibleTrigger>
+                                            <span className="cursor-pointer font-semibold text-[14px]">
+                                                Advanced
+                                                <ChevronsUpDown
+                                                    className="inline-block ml-1 mb-1"
+                                                    size={14}
+                                                />
+                                            </span>
+                                        </CollapsibleTrigger>
+                                        <CollapsibleContent className="pt-2">
+                                            <Field>
+                                                <FieldDescription className="space-y-1">
+                                                    (Optional) Provide a custom
+                                                    properties JSON to override
+                                                    default bob node
+                                                    configurations (it won't
+                                                    override all settings, only
+                                                    the provided keys).
+                                                </FieldDescription>
+                                                <Textarea
+                                                    value={bobConfig}
+                                                    onChange={(e) =>
+                                                        setBobConfig(
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    placeholder="custom bob config (json)"
+                                                />
+                                            </Field>
+                                        </CollapsibleContent>
+                                    </Collapsible>
                                 </FieldGroup>
                             </FieldSet>
                         </TabsContent>
