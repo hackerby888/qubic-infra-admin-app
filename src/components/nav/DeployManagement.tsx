@@ -66,6 +66,9 @@ export default function DeployManagement() {
     let [customBinary, setCustomBinary] = useState<string>("");
     let [bobConfig, setBobConfig] = useState<string>("");
     let [loggingPasscode, setLoggingPasscode] = useState<string>("0-0-0-0");
+    let [operatorId, setOperatorId] = useState<string>(
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    );
     let [isSelectTagOpen, setIsSelectTagOpen] = useState<boolean>(false);
 
     let {
@@ -256,6 +259,11 @@ export default function DeployManagement() {
             );
         }
 
+        // check operator ID format
+        if (operatorId.length !== 60) {
+            return toast.error("Operator ID must be exactly 55 characters");
+        }
+
         let mainAuxStatus: number =
             {
                 main: 3,
@@ -276,6 +284,7 @@ export default function DeployManagement() {
                     .filter((id) => id.length === 55),
                 ramMode: ramMode,
                 loggingPasscode: loggingPasscode,
+                operatorId: operatorId.toUpperCase(),
             },
         };
         let jsonBobConfig = {};
@@ -548,7 +557,22 @@ export default function DeployManagement() {
                                                 />
                                             </span>
                                         </CollapsibleTrigger>
-                                        <CollapsibleContent className="pt-2">
+                                        <CollapsibleContent className="pt-2 space-y-3">
+                                            <Field>
+                                                <FieldLabel>
+                                                    Operator ID
+                                                </FieldLabel>
+                                                <Input
+                                                    value={operatorId}
+                                                    onChange={(e) =>
+                                                        setOperatorId(
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    type="text"
+                                                    placeholder="Operator ID"
+                                                />
+                                            </Field>
                                             <Field>
                                                 <FieldLabel>
                                                     Logging Passcode
