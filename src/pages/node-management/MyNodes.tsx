@@ -8,11 +8,12 @@ import { AlertCircleIcon } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import LiteNodeTable from "../home/components/LiteNodeTable";
 import BobNodeTable from "../home/components/BobNodeTable";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function MyNodes() {
     let operatorToken = MyStorage.getLoginCredential();
     let operatorInfo = MyStorage.decodeTokenPayload(operatorToken || "");
+    let [currentService, setCurrentService] = useState<string>("lite-node");
     let { data: serversData } = useGeneralGet<{
         servers: Server[];
     }>({
@@ -36,7 +37,7 @@ export default function MyNodes() {
         column: string;
         direction: "asc" | "desc";
     }>({
-        column: "alias",
+        column: "tick",
         direction: "asc",
     });
 
@@ -119,6 +120,24 @@ export default function MyNodes() {
         setCurrentSortedColumn({ column, direction: newDirection });
     };
 
+    const handleOnServiceChange = (value: string) => {
+        if (value == "lite-node") {
+            setCurrentSortedColumn({
+                column: "tick",
+                direction: "asc",
+            });
+            setCurrentService(value);
+        } else if (value == "bob-node") {
+            setCurrentSortedColumn({
+                column: "currentFetchingTick",
+                direction: "asc",
+            });
+            setCurrentService(value);
+        }
+    };
+
+    useEffect(() => {}, [currentService]);
+
     type NodeType = keyof typeof totalNodes;
     let titleNameFromNodeType = {
         liteNodes: "My Lite Nodes",
@@ -148,7 +167,11 @@ export default function MyNodes() {
                     </div>
                     <div className="status-table mt-5">
                         {!error ? (
-                            <Tabs defaultValue="lite-node" className="w-full">
+                            <Tabs
+                                onValueChange={handleOnServiceChange}
+                                defaultValue="lite-node"
+                                className="w-full"
+                            >
                                 <TabsList>
                                     <TabsTrigger
                                         className="cursor-pointer"
