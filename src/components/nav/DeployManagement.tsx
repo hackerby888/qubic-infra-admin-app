@@ -196,11 +196,12 @@ export default function DeployManagement() {
                 // The peer should be an IP address (v4) only (dont use regex expression for simplicity)
                 let ipSplits = peer.split(".");
                 if (
-                    ipSplits.length !== 4 ||
-                    ipSplits.some((segment) => {
-                        let num = Number(segment);
-                        return isNaN(num) || num < 0 || num > 255;
-                    })
+                    ipSplits[0] !== "auto_p2p" &&
+                    (ipSplits.length !== 4 ||
+                        ipSplits.some((segment) => {
+                            let num = Number(segment);
+                            return isNaN(num) || num < 0 || num > 255;
+                        }))
                 ) {
                     return toast.error(
                         `Invalid peer address for lite node: ${peer}`
