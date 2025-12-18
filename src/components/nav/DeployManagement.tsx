@@ -63,7 +63,6 @@ export default function DeployManagement() {
     let [peers, setPeers] = useState<string>("");
     let [ids, setIds] = useState<string>("");
     let [mode, setMode] = useState<string>("aux");
-    let [ramMode, setRamMode] = useState<string>("16GB");
     let [customBinary, setCustomBinary] = useState<string>("");
     let [bobConfig, setBobConfig] = useState<string>("");
     let [keydbConfig, setKeydbConfig] = useState<string>("");
@@ -299,7 +298,6 @@ export default function DeployManagement() {
                     .split(",")
                     .map((id) => id.trim())
                     .filter((id) => id.length === 55),
-                ramMode: ramMode,
                 loggingPasscode: loggingPasscode,
                 operatorId: operatorId.toUpperCase(),
                 keydbConfig: keydbConfigArray,
@@ -714,32 +712,6 @@ export default function DeployManagement() {
                                         </div>
                                         <FieldDescription>
                                             Select the version to deploy.
-                                        </FieldDescription>
-                                    </Field>
-                                    <Field>
-                                        <FieldLabel htmlFor="version">
-                                            Ram Mode
-                                        </FieldLabel>
-                                        <div className="space-x-2 space-y-2">
-                                            {["12GB", "16GB"].map((ram) => (
-                                                <>
-                                                    <Button
-                                                        onClick={() =>
-                                                            setRamMode(ram)
-                                                        }
-                                                        className={`cursor-pointer hover:bg-blue-500 hover:text-white ${
-                                                            ramMode === ram &&
-                                                            "bg-blue-500 text-white"
-                                                        }`}
-                                                        variant={"outline"}
-                                                    >
-                                                        {ram} Mode
-                                                    </Button>
-                                                </>
-                                            ))}
-                                        </div>
-                                        <FieldDescription>
-                                            Select the ram mode for bob node.
                                         </FieldDescription>
                                     </Field>
                                     <Field>
