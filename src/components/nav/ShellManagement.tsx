@@ -47,7 +47,7 @@ export default function ShellManagement() {
     let [isOpen, setIsOpen] = useState<boolean>(false);
     const selectedStore = useSelectedServersStore() as SelectedServersState;
 
-    let { data: commands, isLoading: isShortcutCommandsLoading } =
+    let { data: shortcutCommandsServer, isLoading: isShortcutCommandsLoading } =
         useGeneralGet<{ commands: ShortcutCommand[] }>({
             queryKey: ["shortcut-commands"],
             path: "/shortcut-commands",
@@ -58,6 +58,33 @@ export default function ShellManagement() {
             queryKey: ["add-shortcut-command"],
             path: "/add-shortcut-command",
         });
+
+    let { mutate: deleteShortcutCommand } = useGeneralPost({
+        queryKey: ["delete-shortcut-command"],
+        path: "/delete-shortcut-command",
+        method: "DELETE",
+    });
+
+    const handleDeleteCommand = (name: string) => {
+        let body = {
+            name: name,
+        };
+        deleteShortcutCommand(body as any, {
+            onSuccess: () => {
+                toast.success("Shortcut command deleted.");
+                queryClient.invalidateQueries({
+                    queryKey: ["shortcut-commands"],
+                });
+            },
+            onError: (error: any) => {
+                toast.error(
+                    `Error: ${
+                        error.message || "Failed to delete shortcut command."
+                    }`
+                );
+            },
+        });
+    };
 
     let { mutate: sendCommand, isPending: isSendingCommand } = useGeneralPost({
         queryKey: ["execute-command", command],
@@ -249,18 +276,29 @@ export default function ShellManagement() {
                         </Collapsible>
                     </div>
                     <ul className="mt-2 space-y-1 text-sm flex space-x-1">
-                        {commands?.commands.map((command) => (
+                        {shortcutCommandsServer?.commands.map((command) => (
                             <li key={command.name}>
                                 <Button
                                     onClick={() => setCommand(command.command)}
                                     variant={"outline"}
-                                    className="cursor-pointer text-[12px]"
+                                    className="cursor-pointer text-[12px] rounded-tr-none rounded-br-none"
                                 >
                                     {command.name}
                                 </Button>
+                                {
+                                    <Button
+                                        onClick={() =>
+                                            handleDeleteCommand(command.name)
+                                        }
+                                        variant={"outline"}
+                                        className="rounded-tl-none rounded-bl-none text-[12px] px-2 cursor-pointer"
+                                    >
+                                        X
+                                    </Button>
+                                }
                             </li>
                         ))}
-                        {commands?.commands.length === 0 && (
+                        {shortcutCommandsServer?.commands.length === 0 && (
                             <li className="text-gray-500 text-sm">
                                 No custom commands found
                             </li>
