@@ -49,6 +49,7 @@ import {
     CollapsibleContent,
     CollapsibleTrigger,
 } from "../ui/collapsible";
+import { Checkbox } from "../ui/checkbox";
 
 export default function DeployManagement() {
     let queryClient = useQueryClient();
@@ -65,11 +66,14 @@ export default function DeployManagement() {
     let [ramMode, setRamMode] = useState<string>("16GB");
     let [customBinary, setCustomBinary] = useState<string>("");
     let [bobConfig, setBobConfig] = useState<string>("");
+    let [keydbConfig, setKeydbConfig] = useState<string>("");
+    let [kvrocksConfig, setKvrocksConfig] = useState<string>("");
     let [loggingPasscode, setLoggingPasscode] = useState<string>("0-0-0-0");
     let [operatorId, setOperatorId] = useState<string>(
         "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
     );
     let [isSelectTagOpen, setIsSelectTagOpen] = useState<boolean>(false);
+    let [keepOldConfig, setKeepOldConfig] = useState<boolean>(false);
 
     let {
         data: tags,
@@ -271,6 +275,18 @@ export default function DeployManagement() {
                 aux: 0,
             }[mode] || 0;
 
+        let keydbConfigArray = [];
+        for (let line of keydbConfig.split("\n")) {
+            if (line.trim().length > 0) {
+                keydbConfigArray.push(line.trim());
+            }
+        }
+        let kvrocksConfigArray = [];
+        for (let line of kvrocksConfig.split("\n")) {
+            if (line.trim().length > 0) {
+                kvrocksConfigArray.push(line.trim());
+            }
+        }
         let body = {
             servers: selectedStore.selectedServers,
             service: currentService,
@@ -286,6 +302,9 @@ export default function DeployManagement() {
                 ramMode: ramMode,
                 loggingPasscode: loggingPasscode,
                 operatorId: operatorId.toUpperCase(),
+                keydbConfig: keydbConfigArray,
+                kvrocksConfig: kvrocksConfigArray,
+                keepOldConfig: keepOldConfig,
             },
         };
         let jsonBobConfig = {};
@@ -818,7 +837,7 @@ export default function DeployManagement() {
                                                 />
                                             </span>
                                         </CollapsibleTrigger>
-                                        <CollapsibleContent className="pt-2">
+                                        <CollapsibleContent className="pt-2 space-y-3">
                                             <Field>
                                                 <FieldDescription className="space-y-1">
                                                     (Optional) Provide a custom
@@ -837,6 +856,71 @@ export default function DeployManagement() {
                                                     }
                                                     placeholder="custom bob config (json)"
                                                 />
+                                            </Field>
+                                            <Field>
+                                                <FieldDescription className="space-y-1">
+                                                    (Optional) Provide a custom
+                                                    configuration entry for
+                                                    keydb.conf
+                                                </FieldDescription>
+                                                <Textarea
+                                                    value={keydbConfig}
+                                                    onChange={(e) =>
+                                                        setKeydbConfig(
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    placeholder={`maxmemory 8gb
+maxmemory-policy allkeys-lru`}
+                                                />
+                                            </Field>
+                                            <Field>
+                                                <FieldDescription className="space-y-1">
+                                                    (Optional) Provide a custom
+                                                    configuration entry for
+                                                    kvrocks.conf
+                                                </FieldDescription>
+                                                <Textarea
+                                                    value={kvrocksConfig}
+                                                    onChange={(e) =>
+                                                        setKvrocksConfig(
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    placeholder={`rocksdb.ttl 1814400
+                                                        `}
+                                                />
+                                            </Field>
+                                            <Field>
+                                                <FieldDescription className="space-y-1">
+                                                    Keep old bob configurations
+                                                </FieldDescription>
+                                                <div
+                                                    onClick={() =>
+                                                        setKeepOldConfig(
+                                                            !keepOldConfig
+                                                        )
+                                                    }
+                                                    className="flex items-center cursor-pointer"
+                                                >
+                                                    <Checkbox
+                                                        checked={keepOldConfig}
+                                                        onCheckedChange={(
+                                                            checked
+                                                        ) =>
+                                                            setKeepOldConfig(
+                                                                Boolean(checked)
+                                                            )
+                                                        }
+                                                    />
+                                                    <span className="ml-2 text-sm">
+                                                        Keep old bob
+                                                        configurations
+                                                        (bob_config.json will
+                                                        not be deleted during
+                                                        deployment)
+                                                    </span>
+                                                </div>
                                             </Field>
                                         </CollapsibleContent>
                                     </Collapsible>

@@ -110,6 +110,12 @@ export interface CommandLog {
     duration: number;
 }
 
+export interface ShortcutCommand {
+    operator: string;
+    name: string;
+    command: string;
+}
+
 export interface ServersStatus {
     statuses: {
         liteNodes: LiteNodeTickInfo[];

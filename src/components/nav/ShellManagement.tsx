@@ -5,7 +5,12 @@ import {
     InputGroupInput,
 } from "@/components/ui/input-group";
 import { Button } from "@/components/ui/button";
-import { CornerDownLeft, SquareTerminal, Terminal } from "lucide-react";
+import {
+    ChevronsUpDown,
+    CornerDownLeft,
+    SquareTerminal,
+    Terminal,
+} from "lucide-react";
 import {
     useSelectedServersStore,
     type SelectedServersState,
@@ -14,7 +19,13 @@ import { useState } from "react";
 import useGeneralPost, { useGeneralGet } from "@/networking/api";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
-import type { CommandLog } from "@/types/type";
+import type { CommandLog, ShortcutCommand } from "@/types/type";
+import { Input } from "../ui/input";
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from "../ui/collapsible";
 
 const LITE_COMMANDS_MAP = {
     "F8/SaveSnapShot (Lite Node)": "f8/savesnapshot:lite",
@@ -30,9 +41,23 @@ const BOB_COMMANDS_MAP = {
 export default function ShellManagement() {
     let queryClient = useQueryClient();
 
+    let [shortcutName, setShortcutName] = useState<string>("");
+    let [shortcutCommand, setShortcutCommand] = useState<string>("");
     let [command, setCommand] = useState<string>("");
     let [isOpen, setIsOpen] = useState<boolean>(false);
     const selectedStore = useSelectedServersStore() as SelectedServersState;
+
+    let { data: commands, isLoading: isShortcutCommandsLoading } =
+        useGeneralGet<{ commands: ShortcutCommand[] }>({
+            queryKey: ["shortcut-commands"],
+            path: "/shortcut-commands",
+        });
+
+    let { mutate: addShortcutCommand, isPending: isAddingShortcutCommand } =
+        useGeneralPost({
+            queryKey: ["add-shortcut-command"],
+            path: "/add-shortcut-command",
+        });
 
     let { mutate: sendCommand, isPending: isSendingCommand } = useGeneralPost({
         queryKey: ["execute-command", command],
@@ -47,6 +72,33 @@ export default function ShellManagement() {
             limit: "7",
         },
     });
+
+    const handleAddShortcutCommand = () => {
+        if (shortcutName.trim() === "" || shortcutCommand.trim() === "") {
+            return toast.error("Name and Command cannot be empty.");
+        }
+        let body = {
+            name: shortcutName,
+            command: shortcutCommand,
+        };
+        addShortcutCommand(body as any, {
+            onSuccess: () => {
+                toast.success("Shortcut command added.");
+                setShortcutName("");
+                setShortcutCommand("");
+                queryClient.invalidateQueries({
+                    queryKey: ["shortcut-commands"],
+                });
+            },
+            onError: (error: any) => {
+                toast.error(
+                    `Error: ${
+                        error.message || "Failed to add shortcut command."
+                    }`
+                );
+            },
+        });
+    };
 
     const handleSubmitCommand = () => {
         if (selectedStore.selectedServers.length === 0) {
@@ -145,6 +197,75 @@ export default function ShellManagement() {
                                 </li>
                             )
                         )}
+                    </ul>
+                </div>
+                <div>
+                    <div className="flex flex-col">
+                        <span className="font-semibold">
+                            My Custom Commands
+                        </span>
+                        <Collapsible>
+                            <CollapsibleTrigger className="my-2">
+                                <span className="cursor-pointer text-[14px] rounded-sm shadow-sm p-2">
+                                    Add new
+                                    <ChevronsUpDown
+                                        className="inline-block ml-1 mb-1"
+                                        size={14}
+                                    />
+                                </span>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent>
+                                {" "}
+                                <div className="flex space-x-2 mt-2 items-center">
+                                    <Input
+                                        value={shortcutName}
+                                        onChange={(e) =>
+                                            setShortcutName(e.target.value)
+                                        }
+                                        className="w-4/12"
+                                        placeholder="Name"
+                                    />
+                                    <Input
+                                        value={shortcutCommand}
+                                        onChange={(e) =>
+                                            setShortcutCommand(e.target.value)
+                                        }
+                                        placeholder="Command"
+                                    />
+                                    {!isAddingShortcutCommand ? (
+                                        <Button
+                                            onClick={handleAddShortcutCommand}
+                                            className=""
+                                        >
+                                            Add Command
+                                        </Button>
+                                    ) : (
+                                        <Button className="" disabled>
+                                            Adding...
+                                        </Button>
+                                    )}
+                                </div>
+                            </CollapsibleContent>
+                        </Collapsible>
+                    </div>
+                    <ul className="mt-2 space-y-1 text-sm flex space-x-1">
+                        {commands?.commands.map((command) => (
+                            <li key={command.name}>
+                                <Button
+                                    onClick={() => setCommand(command.command)}
+                                    variant={"outline"}
+                                    className="cursor-pointer text-[12px]"
+                                >
+                                    {command.name}
+                                </Button>
+                            </li>
+                        ))}
+                        {commands?.commands.length === 0 && (
+                            <li className="text-gray-500 text-sm">
+                                No custom commands found
+                            </li>
+                        )}
+                        {isShortcutCommandsLoading && <li>Loading...</li>}
                     </ul>
                 </div>
                 <div>
