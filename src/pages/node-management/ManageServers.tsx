@@ -75,6 +75,8 @@ export default function ManageServers() {
 
     const selectedStore = useSelectedServersStore() as SelectedServersState;
 
+    let [currentSelectedCommandLogUuid, setCurrentSelectedCommandLogUuid] =
+        useState<string>("");
     let [isAliasDialogOpen, setIsAliasDialogOpen] = useState(false);
     let [aliasMutationObject, setAliasMutationObject] = useState<{
         server: string;
@@ -129,6 +131,21 @@ export default function ManageServers() {
     let { mutate: deleteServer } = useGeneralPost({
         queryKey: ["delete-server"],
         path: "/delete-server",
+    });
+
+    let {
+        data: currentCommandUuidLogs,
+        isLoading: isLoadingCurrentCommandLogs,
+        isFetching: isFetchingCurrentCommandLogs,
+    } = useGeneralGet<{
+        stdout: string;
+        stderr: string;
+    }>({
+        queryKey: ["stdout-command-log", currentSelectedCommandLogUuid],
+        path: "/stdout-command-log",
+        reqQuery: {
+            uuid: currentSelectedCommandLogUuid,
+        },
     });
 
     let bgColorMap: Record<NodeStatus, string> = {
@@ -369,7 +386,11 @@ export default function ManageServers() {
                 <div className="mb-4 rounded shadow-sm p-4 space-x-2 max-h-1/3 overflow-y-auto">
                     {commandLogs?.commandLogs.map((log) => (
                         <Dialog key={log.uuid}>
-                            <DialogTrigger>
+                            <DialogTrigger
+                                onClick={() => {
+                                    setCurrentSelectedCommandLogUuid(log.uuid);
+                                }}
+                            >
                                 <div className="flex">
                                     <Badge
                                         className={`cursor-pointer ${
@@ -433,10 +454,26 @@ export default function ManageServers() {
                                         </TabsTrigger>
                                     </TabsList>
                                     <TabsContent value="stdout">
-                                        <LocalTerminal text={log.stdout} />
+                                        <LocalTerminal
+                                            text={
+                                                isFetchingCurrentCommandLogs ||
+                                                isLoadingCurrentCommandLogs
+                                                    ? "Loading..."
+                                                    : currentCommandUuidLogs?.stdout ||
+                                                      ""
+                                            }
+                                        />
                                     </TabsContent>
                                     <TabsContent value="stderr">
-                                        <LocalTerminal text={log.stderr} />
+                                        <LocalTerminal
+                                            text={
+                                                isFetchingCurrentCommandLogs ||
+                                                isLoadingCurrentCommandLogs
+                                                    ? "Loading..."
+                                                    : currentCommandUuidLogs?.stderr ||
+                                                      ""
+                                            }
+                                        />
                                     </TabsContent>
                                 </Tabs>
                             </DialogContent>
