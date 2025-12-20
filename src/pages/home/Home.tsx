@@ -73,7 +73,7 @@ export default function Home() {
         return () => {
             socket.emit("unsubscribeFromRealtimeStats");
         };
-    }, [currentService]);
+    }, []);
 
     return (
         <div className="p-4">

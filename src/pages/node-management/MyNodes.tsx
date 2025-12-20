@@ -132,7 +132,7 @@ export default function MyNodes() {
         }
     };
 
-    useEffect(() => {}, [currentService]);
+    useEffect(() => {}, []);
 
     useEffect(() => {
         setIsLoading(true);
