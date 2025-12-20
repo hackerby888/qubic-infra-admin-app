@@ -1,19 +1,25 @@
 import { useGeneralGet } from "@/networking/api";
-import type { Server, ServersStatus } from "@/types/type";
+import type {
+    BobNodeTickInfo,
+    LiteNodeTickInfo,
+    Server,
+    ServiceType,
+} from "@/types/type";
 import { isNodeActive } from "@/utils/common";
 import NodeStatus from "../home/components/NodeStatus";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { MyStorage } from "@/utils/storage";
 import { AlertCircleIcon } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import LiteNodeTable from "../home/components/LiteNodeTable";
 import BobNodeTable from "../home/components/BobNodeTable";
 import { useEffect, useState } from "react";
+import socket from "@/networking/socket";
 
 export default function MyNodes() {
     let operatorToken = MyStorage.getLoginCredential();
     let operatorInfo = MyStorage.decodeTokenPayload(operatorToken || "");
-    let [currentService, setCurrentService] = useState<string>("lite-node");
+    let [currentService, setCurrentService] = useState<ServiceType>("liteNode");
     let { data: serversData } = useGeneralGet<{
         servers: Server[];
     }>({
@@ -22,17 +28,11 @@ export default function MyNodes() {
         enabled: !!operatorInfo,
     });
 
-    let { data, error, isLoading } = useGeneralGet<ServersStatus>({
-        queryKey: [
-            "servers-status",
-            operatorInfo?.username || "no-valid-operator",
-        ],
-        path: "/servers-status",
-        refetchInterval: 1000,
-        reqQuery: {
-            operator: operatorInfo?.username || "",
-        },
-    });
+    let [isLoading, setIsLoading] = useState<boolean>(false);
+    let [statuses, setStatuses] = useState<{
+        liteNodes: LiteNodeTickInfo[];
+        bobNodes: BobNodeTickInfo[];
+    }>({ liteNodes: [], bobNodes: [] });
     let [currentSortedColumn, setCurrentSortedColumn] = useState<{
         column: string;
         direction: "asc" | "desc";
@@ -42,19 +42,17 @@ export default function MyNodes() {
     });
 
     let totalNodes = {
-        liteNodes: data?.statuses.liteNodes.length || 0,
-        bobNodes: data?.statuses.bobNodes.length || 0,
+        liteNodes: statuses.liteNodes.length || 0,
+        bobNodes: statuses.bobNodes.length || 0,
     };
 
     let upNodes = {
         liteNodes:
-            data?.statuses.liteNodes.filter((s) =>
-                isNodeActive(s.lastTickChanged)
-            ).length || 0,
+            statuses.liteNodes.filter((s) => isNodeActive(s.lastTickChanged))
+                .length || 0,
         bobNodes:
-            data?.statuses.bobNodes.filter((s) =>
-                isNodeActive(s.lastTickChanged)
-            ).length || 0,
+            statuses.bobNodes.filter((s) => isNodeActive(s.lastTickChanged))
+                .length || 0,
     };
 
     let downNodes = {
@@ -71,23 +69,21 @@ export default function MyNodes() {
             }
         });
     }
-    let sortedLiteNodeStatuses = data?.statuses.liteNodes
-        .slice()
-        .sort((a, b) => {
-            let direction: "asc" | "desc" =
-                currentSortedColumn.direction === "asc" ? "desc" : "asc";
+    let sortedLiteNodeStatuses = statuses.liteNodes.slice().sort((a, b) => {
+        let direction: "asc" | "desc" =
+            currentSortedColumn.direction === "asc" ? "desc" : "asc";
 
-            let aValue = (a as any)[currentSortedColumn.column] || "";
-            let bValue = (b as any)[currentSortedColumn.column] || "";
-            if (currentSortedColumn.column === "alias") {
-                aValue = aliasMap[a.server] || "";
-                bValue = aliasMap[b.server] || "";
-            }
-            if (aValue < bValue) return direction === "asc" ? -1 : 1;
-            if (aValue > bValue) return direction === "asc" ? 1 : -1;
-            return 0;
-        });
-    let sortedBobNodeStatuses = data?.statuses.bobNodes.slice().sort((a, b) => {
+        let aValue = (a as any)[currentSortedColumn.column] || "";
+        let bValue = (b as any)[currentSortedColumn.column] || "";
+        if (currentSortedColumn.column === "alias") {
+            aValue = aliasMap[a.server] || "";
+            bValue = aliasMap[b.server] || "";
+        }
+        if (aValue < bValue) return direction === "asc" ? -1 : 1;
+        if (aValue > bValue) return direction === "asc" ? 1 : -1;
+        return 0;
+    });
+    let sortedBobNodeStatuses = statuses.bobNodes.slice().sort((a, b) => {
         let direction: "asc" | "desc" =
             currentSortedColumn.direction === "asc" ? "desc" : "asc";
 
@@ -120,14 +116,14 @@ export default function MyNodes() {
         setCurrentSortedColumn({ column, direction: newDirection });
     };
 
-    const handleOnServiceChange = (value: string) => {
-        if (value == "lite-node") {
+    const handleOnServiceChange = (value: ServiceType) => {
+        if (value == "liteNode") {
             setCurrentSortedColumn({
                 column: "tick",
                 direction: "asc",
             });
             setCurrentService(value);
-        } else if (value == "bob-node") {
+        } else if (value == "bobNode") {
             setCurrentSortedColumn({
                 column: "currentFetchingTick",
                 direction: "asc",
@@ -137,6 +133,30 @@ export default function MyNodes() {
     };
 
     useEffect(() => {}, [currentService]);
+
+    useEffect(() => {
+        setIsLoading(true);
+        let operatorInfo = MyStorage.getUserInfo();
+        socket.emit("subscribeToRealtimeStats", {
+            service: currentService,
+            operator: operatorInfo?.username || "",
+        });
+
+        socket.on(
+            "realtimeStatsUpdate",
+            (data: {
+                liteNodes: LiteNodeTickInfo[];
+                bobNodes: BobNodeTickInfo[];
+            }) => {
+                setIsLoading(false);
+                setStatuses(data);
+                console.log("Received realtime stats update", data);
+            }
+        );
+        return () => {
+            socket.emit("unsubscribeFromRealtimeStats");
+        };
+    }, [currentService]);
 
     type NodeType = keyof typeof totalNodes;
     let titleNameFromNodeType = {
@@ -166,100 +186,87 @@ export default function MyNodes() {
                         })}
                     </div>
                     <div className="status-table mt-5">
-                        {!error ? (
-                            <Tabs
-                                onValueChange={handleOnServiceChange}
-                                defaultValue="lite-node"
-                                className="w-full"
-                            >
-                                <TabsList>
-                                    <TabsTrigger
-                                        className="cursor-pointer"
-                                        value="lite-node"
-                                    >
-                                        Lite Node
-                                    </TabsTrigger>
-                                    <TabsTrigger
-                                        className="cursor-pointer"
-                                        value="bob-node"
-                                    >
-                                        Bob Node
-                                    </TabsTrigger>
-                                </TabsList>
-                                <TabsContent value="lite-node">
-                                    <Tabs
-                                        defaultValue="lite-all"
-                                        className="w-full"
-                                    >
-                                        <TabsList>
-                                            <TabsTrigger
-                                                className="cursor-pointer"
-                                                value="lite-all"
-                                            >
-                                                All
-                                            </TabsTrigger>
-                                            <TabsTrigger
-                                                className="cursor-pointer"
-                                                value="lite-mining"
-                                            >
-                                                Mining Nodes
-                                            </TabsTrigger>
-                                        </TabsList>
-                                        <TabsContent value="lite-all">
-                                            <LiteNodeTable
-                                                onChangeSorting={
-                                                    onLiteNodeTableChangeSorting
-                                                }
-                                                operatorInfo={operatorInfo!}
-                                                isLoading={isLoading}
-                                                sortedLiteNodeStatuses={
-                                                    sortedLiteNodeStatuses || []
-                                                }
-                                            />
-                                        </TabsContent>
-                                        <TabsContent value="lite-mining">
-                                            <LiteNodeTable
-                                                onChangeSorting={
-                                                    onLiteNodeTableChangeSorting
-                                                }
-                                                operatorInfo={operatorInfo!}
-                                                isLoading={isLoading}
-                                                sortedLiteNodeStatuses={
-                                                    sortedLiteNodeStatuses?.filter(
-                                                        (s) => s.groupId !== ""
-                                                    ) || []
-                                                }
-                                            />
-                                        </TabsContent>
-                                    </Tabs>
-                                </TabsContent>
-                                <TabsContent value="bob-node">
-                                    <BobNodeTable
-                                        onChangeSorting={
-                                            onBobNodeTableChangeSorting
-                                        }
-                                        isLoading={isLoading}
-                                        sortedBobNodeStatuses={
-                                            sortedBobNodeStatuses || []
-                                        }
-                                        operatorInfo={operatorInfo!}
-                                    />
-                                </TabsContent>
-                            </Tabs>
-                        ) : (
-                            <Alert variant="destructive">
-                                <AlertCircleIcon />
-                                <AlertTitle className="font-bold">
-                                    Error
-                                </AlertTitle>
-                                <AlertDescription>
-                                    {`Failed to load your nodes: ${
-                                        (error as any)?.message ||
-                                        "Unknown error"
-                                    }`}
-                                </AlertDescription>
-                            </Alert>
-                        )}
+                        <Tabs
+                            onValueChange={(value) =>
+                                handleOnServiceChange(value as ServiceType)
+                            }
+                            defaultValue="liteNode"
+                            className="w-full"
+                        >
+                            <TabsList>
+                                <TabsTrigger
+                                    className="cursor-pointer"
+                                    value="liteNode"
+                                >
+                                    Lite Node
+                                </TabsTrigger>
+                                <TabsTrigger
+                                    className="cursor-pointer"
+                                    value="bobNode"
+                                >
+                                    Bob Node
+                                </TabsTrigger>
+                            </TabsList>
+                            <TabsContent value="liteNode">
+                                <Tabs
+                                    defaultValue="lite-all"
+                                    className="w-full"
+                                >
+                                    <TabsList>
+                                        <TabsTrigger
+                                            className="cursor-pointer"
+                                            value="lite-all"
+                                        >
+                                            All
+                                        </TabsTrigger>
+                                        <TabsTrigger
+                                            className="cursor-pointer"
+                                            value="lite-mining"
+                                        >
+                                            Mining Nodes
+                                        </TabsTrigger>
+                                    </TabsList>
+                                    <TabsContent value="lite-all">
+                                        <LiteNodeTable
+                                            onChangeSorting={
+                                                onLiteNodeTableChangeSorting
+                                            }
+                                            operatorInfo={operatorInfo!}
+                                            isLoading={isLoading}
+                                            sortedLiteNodeStatuses={
+                                                sortedLiteNodeStatuses || []
+                                            }
+                                        />
+                                    </TabsContent>
+                                    <TabsContent value="lite-mining">
+                                        <LiteNodeTable
+                                            onChangeSorting={
+                                                onLiteNodeTableChangeSorting
+                                            }
+                                            operatorInfo={operatorInfo!}
+                                            isLoading={isLoading}
+                                            sortedLiteNodeStatuses={
+                                                sortedLiteNodeStatuses?.filter(
+                                                    (s) => s.groupId !== ""
+                                                ) || []
+                                            }
+                                        />
+                                    </TabsContent>
+                                </Tabs>
+                            </TabsContent>
+                            <TabsContent value="bobNode">
+                                <BobNodeTable
+                                    onChangeSorting={
+                                        onBobNodeTableChangeSorting
+                                    }
+                                    isLoading={isLoading}
+                                    sortedBobNodeStatuses={
+                                        sortedBobNodeStatuses || []
+                                    }
+                                    operatorInfo={operatorInfo!}
+                                />
+                            </TabsContent>
+                        </Tabs>
                     </div>
                 </>
             ) : (

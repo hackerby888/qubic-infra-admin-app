@@ -1,37 +1,36 @@
-import { useGeneralGet } from "@/networking/api";
-import type { LiteNodeTickInfo, BobNodeTickInfo } from "@/types/type";
+import type {
+    LiteNodeTickInfo,
+    BobNodeTickInfo,
+    ServiceType,
+} from "@/types/type";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import LiteNodeTable from "./components/LiteNodeTable";
 import BobNodeTable from "./components/BobNodeTable";
 import NodeStatus from "./components/NodeStatus";
 import { isNodeActive } from "@/utils/common";
+import { useEffect, useState } from "react";
+import socket from "@/networking/socket";
 
 export default function Home() {
-    let { data, isLoading } = useGeneralGet<{
-        statuses: {
-            liteNodes: LiteNodeTickInfo[];
-            bobNodes: BobNodeTickInfo[];
-        };
-    }>({
-        queryKey: ["servers-status"],
-        path: "/servers-status",
-        refetchInterval: 1000,
-    });
+    let [isLoading, setIsLoading] = useState<boolean>(false);
+    let [currentService, setCurrentService] = useState<ServiceType>("liteNode");
+    let [statuses, setStatuses] = useState<{
+        liteNodes: LiteNodeTickInfo[];
+        bobNodes: BobNodeTickInfo[];
+    }>({ liteNodes: [], bobNodes: [] });
 
     let totalNodes = {
-        liteNodes: data?.statuses.liteNodes.length || 0,
-        bobNodes: data?.statuses.bobNodes.length || 0,
+        liteNodes: statuses.liteNodes.length || 0,
+        bobNodes: statuses.bobNodes.length || 0,
     };
 
     let upNodes = {
         liteNodes:
-            data?.statuses.liteNodes.filter((s) =>
-                isNodeActive(s.lastTickChanged)
-            ).length || 0,
+            statuses.liteNodes.filter((s) => isNodeActive(s.lastTickChanged))
+                .length || 0,
         bobNodes:
-            data?.statuses.bobNodes.filter((s) =>
-                isNodeActive(s.lastTickChanged)
-            ).length || 0,
+            statuses.bobNodes.filter((s) => isNodeActive(s.lastTickChanged))
+                .length || 0,
     };
 
     let downNodes = {
@@ -40,10 +39,10 @@ export default function Home() {
     };
 
     // Clone and sort statuses by tick
-    let sortedLiteNodeStatuses = data?.statuses.liteNodes
+    let sortedLiteNodeStatuses = statuses.liteNodes
         .slice()
         .sort((a, b) => b.tick - a.tick);
-    let sortedBobNodeStatuses = data?.statuses.bobNodes
+    let sortedBobNodeStatuses = statuses.bobNodes
         .slice()
         .sort((a, b) => b.currentProcessingEpoch - a.currentProcessingEpoch);
 
@@ -52,6 +51,29 @@ export default function Home() {
         liteNodes: "Lite Nodes",
         bobNodes: "Bob Nodes",
     };
+
+    useEffect(() => {
+        setIsLoading(true);
+        socket.emit("subscribeToRealtimeStats", {
+            service: currentService,
+            operator: "",
+        });
+
+        socket.on(
+            "realtimeStatsUpdate",
+            (data: {
+                liteNodes: LiteNodeTickInfo[];
+                bobNodes: BobNodeTickInfo[];
+            }) => {
+                setIsLoading(false);
+                setStatuses(data);
+                console.log("Received realtime stats update", data);
+            }
+        );
+        return () => {
+            socket.emit("unsubscribeFromRealtimeStats");
+        };
+    }, [currentService]);
 
     return (
         <div className="p-4">
@@ -72,22 +94,25 @@ export default function Home() {
                 })}
             </div>
             <div className="status-table mt-5">
-                <Tabs defaultValue="lite-node" className="w-full">
+                <Tabs
+                    onValueChange={(value) =>
+                        setCurrentService(value as ServiceType)
+                    }
+                    defaultValue="liteNode"
+                    className="w-full"
+                >
                     <TabsList>
                         <TabsTrigger
                             className="cursor-pointer"
-                            value="lite-node"
+                            value="liteNode"
                         >
                             Lite Node
                         </TabsTrigger>
-                        <TabsTrigger
-                            className="cursor-pointer"
-                            value="bob-node"
-                        >
+                        <TabsTrigger className="cursor-pointer" value="bobNode">
                             Bob Node
                         </TabsTrigger>
                     </TabsList>
-                    <TabsContent value="lite-node">
+                    <TabsContent value="liteNode">
                         <LiteNodeTable
                             isLoading={isLoading}
                             sortedLiteNodeStatuses={
@@ -95,7 +120,7 @@ export default function Home() {
                             }
                         />
                     </TabsContent>
-                    <TabsContent value="bob-node">
+                    <TabsContent value="bobNode">
                         <BobNodeTable
                             isLoading={isLoading}
                             sortedBobNodeStatuses={sortedBobNodeStatuses || []}
