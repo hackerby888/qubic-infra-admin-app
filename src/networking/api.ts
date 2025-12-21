@@ -61,7 +61,7 @@ export function useGeneralGet<T>({
     });
 }
 
-export default function useGeneralPost({
+export default function useGeneralPost<TData = any>({
     queryKey,
     path,
     reqQuery,
@@ -74,7 +74,7 @@ export default function useGeneralPost({
     };
     method?: "POST" | "PUT" | "DELETE";
 }) {
-    return useMutation({
+    return useMutation<TData>({
         mutationKey: queryKey,
         mutationFn: async (data) => {
             let reqQueryString = "";

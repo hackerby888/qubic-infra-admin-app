@@ -223,9 +223,16 @@ export default function ManageServers() {
 
     const locallyRemoveServer = (server: string) => {
         if (data) {
-            queryClient.setQueryData<{ servers: Server[] }>(["my-servers"], {
-                servers: data.servers.filter((s) => s.server !== server),
-            });
+            queryClient.setQueryData<{ servers: Server[] }>(
+                ["my-servers"],
+                (old) => {
+                    return {
+                        servers:
+                            old?.servers.filter((s) => s.server !== server) ||
+                            [],
+                    };
+                }
+            );
         }
     };
 
