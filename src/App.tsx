@@ -24,7 +24,11 @@ function getSubdomain() {
 }
 
 function App() {
-    const subdomain = getSubdomain();
+    const supportingDomains = ["map"];
+    let subdomain = getSubdomain();
+    if (subdomain && !supportingDomains.includes(subdomain)) {
+        subdomain = null;
+    }
     console.log("Subdomain detected:", subdomain);
 
     return (
