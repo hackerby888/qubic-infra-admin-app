@@ -14,6 +14,7 @@ import { Earth } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import GlobalDataPulseMap from "@/components/common/GlobalDataPulseMap";
 import useGeneralPost from "@/networking/api";
+import { MyStorage } from "@/utils/storage";
 
 export default function Home() {
     let [isLoading, setIsLoading] = useState<boolean>(false);
@@ -79,10 +80,11 @@ export default function Home() {
     };
 
     useEffect(() => {
+        let operatorInfo = MyStorage.getUserInfo();
         setIsLoading(true);
         socket.emit("subscribeToRealtimeStats", {
             service: currentService,
-            operator: "",
+            operator: operatorInfo?.username || "",
         });
 
         socket.on(
