@@ -12,7 +12,7 @@ import { useEffect, useMemo, useState } from "react";
 import socket from "@/networking/socket";
 import { Earth } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import GlobalDataPulseMap from "@/components/common/GlobalMap";
+import GlobalDataPulseMap from "@/components/common/GlobalDataPulseMap";
 import useGeneralPost from "@/networking/api";
 
 export default function Home() {
