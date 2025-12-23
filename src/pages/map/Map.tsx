@@ -18,7 +18,6 @@ export default function Map() {
     }>({
         queryKey: ["servers-status"],
         path: "/servers-status",
-        refetchInterval: 15000,
     });
 
     let { mutate: updateServersForMap, data: mapData } = useGeneralPost<{
