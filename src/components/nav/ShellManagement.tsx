@@ -161,7 +161,7 @@ export default function ShellManagement() {
                 {" "}
                 <SquareTerminal className="cursor-pointer" size={20} />
             </DialogTrigger>
-            <DialogContent className="min-w-1/2">
+            <DialogContent className="overflow-y-auto max-h-[90vh] min-w-1/2">
                 <div className="flex items-center justify-center mt-4">
                     <div className="w-full flex flex-col">
                         {/* <span className="text-sm text-gray-600 border border-b-0 w-fit rounded-t-sm px-4 py-1">
