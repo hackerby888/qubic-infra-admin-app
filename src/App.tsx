@@ -11,6 +11,7 @@ import { Toaster } from "@/components/ui/sonner";
 import Auth from "./pages/node-management/Auth";
 import ManageServers from "./pages/node-management/ManageServers";
 import Map from "./pages/map/Map";
+import CronJobs from "./pages/cron-jobs/CronJobs";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -74,6 +75,12 @@ function App() {
                                                             path="manage-servers"
                                                             element={
                                                                 <ManageServers />
+                                                            }
+                                                        />
+                                                        <Route
+                                                            path="cron-jobs"
+                                                            element={
+                                                                <CronJobs />
                                                             }
                                                         />
                                                         <Route

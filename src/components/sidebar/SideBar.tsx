@@ -149,6 +149,10 @@ export default function SideBar() {
                                                 path: "/manage-servers",
                                             },
                                             {
+                                                label: "Crob Jobs",
+                                                path: "/cron-jobs",
+                                            },
+                                            {
                                                 label: "Authentication",
                                                 path: "/auth",
                                             },

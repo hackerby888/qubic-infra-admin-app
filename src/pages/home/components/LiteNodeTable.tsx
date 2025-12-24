@@ -122,7 +122,9 @@ export default function LiteNodeTable({
                         <>
                             <TableRow
                                 className={`${
-                                    !nodeAlive && "bg-red-100 hover:bg-red-200"
+                                    !nodeAlive &&
+                                    !stat.isSavingSnapshot &&
+                                    "bg-red-100 hover:bg-red-200"
                                 }`}
                                 key={stat.server}
                             >
@@ -148,6 +150,14 @@ export default function LiteNodeTable({
                                     >
                                         {stat.ipInfo?.country}
                                     </Badge>
+                                    {Boolean(stat.isSavingSnapshot) && (
+                                        <Badge
+                                            variant={"outline"}
+                                            className="ml-1 bg-yellow-500 text-white"
+                                        >
+                                            {"Saving Snapshot"}
+                                        </Badge>
+                                    )}
                                     {!nodeAlive && (
                                         <Badge
                                             className="ml-1"

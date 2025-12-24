@@ -5,7 +5,13 @@ import * as topojson from "topojson-client";
 function GlobalDataPulseMap({
     nodes: nodes,
 }: {
-    nodes: { server: string; lat: number; lon: number; isActive: boolean }[];
+    nodes: {
+        server: string;
+        lat: number;
+        lon: number;
+        isActive: boolean;
+        isBM: boolean;
+    }[];
 }) {
     console.log("Rendering GlobalDataPulseMap with nodes:", nodes);
     const containerRef = useRef(null);
@@ -65,12 +71,71 @@ function GlobalDataPulseMap({
                 .attr("stroke", "#2a3139")
                 .attr("stroke-width", 0.5);
 
+            let xyMap: { [server: string]: [number, number] } = {};
+            let colorMap: { [server: string]: string } = {};
+            let countryCounts: { [country: string]: number } = {};
+            nodes.forEach((n) => {
+                const country = countries.features.find((feature: any) =>
+                    d3.geoContains(feature, [n.lon, n.lat])
+                );
+                if (country) {
+                    const countryName = country.properties.name;
+                    countryCounts[countryName] =
+                        (countryCounts[countryName] || 0) + 1;
+                }
+            });
+            console.log("Node counts by country:", countryCounts);
+
             nodes.forEach((n) => {
                 console.log("Plotting node on map:", n);
                 // @ts-ignore
-                const [x, y] = projection([n.lon, n.lat]);
+                let [x, y] = projection([n.lon, n.lat]);
 
-                let targetColor = n.isActive ? "#00f2ff" : "#fb2b2b";
+                const country = countries.features.find((feature: any) =>
+                    d3.geoContains(feature, [n.lon, n.lat])
+                );
+
+                if (!country) {
+                    // skip nodes in ocean (or handle differently)
+                    return;
+                }
+
+                // if there is many nodes in the country, we draw randomly around the country center
+                if (countryCounts[country.properties.name] >= 2) {
+                    const maxRadius = 10; // px
+                    const attempts = 10;
+                    let baseXY = [x, y];
+
+                    for (let i = 0; i < attempts; i++) {
+                        const angle = Math.random() * 2 * Math.PI;
+                        const radius = 2 + Math.random() * maxRadius;
+
+                        const jx = baseXY[0] + radius * Math.cos(angle);
+                        const jy = baseXY[1] + radius * Math.sin(angle);
+
+                        // invert back to lon/lat to validate
+                        // @ts-ignore
+                        const lonLat = projection.invert([jx, jy]) as [
+                            number,
+                            number
+                        ];
+
+                        if (lonLat && d3.geoContains(country, lonLat)) {
+                            x = jx;
+                            y = jy;
+                            break;
+                        }
+                    }
+                }
+                xyMap[n.server] = [x, y];
+
+                // check if the point is belong to a country
+                let targetColor = n.isBM
+                    ? "#00ff65"
+                    : n.isActive
+                    ? "#00f2ff"
+                    : "#fb2b2b";
+                colorMap[n.server] = targetColor;
 
                 g.append("circle")
                     .attr("cx", x)
@@ -113,8 +178,8 @@ function GlobalDataPulseMap({
                             Math.floor(Math.random() * activeNodes.length)
                         ];
 
-                const [sx, sy] = projection([a.lon, a.lat]);
-                const [tx, ty] = projection([b.lon, b.lat]);
+                const [sx, sy] = xyMap[a.server];
+                const [tx, ty] = xyMap[b.server];
 
                 const mx = (sx + tx) / 2;
                 const my = (sy + ty) / 2 - Math.hypot(tx - sx, ty - sy) / 4;
@@ -125,7 +190,7 @@ function GlobalDataPulseMap({
                     .append("path")
                     .attr("d", d)
                     .attr("fill", "none")
-                    .attr("stroke", "#00f2ff")
+                    .attr("stroke", colorMap[a.server])
                     .attr("stroke-width", 1.1)
                     .attr("stroke-linecap", "round");
 

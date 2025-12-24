@@ -13,6 +13,7 @@ export interface LiteNodeTickInfo {
     lastTickChanged: number;
     isPrivate: boolean;
     groupId: string;
+    isSavingSnapshot: boolean;
 }
 
 export interface BobNodeTickInfo {
@@ -121,4 +122,16 @@ export interface ServersStatus {
         liteNodes: LiteNodeTickInfo[];
         bobNodes: BobNodeTickInfo[];
     };
+}
+
+export interface CronJob {
+    operator: string;
+    cronId: string;
+    name: string;
+    schedule: string;
+    command: string;
+    type: "system" | "custom";
+    lastRun: number | null;
+    status: "success" | "failed" | "running" | "idle";
+    isEnabled: boolean;
 }

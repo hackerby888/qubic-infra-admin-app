@@ -8,9 +8,14 @@ import type {
 } from "@/types/type";
 import { isNodeActive } from "@/utils/common";
 import { useEffect, useMemo, useState } from "react";
+import * as d3 from "d3";
+import * as topojson from "topojson-client";
 
 export default function Map() {
     let [currentService, setCurrentService] = useState<ServiceType>("liteNode");
+    let [countryCounts, setCountryCounts] = useState<{
+        [country: string]: number;
+    }>({});
 
     let { data: statuses } = useGeneralGet<{
         liteNodes: LiteNodeTickInfo[];
@@ -25,6 +30,7 @@ export default function Map() {
             server: string;
             lat: number;
             lon: number;
+            isBM: boolean;
         }[];
     }>({
         queryKey: ["servers-for-map"],
@@ -52,12 +58,15 @@ export default function Map() {
                 }
                 return {
                     ...s,
-                    isActive,
+                    isActive: s.isBM ? true : isActive,
                 };
             }) || []
         ).filter((s) => {
             // filter based on service
             if (currentService === "liteNode") {
+                if (s.isBM) {
+                    return true;
+                }
                 return statuses?.liteNodes.some(
                     (node) => node.server === s.server
                 );
@@ -68,6 +77,35 @@ export default function Map() {
             }
         });
     }, [currentService, mapData, statuses]);
+
+    useEffect(() => {
+        const init = async () => {
+            const world = (await d3.json(
+                "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json"
+            )) as any;
+
+            const countries = topojson.feature(
+                world,
+                world.objects.countries
+            ) as any;
+
+            let countryCounts: { [country: string]: number } = {};
+
+            renderServersMap.forEach((n) => {
+                const country = countries.features.find((feature: any) =>
+                    d3.geoContains(feature, [n.lon, n.lat])
+                );
+                if (country) {
+                    const countryName = country.properties.name;
+                    countryCounts[countryName] =
+                        (countryCounts[countryName] || 0) + 1;
+                }
+            });
+
+            setCountryCounts(countryCounts);
+        };
+        init();
+    }, [renderServersMap]);
 
     useEffect(() => {
         updateServersForMap();
@@ -82,7 +120,7 @@ export default function Map() {
                         currentService === "liteNode" ? "bg-cyan-600" : ""
                     }`}
                 >
-                    Lite Nodes
+                    BM Nodes
                 </Button>
                 <Button
                     onClick={() => setCurrentService("bobNode")}
@@ -92,6 +130,15 @@ export default function Map() {
                 >
                     Bob Nodes
                 </Button>
+            </div>
+            <div className="absolute p-2 right-2 top-2 bg-white-600 text-white">
+                <ul className="">
+                    {Object.entries(countryCounts).map(([country, count]) => (
+                        <li key={country} className="text-xs text-white">
+                            {country}: {count}
+                        </li>
+                    ))}
+                </ul>
             </div>
             <GlobalDataPulseMap nodes={renderServersMap} />
         </div>

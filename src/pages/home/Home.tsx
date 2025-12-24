@@ -55,10 +55,13 @@ export default function Home() {
 
     useEffect(() => {
         let operatorInfo = MyStorage.getUserInfo();
+        // do not subscribe if no operator info atm
+        if (!operatorInfo || !operatorInfo.username) {
+            return;
+        }
         setIsLoading(true);
         socket.emit("subscribeToRealtimeStats", {
             service: currentService,
-            operator: operatorInfo?.username || "",
         });
 
         socket.on(
