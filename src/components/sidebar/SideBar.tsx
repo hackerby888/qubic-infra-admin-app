@@ -1,4 +1,4 @@
-import { House, LaptopMinimal, Search, UserRoundPlus } from "lucide-react";
+import { House, LaptopMinimal, Map, Search, UserRoundPlus } from "lucide-react";
 import {
     Sidebar,
     SidebarContent,
@@ -19,7 +19,15 @@ import {
     type LoginReloadState,
 } from "@/stores/login-reload-store";
 
-const availableRoutesPublic = [{ name: "Home", path: "/", icon: House }];
+const availableRoutesPublic = [
+    { name: "Home", path: "/", icon: House },
+    {
+        name: "Map",
+        path: "/`map`",
+        customPath: "https://map.qubic.global",
+        icon: Map,
+    },
+];
 
 export default function SideBar() {
     const loginReload = useLoginReloadStore() as LoginReloadState;
@@ -27,6 +35,10 @@ export default function SideBar() {
     const navigate = useNavigate();
 
     const nagivateToRoute = (path: string) => {
+        if (path.startsWith("http")) {
+            window.open(path, "_blank");
+            return;
+        }
         navigate(path);
     };
 
@@ -69,7 +81,9 @@ export default function SideBar() {
                                     <li
                                         key={route.path}
                                         onClick={() =>
-                                            nagivateToRoute(route.path)
+                                            nagivateToRoute(
+                                                route.customPath || route.path
+                                            )
                                         }
                                         className={`${
                                             route.path == location.pathname
