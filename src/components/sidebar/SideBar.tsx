@@ -1,4 +1,4 @@
-import { House, LaptopMinimal, Map, Search, UserRoundPlus } from "lucide-react";
+import { House, LaptopMinimal, Map, UserRoundPlus } from "lucide-react";
 import {
     Sidebar,
     SidebarContent,
@@ -6,11 +6,6 @@ import {
     SidebarGroup,
     SidebarHeader,
 } from "@/components/ui/sidebar";
-import {
-    InputGroup,
-    InputGroupAddon,
-    InputGroupInput,
-} from "@/components/ui/input-group";
 import { useLocation, useNavigate } from "react-router";
 import DynamicNavigatorMenu from "../common/dynamic-navigator-menu";
 import { MyStorage } from "@/utils/storage";
@@ -18,6 +13,15 @@ import {
     useLoginReloadStore,
     type LoginReloadState,
 } from "@/stores/login-reload-store";
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
+} from "@/components/ui/command";
+import { useState } from "react";
 
 const availableRoutesPublic = [
     { name: "Home", path: "/", icon: House },
@@ -29,10 +33,27 @@ const availableRoutesPublic = [
     },
 ];
 
+const availableRoutesPrivate = {
+    "operator-management": [
+        { name: "Operator", path: "/operator", icon: UserRoundPlus },
+    ],
+    "node-management": [
+        { name: "My Nodes", path: "/my-nodes", icon: LaptopMinimal },
+        {
+            name: "Manage Servers",
+            path: "/manage-servers",
+            icon: LaptopMinimal,
+        },
+        { name: "Cron Jobs", path: "/cron-jobs", icon: LaptopMinimal },
+        { name: "Authentication", path: "/auth", icon: LaptopMinimal },
+    ],
+};
+
 export default function SideBar() {
     const loginReload = useLoginReloadStore() as LoginReloadState;
     const location = useLocation();
     const navigate = useNavigate();
+    const [searchValue, setSearchValue] = useState("");
 
     const nagivateToRoute = (path: string) => {
         if (path.startsWith("http")) {
@@ -64,15 +85,100 @@ export default function SideBar() {
                         </div>
 
                         <div className="mt-4">
-                            <InputGroup autoFocus={false}>
-                                <InputGroupInput
-                                    autoFocus={false}
-                                    placeholder="Search..."
+                            <Command>
+                                <CommandInput
+                                    value={searchValue}
+                                    onValueChange={setSearchValue}
+                                    placeholder="Search (eg. Home)…"
                                 />
-                                <InputGroupAddon>
-                                    <Search />
-                                </InputGroupAddon>
-                            </InputGroup>
+                                <CommandList>
+                                    {searchValue.length > 0 && (
+                                        <CommandEmpty>
+                                            No results found.
+                                        </CommandEmpty>
+                                    )}
+
+                                    {searchValue.length > 0 && (
+                                        <CommandGroup heading="Public Pages">
+                                            {availableRoutesPublic.map(
+                                                (route) => (
+                                                    <CommandItem
+                                                        key={route.path}
+                                                        onSelect={() =>
+                                                            nagivateToRoute(
+                                                                route.customPath ||
+                                                                    route.path
+                                                            )
+                                                        }
+                                                    >
+                                                        {route.name}
+                                                    </CommandItem>
+                                                )
+                                            )}
+                                        </CommandGroup>
+                                    )}
+                                    {Object.entries(availableRoutesPrivate).map(
+                                        ([groupName, routes]) => {
+                                            if (!isLoggedIn) return null;
+                                            if (
+                                                groupName ===
+                                                    "operator-management" &&
+                                                !isAdmin
+                                            )
+                                                return null;
+                                            return (
+                                                searchValue.length > 0 && (
+                                                    <CommandGroup
+                                                        heading={groupName
+                                                            .split("-")
+                                                            .map(
+                                                                (word) =>
+                                                                    word
+                                                                        .charAt(
+                                                                            0
+                                                                        )
+                                                                        .toUpperCase() +
+                                                                    word.slice(
+                                                                        1
+                                                                    )
+                                                            )
+                                                            .join(" ")}
+                                                        key={groupName}
+                                                    >
+                                                        {routes.map(
+                                                            (route) =>
+                                                                isLoggedIn &&
+                                                                searchValue.length >
+                                                                    0 &&
+                                                                route.name
+                                                                    .toLowerCase()
+                                                                    .includes(
+                                                                        searchValue.toLowerCase()
+                                                                    ) && (
+                                                                    <CommandItem
+                                                                        key={
+                                                                            route.path
+                                                                        }
+                                                                        onSelect={() =>
+                                                                            nagivateToRoute(
+                                                                                groupName +
+                                                                                    route.path
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        {
+                                                                            route.name
+                                                                        }
+                                                                    </CommandItem>
+                                                                )
+                                                        )}
+                                                    </CommandGroup>
+                                                )
+                                            );
+                                        }
+                                    )}
+                                </CommandList>
+                            </Command>
                         </div>
 
                         <div>
@@ -103,75 +209,42 @@ export default function SideBar() {
 
                         {isLoggedIn ? (
                             <>
-                                {" "}
                                 <hr className="mt-4"></hr>
-                                <div className="text-sm mt-4">
-                                    {/* <Collapsible className="w-full">
-                                <CollapsibleTrigger className="w-full">
-                                    <div className="p-2 rounded-sm hover:bg-gray-100 cursor-pointer flex w-full">
-                                        <LaptopMinimal
-                                            size={20}
-                                            className="mr-2"
-                                        />
-                                        <span className="flex-1 text-left">
-                                            Node Management
-                                        </span>
-                                        <ChevronUp
-                                            className="text-gray-500"
-                                            size={20}
-                                        />
-                                    </div>
-                                </CollapsibleTrigger>
-                                <CollapsibleContent>
-                                    <ul className="text-sm pl-3">
-                                        <li className="border-l-2 border-l-blue-600 text-blue-600 pl-2 py-2 hover:bg-gray-100 cursor-pointer flex">
-                                            General
-                                        </li>
-                                        <li className="border-l-2 border-l-gray-300 pl-2 py-2 hover:bg-gray-100 cursor-pointer flex">
-                                            General
-                                        </li>
-                                    </ul>
-                                </CollapsibleContent>
-                            </Collapsible> */}
-                                    {isAdmin && (
-                                        <>
-                                            <DynamicNavigatorMenu
-                                                icon={UserRoundPlus}
-                                                title="Operator Management"
-                                                rootPath="/operator-management"
-                                                items={[
-                                                    {
-                                                        label: "Operator",
-                                                        path: "/operator",
-                                                    },
-                                                ]}
-                                            />
-                                            <div className="mt-2"></div>
-                                        </>
+                                <div className="text-sm mt-4 space-y-3">
+                                    {Object.entries(availableRoutesPrivate).map(
+                                        ([groupName, routes]) => {
+                                            if (
+                                                groupName ===
+                                                    "operator-management" &&
+                                                !isAdmin
+                                            )
+                                                return null;
+                                            return (
+                                                <DynamicNavigatorMenu
+                                                    icon={routes[0].icon}
+                                                    title={groupName
+                                                        .split("-")
+                                                        .map(
+                                                            (word) =>
+                                                                word
+                                                                    .charAt(0)
+                                                                    .toUpperCase() +
+                                                                word.slice(1)
+                                                        )
+                                                        .join(" ")}
+                                                    rootPath={`/${groupName}`}
+                                                    items={[
+                                                        ...routes.map(
+                                                            (route) => ({
+                                                                label: route.name,
+                                                                path: route.path,
+                                                            })
+                                                        ),
+                                                    ]}
+                                                />
+                                            );
+                                        }
                                     )}
-                                    <DynamicNavigatorMenu
-                                        icon={LaptopMinimal}
-                                        title="Node Management"
-                                        rootPath="/node-management"
-                                        items={[
-                                            {
-                                                label: "My Nodes",
-                                                path: "/my-nodes",
-                                            },
-                                            {
-                                                label: "Manage Servers",
-                                                path: "/manage-servers",
-                                            },
-                                            {
-                                                label: "Crob Jobs",
-                                                path: "/cron-jobs",
-                                            },
-                                            {
-                                                label: "Authentication",
-                                                path: "/auth",
-                                            },
-                                        ]}
-                                    />
                                 </div>
                             </>
                         ) : (
