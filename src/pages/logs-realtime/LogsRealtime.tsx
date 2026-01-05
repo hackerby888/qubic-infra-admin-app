@@ -8,6 +8,15 @@ import type {
 } from "@/types/type";
 import { useGeneralGet } from "@/networking/api";
 import { toast } from "sonner";
+import socket from "@/networking/socket";
+
+let subscribeLogTypes: {
+    scIndex: number;
+    logType: number;
+}[] = [];
+for (let i = 0; i <= 12; i++) {
+    subscribeLogTypes.push({ scIndex: 0, logType: i });
+}
 
 export default function LogsRealtime() {
     let { data: statuses } = useGeneralGet<{
@@ -26,7 +35,6 @@ export default function LogsRealtime() {
     }>({});
 
     let [isSubscribed, setIsSubscribed] = useState(false);
-    let [isConnected, setIsConnected] = useState(false);
     let [candidateBobNode, setCandidateBobNode] = useState<string | null>(null);
 
     useEffect(() => {
@@ -56,11 +64,17 @@ export default function LogsRealtime() {
         let selectedServer = candidateServers[randomIndex];
         setCandidateBobNode(selectedServer.server);
 
-        // connect to the selected server via WebSocket
-        const ws = new WebSocket(`ws://${selectedServer.server}:40420/ws/logs`);
+        // we use proxy here instead of direct connection to Bob node
+        socket.emit("subscribeToBobRealtimeLogs", {
+            bobHost: selectedServer.server,
+            subscribeData: {
+                action: "subscribe",
+                subscriptions: [...subscribeLogTypes],
+            },
+        });
 
-        ws.onmessage = (event) => {
-            let log = JSON.parse(event.data) as LogEvent;
+        socket.on("bobRealtimeLogUpdate", (data: string) => {
+            let log = JSON.parse(data) as LogEvent;
             if (!log.message || !log.message.tick) {
                 if (log.type === "welcome") {
                     setIsSubscribed(true);
@@ -81,33 +95,17 @@ export default function LogsRealtime() {
                 };
             });
             console.log("Received log:", log);
-        };
-
-        ws.onopen = () => {
-            let subscribeLogTypes = [];
-            for (let i = 0; i <= 12; i++) {
-                subscribeLogTypes.push({ scIndex: 0, logType: i });
-            }
-            // Optionally, send a message to the server
-            setTimeout(() => {
-                ws.send(
-                    JSON.stringify({
-                        action: "subscribe",
-                        subscriptions: [...subscribeLogTypes],
-                    })
-                );
-            }, 2000);
-            console.log("WebSocket connection opened");
-            setIsConnected(true);
-        };
-
-        ws.onclose = () => {
-            console.log("WebSocket connection closed");
-            setIsConnected(false);
-        };
+        });
 
         return () => {
-            ws.close();
+            socket.off("bobRealtimeLogUpdate");
+            socket.emit("unsubscribeFromBobRealtimeLogs", {
+                bobHost: selectedServer.server,
+                unsubscribeData: {
+                    action: "unsubscribe",
+                    subscriptions: [...subscribeLogTypes],
+                },
+            });
         };
     }, [statuses]);
 
@@ -138,9 +136,9 @@ export default function LogsRealtime() {
                         ))
                     ) : (
                         <div className="text-center text-gray-500">
-                            {isConnected
-                                ? "Subscribing to logs..."
-                                : "Connecting to log server..."}
+                            {
+                                "Connecting to Bob node and subscribing to real-time logs..."
+                            }
                         </div>
                     )}
                 </div>
