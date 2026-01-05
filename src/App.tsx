@@ -12,6 +12,7 @@ import Auth from "./pages/node-management/Auth";
 import ManageServers from "./pages/node-management/ManageServers";
 import Map from "./pages/map/Map";
 import CronJobs from "./pages/cron-jobs/CronJobs";
+import LogsRealTime from "./pages/logs-realtime/LogsRealtime";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -40,17 +41,23 @@ function App() {
                         map: <Map />,
                         "": (
                             <SidebarProvider>
-                                <>
+                                <div className="w-full h-screen">
                                     <Toaster />
                                     <div className="flex w-full h-full">
                                         <SideBar />
-                                        <main className="w-full flex flex-col">
+                                        <main className="w-full flex flex-col h-full">
                                             <Nav />
-                                            <div className="overflow-y-auto">
+                                            <div className="overflow-y-auto w-full h-full">
                                                 <Routes>
                                                     <Route
                                                         path="/"
                                                         element={<Home />}
+                                                    />
+                                                    <Route
+                                                        path="/logs-realtime"
+                                                        element={
+                                                            <LogsRealTime />
+                                                        }
                                                     />
                                                     <Route
                                                         path="/map"
@@ -92,7 +99,7 @@ function App() {
                                             </div>
                                         </main>
                                     </div>
-                                </>
+                                </div>
                             </SidebarProvider>
                         ),
                     }[subdomain || ""]

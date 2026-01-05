@@ -41,6 +41,7 @@
     "tailwindcss": "^4.1.16",
     "timeago.js": "^4.0.2",
     "topojson-client": "^3.1.0",
+    "ws": "^8.18.3",
     "zustand": "^5.0.8"
   },
   "devDependencies": {

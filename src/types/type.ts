@@ -135,3 +135,28 @@ export interface CronJob {
     status: "success" | "failed" | "running" | "idle";
     isEnabled: boolean;
 }
+
+export interface LogEvent {
+    scIndex: number;
+    message: {
+        epoch: number;
+        body: object;
+        tick: number;
+        logId: number;
+        logDigest: string;
+        bodySize: number;
+        timestamp: string;
+        txHash: string;
+        logTypename: string;
+        ok: boolean;
+        type: number;
+    };
+    type: string;
+    isCatchUp?: boolean;
+    logType: number;
+}
+
+export interface TickEvent {
+    tick: number;
+    logs: LogEvent[];
+}

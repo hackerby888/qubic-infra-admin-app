@@ -1,4 +1,4 @@
-import { House, LaptopMinimal, Map, UserRoundPlus } from "lucide-react";
+import { House, LaptopMinimal, Loader, Map, UserRoundPlus } from "lucide-react";
 import {
     Sidebar,
     SidebarContent,
@@ -25,6 +25,11 @@ import { useState } from "react";
 
 const availableRoutesPublic = [
     { name: "Home", path: "/", icon: House },
+    {
+        name: "Logs",
+        path: "/logs-realtime",
+        icon: Loader,
+    },
     {
         name: "Map",
         path: "/`map`",
