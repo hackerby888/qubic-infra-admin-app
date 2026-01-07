@@ -408,7 +408,7 @@ export default function DeployManagement() {
                                                     <SelectTrigger className="w-full">
                                                         <SelectValue placeholder="Version" />
                                                     </SelectTrigger>
-                                                    <SelectContent>
+                                                    <SelectContent className="max-h-72 overflow-y-auto">
                                                         <SelectGroup>
                                                             <SelectLabel>
                                                                 Version
@@ -638,7 +638,7 @@ export default function DeployManagement() {
                                                     <SelectTrigger className="w-11/12">
                                                         <SelectValue placeholder="Version" />
                                                     </SelectTrigger>
-                                                    <SelectContent>
+                                                    <SelectContent className="max-h-72 overflow-y-auto">
                                                         <SelectGroup>
                                                             <SelectLabel>
                                                                 Version
