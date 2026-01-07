@@ -63,6 +63,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
+import { MyStorage } from "@/utils/storage";
 function tripText(text: string, maxLength: number) {
     if (text.length <= maxLength) {
         return text;
@@ -350,6 +351,8 @@ export default function ManageServers() {
         window.addEventListener("keydown", handleKey);
         return () => window.removeEventListener("keydown", handleKey);
     }, [selectedStore.selectedServers]);
+
+    let myOperator = MyStorage.getUserInfo()?.username || "unknown";
 
     return (
         <>
@@ -640,6 +643,14 @@ export default function ManageServers() {
                                                         {serverInfo.alias ||
                                                             "Unknown"}
                                                     </div>
+                                                    {serverInfo.operator !==
+                                                        myOperator && (
+                                                        <Badge>
+                                                            {
+                                                                serverInfo.operator
+                                                            }
+                                                        </Badge>
+                                                    )}
                                                     <Pencil size={13} />
                                                 </div>
                                             </TableCell>
