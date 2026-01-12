@@ -429,24 +429,32 @@ export default function ManageServers() {
                                         View the logs of your node here.
                                     </DialogDescription>
                                 </DialogHeader>
-                                <div className="bg-gray-100 w-full rounded-sm px-2 py-2 text-sm text-gray-700 mb-2">
-                                    {log.command}{" "}
-                                    <span className="text-xs text-gray-500">
-                                        {new Date(
-                                            log.timestamp
-                                        ).toLocaleString()}{" "}
-                                        -{" "}
-                                        <b
-                                            className={`${
-                                                log.status === "failed" &&
-                                                "text-red-500"
-                                            }`}
-                                        >
-                                            {log.status} (
-                                            {millisToSeconds(log.duration)}{" "}
-                                            seconds)
-                                        </b>
-                                    </span>
+                                <div className="space-y-1">
+                                    <div className="bg-gray-100 w-full rounded-sm px-2 py-2 text-sm text-gray-700">
+                                        {log.command}{" "}
+                                        <span className="text-xs text-gray-500">
+                                            {new Date(
+                                                log.timestamp
+                                            ).toLocaleString()}{" "}
+                                            -{" "}
+                                            <b
+                                                className={`${
+                                                    log.status === "failed" &&
+                                                    "text-red-500"
+                                                }`}
+                                            >
+                                                {log.status} (
+                                                {millisToSeconds(log.duration)}{" "}
+                                                seconds)
+                                            </b>
+                                        </span>
+                                    </div>
+                                    <div className="bg-gray-100 w-full rounded-sm px-2 py-2 text-sm text-gray-700">
+                                        ({log.servers.length} servers){" "}
+                                        <span className="text-xs text-gray-500">
+                                            {log.servers.join(", ")}
+                                        </span>
+                                    </div>
                                 </div>
                                 <Tabs defaultValue="stdout">
                                     <TabsList>

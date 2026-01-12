@@ -109,6 +109,7 @@ export interface CommandLog {
     status: "pending" | "completed" | "failed";
     uuid: string;
     duration: number;
+    servers: string[];
 }
 
 export interface ShortcutCommand {
