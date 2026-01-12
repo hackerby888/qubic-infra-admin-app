@@ -110,6 +110,7 @@ export interface CommandLog {
     uuid: string;
     duration: number;
     servers: string[];
+    errorServers?: string[];
 }
 
 export interface ShortcutCommand {

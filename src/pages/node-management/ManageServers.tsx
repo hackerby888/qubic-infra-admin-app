@@ -394,109 +394,135 @@ export default function ManageServers() {
             <div className="p-4">
                 <h3 className="text-2xl font-bold mb-4">Manage Servers</h3>{" "}
                 <div className="mb-4 rounded shadow-sm p-4 space-x-2 max-h-1/3 overflow-y-auto">
-                    {commandLogs?.commandLogs.map((log) => (
-                        <Dialog key={log.uuid}>
-                            <DialogTrigger
-                                onClick={() => {
-                                    setCurrentSelectedCommandLogUuid(log.uuid);
-                                }}
-                            >
-                                <div className="flex">
-                                    <Badge
-                                        className={`cursor-pointer ${
-                                            commandLogStatusColorMap[log.status]
-                                        }`}
-                                        variant={"secondary"}
-                                    >
-                                        {tripText(log.command, 20)}
-                                        <span
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleDeleteCommandLog(
-                                                    log.uuid
-                                                );
-                                            }}
+                    {commandLogs?.commandLogs.map((log) => {
+                        let errorServers = log?.errorServers || [];
+                        return (
+                            <Dialog key={log.uuid}>
+                                <DialogTrigger
+                                    onClick={() => {
+                                        setCurrentSelectedCommandLogUuid(
+                                            log.uuid
+                                        );
+                                    }}
+                                >
+                                    <div className="flex">
+                                        <Badge
+                                            className={`cursor-pointer ${
+                                                commandLogStatusColorMap[
+                                                    log.status
+                                                ]
+                                            }`}
+                                            variant={"secondary"}
                                         >
-                                            <X className="" size={15} />
-                                        </span>
-                                    </Badge>
-                                </div>
-                            </DialogTrigger>
-                            <DialogContent className="min-w-3/6">
-                                <DialogHeader>
-                                    <DialogTitle>Command Logs</DialogTitle>
-                                    <DialogDescription>
-                                        View the logs of your node here.
-                                    </DialogDescription>
-                                </DialogHeader>
-                                <div className="space-y-1">
-                                    <div className="bg-gray-100 w-full rounded-sm px-2 py-2 text-sm text-gray-700">
-                                        {log.command}{" "}
-                                        <span className="text-xs text-gray-500">
-                                            {new Date(
-                                                log.timestamp
-                                            ).toLocaleString()}{" "}
-                                            -{" "}
-                                            <b
-                                                className={`${
-                                                    log.status === "failed" &&
-                                                    "text-red-500"
-                                                }`}
+                                            {tripText(log.command, 20)}
+                                            <span
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDeleteCommandLog(
+                                                        log.uuid
+                                                    );
+                                                }}
                                             >
-                                                {log.status} (
-                                                {millisToSeconds(log.duration)}{" "}
-                                                seconds)
-                                            </b>
-                                        </span>
+                                                <X className="" size={15} />
+                                            </span>
+                                        </Badge>
                                     </div>
-                                    <div className="bg-gray-100 w-full rounded-sm px-2 py-2 text-sm text-gray-700">
-                                        ({log.servers.length} servers){" "}
-                                        <span className="text-xs text-gray-500">
-                                            {log.servers.join(", ")}
-                                        </span>
+                                </DialogTrigger>
+                                <DialogContent className="min-w-3/6">
+                                    <DialogHeader>
+                                        <DialogTitle>Command Logs</DialogTitle>
+                                        <DialogDescription>
+                                            View the logs of your node here.
+                                        </DialogDescription>
+                                    </DialogHeader>
+                                    <div className="space-y-1">
+                                        <div className="bg-gray-100 w-full rounded-sm px-2 py-2 text-sm text-gray-700">
+                                            {log.command}{" "}
+                                            <span className="text-xs text-gray-500">
+                                                {new Date(
+                                                    log.timestamp
+                                                ).toLocaleString()}{" "}
+                                                -{" "}
+                                                <b
+                                                    className={`${
+                                                        log.status ===
+                                                            "failed" &&
+                                                        "text-red-500"
+                                                    }`}
+                                                >
+                                                    {log.status} (
+                                                    {millisToSeconds(
+                                                        log.duration
+                                                    )}{" "}
+                                                    seconds)
+                                                </b>
+                                            </span>
+                                        </div>
+                                        <div className="bg-gray-100 w-full rounded-sm px-2 py-2 text-sm text-gray-700">
+                                            ({log.servers.length} servers){" "}
+                                            <span className="text-xs text-gray-500">
+                                                {log.servers
+                                                    .filter(
+                                                        (server) =>
+                                                            !errorServers.includes(
+                                                                server
+                                                            )
+                                                    )
+                                                    .join(", ")}
+                                            </span>
+                                            <span className="ml-1 text-xs text-red-500">
+                                                {log.servers
+                                                    .filter((server) =>
+                                                        errorServers.includes(
+                                                            server
+                                                        )
+                                                    )
+                                                    .join(", ")}
+                                            </span>
+                                        </div>
                                     </div>
-                                </div>
-                                <Tabs defaultValue="stdout">
-                                    <TabsList>
-                                        <TabsTrigger
-                                            className="cursor-pointer"
-                                            value="stdout"
-                                        >
-                                            stdout
-                                        </TabsTrigger>
-                                        <TabsTrigger
-                                            className="cursor-pointer"
-                                            value="stderr"
-                                        >
-                                            stderr
-                                        </TabsTrigger>
-                                    </TabsList>
-                                    <TabsContent value="stdout">
-                                        <LocalTerminal
-                                            text={
-                                                isFetchingCurrentCommandLogs ||
-                                                isLoadingCurrentCommandLogs
-                                                    ? "Loading..."
-                                                    : currentCommandUuidLogs?.stdout ||
-                                                      ""
-                                            }
-                                        />
-                                    </TabsContent>
-                                    <TabsContent value="stderr">
-                                        <LocalTerminal
-                                            text={
-                                                isFetchingCurrentCommandLogs ||
-                                                isLoadingCurrentCommandLogs
-                                                    ? "Loading..."
-                                                    : currentCommandUuidLogs?.stderr ||
-                                                      ""
-                                            }
-                                        />
-                                    </TabsContent>
-                                </Tabs>
-                            </DialogContent>
-                        </Dialog>
-                    ))}
+                                    <Tabs defaultValue="stdout">
+                                        <TabsList>
+                                            <TabsTrigger
+                                                className="cursor-pointer"
+                                                value="stdout"
+                                            >
+                                                stdout
+                                            </TabsTrigger>
+                                            <TabsTrigger
+                                                className="cursor-pointer"
+                                                value="stderr"
+                                            >
+                                                stderr
+                                            </TabsTrigger>
+                                        </TabsList>
+                                        <TabsContent value="stdout">
+                                            <LocalTerminal
+                                                text={
+                                                    isFetchingCurrentCommandLogs ||
+                                                    isLoadingCurrentCommandLogs
+                                                        ? "Loading..."
+                                                        : currentCommandUuidLogs?.stdout ||
+                                                          ""
+                                                }
+                                            />
+                                        </TabsContent>
+                                        <TabsContent value="stderr">
+                                            <LocalTerminal
+                                                text={
+                                                    isFetchingCurrentCommandLogs ||
+                                                    isLoadingCurrentCommandLogs
+                                                        ? "Loading..."
+                                                        : currentCommandUuidLogs?.stderr ||
+                                                          ""
+                                                }
+                                            />
+                                        </TabsContent>
+                                    </Tabs>
+                                </DialogContent>
+                            </Dialog>
+                        );
+                    })}
                     {isLoadingCommandsLogs && (
                         <div>
                             <Skeleton className="h-4 w-40 mr-2 inline-block" />
