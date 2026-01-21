@@ -15,7 +15,14 @@ import {
     FieldLabel,
 } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
-import { Check, HardDrive, KeySquare, Plus, User } from "lucide-react";
+import {
+    Check,
+    EthernetPort,
+    HardDrive,
+    KeySquare,
+    Plus,
+    User,
+} from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import useGeneralPost from "@/networking/api";
@@ -25,6 +32,8 @@ import {
     InputGroupAddon,
     InputGroupInput,
 } from "@/components/ui/input-group";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { InfoIcon } from "lucide-react";
 
 function isValidIPv4(ip: string) {
     return /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$/.test(
@@ -40,6 +49,7 @@ export default function NewServer() {
     let [authType, setAuthType] = useState<"password" | "sshKey" | "tracking">(
         "password"
     );
+    let [sshPort, setSshPort] = useState("");
     let [services, setServices] = useState<{
         liteNode: boolean;
         bobNode: boolean;
@@ -95,6 +105,7 @@ export default function NewServer() {
                 ip: ip.trim(),
                 username: username.trim(),
                 password: expectedPassword.trim(),
+                sshPort: sshPort.trim() ? parseInt(sshPort.trim()) : 22,
                 services: {
                     liteNode: services.liteNode,
                     bobNode: services.bobNode,
@@ -150,7 +161,7 @@ export default function NewServer() {
                     <Plus /> New Server
                 </Button>
             </DialogTrigger>
-            <DialogContent className="min-w-3/6">
+            <DialogContent className="min-w-4/6">
                 <DialogHeader>
                     <DialogTitle>Add New Server</DialogTitle>
                     <DialogDescription>
@@ -161,28 +172,69 @@ export default function NewServer() {
                     <div className="box">
                         <FieldGroup>
                             <Field>
+                                <Alert>
+                                    <InfoIcon />
+                                    <AlertTitle>
+                                        Security Recommendation
+                                    </AlertTitle>
+                                    <AlertDescription>
+                                        <div>
+                                            {" "}
+                                            For enhanced security, it is
+                                            recommended to use this{" "}
+                                            <a
+                                                className="text-blue-500"
+                                                href="https://github.com/hackerby888/qubic-core-lite/tree/main/docker/ubuntu-env"
+                                            >
+                                                ubuntu docker image
+                                            </a>{" "}
+                                            to provide qubic.global isolated
+                                            environment.
+                                        </div>
+                                    </AlertDescription>
+                                </Alert>
+                            </Field>
+                            <Field>
                                 <FieldLabel>Server Credentials</FieldLabel>
                                 <FieldDescription>
                                     Provide your server SSH credentials to
                                     connect to your server.
                                 </FieldDescription>
                                 <div className="flex space-x-3">
-                                    {" "}
-                                    <InputGroup>
-                                        <InputGroupInput
-                                            onChange={(e) =>
-                                                handleInputChange(
-                                                    e,
-                                                    setServerIps
-                                                )
-                                            }
-                                            value={serverIps}
-                                            placeholder="server ips (eg. 127.0.0.1,192.168.1.1)"
-                                        />
-                                        <InputGroupAddon>
-                                            <HardDrive />
-                                        </InputGroupAddon>
-                                    </InputGroup>
+                                    <div className="w-full flex">
+                                        <InputGroup className="rounded-tr-none rounded-br-none">
+                                            <InputGroupInput
+                                                onChange={(e) =>
+                                                    handleInputChange(
+                                                        e,
+                                                        setServerIps
+                                                    )
+                                                }
+                                                value={serverIps}
+                                                placeholder="server ips (eg. 127.0.0.1,192.168.1.1)"
+                                            />
+                                            <InputGroupAddon>
+                                                <HardDrive />
+                                            </InputGroupAddon>
+                                        </InputGroup>
+                                        <InputGroup className="w-1/2 rounded-tl-none rounded-bl-none">
+                                            <InputGroupInput
+                                                type="ssh port"
+                                                className="w-full"
+                                                placeholder="ssh port (default 22)"
+                                                onChange={(e) =>
+                                                    handleInputChange(
+                                                        e,
+                                                        setSshPort
+                                                    )
+                                                }
+                                                value={sshPort}
+                                            />
+                                            <InputGroupAddon>
+                                                <EthernetPort />
+                                            </InputGroupAddon>
+                                        </InputGroup>
+                                    </div>
                                     <InputGroup
                                         className={`w-1/2 ${
                                             authType === "tracking" &&

@@ -720,7 +720,8 @@ export default function ManageServers() {
                                                                 serverInfo.deployStatus;
                                                         let status =
                                                             haveDeployStatus
-                                                                ? serverInfo.deployStatus![
+                                                                ? serverInfo
+                                                                      .deployStatus![
                                                                       service as keyof typeof serverInfo.deployStatus
                                                                   ]
                                                                 : "nothing";
