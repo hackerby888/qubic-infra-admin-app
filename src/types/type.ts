@@ -18,6 +18,7 @@ export interface LiteNodeTickInfo {
 
 export interface BobNodeTickInfo {
     server: string;
+    bobVersion: string;
     alias?: string;
     ipInfo: IpInfo;
     operator: string;

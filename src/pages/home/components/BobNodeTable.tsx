@@ -129,6 +129,14 @@ export default function BobNodeTable({
                                 >
                                     {stat.ipInfo?.country}
                                 </Badge>
+                                <Badge
+                                    className="ml-1"
+                                    variant={
+                                        nodeAlive ? "outline" : "secondary"
+                                    }
+                                >
+                                    {`ver: ${stat.bobVersion}`}
+                                </Badge>
                                 {!nodeAlive && (
                                     <Badge className="ml-1" variant="secondary">
                                         Last tick changed:{" "}
