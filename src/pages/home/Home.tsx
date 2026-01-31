@@ -45,7 +45,7 @@ export default function Home() {
         .sort((a, b) => b.tick - a.tick);
     let sortedBobNodeStatuses = statuses.bobNodes
         .slice()
-        .sort((a, b) => b.currentProcessingEpoch - a.currentProcessingEpoch);
+        .sort((a, b) => b.currentFetchingTick - a.currentFetchingTick);
 
     type NodeType = keyof typeof totalNodes;
     let titleNameFromNodeType = {

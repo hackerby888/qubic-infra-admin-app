@@ -17,7 +17,7 @@ export default function Map() {
         [country: string]: number;
     }>({});
 
-    let { data: statuses } = useGeneralGet<{
+    let { data: statuses, isFetched: statusesFetched } = useGeneralGet<{
         liteNodes: LiteNodeTickInfo[];
         bobNodes: BobNodeTickInfo[];
     }>({
@@ -25,12 +25,19 @@ export default function Map() {
         path: "/servers-status",
     });
 
-    let { mutate: updateServersForMap, data: mapData } = useGeneralPost<{
+    let {
+        mutate: updateServersForMap,
+        data: mapData,
+        isSuccess: mapDataFetched,
+    } = useGeneralPost<{
         servers: {
             server: string;
             lat: number;
             lon: number;
             isBM: boolean;
+            isCheckinNode: boolean;
+            type: string | undefined;
+            lastCheckinAt: number | undefined;
         }[];
     }>({
         queryKey: ["servers-for-map"],
@@ -45,16 +52,30 @@ export default function Map() {
                     let nodeStatus = statuses?.liteNodes.find(
                         (node) => node.server === s.server
                     );
-                    isActive = nodeStatus
-                        ? isNodeActive(nodeStatus.lastTickChanged)
-                        : false;
+                    if (s.isCheckinNode) {
+                        // if lastCheckinAt within 1 hour, consider active
+                        isActive = s.lastCheckinAt
+                            ? Date.now() - s.lastCheckinAt < 60 * 60 * 1000
+                            : false;
+                    } else {
+                        isActive = nodeStatus
+                            ? isNodeActive(nodeStatus.lastTickChanged)
+                            : false;
+                    }
                 } else if (currentService === "bobNode") {
                     let nodeStatus = statuses?.bobNodes.find(
                         (node) => node.server === s.server
                     );
-                    isActive = nodeStatus
-                        ? isNodeActive(nodeStatus.lastTickChanged)
-                        : false;
+                    if (s.isCheckinNode) {
+                        // if lastCheckinAt within 1 hour, consider active
+                        isActive = s.lastCheckinAt
+                            ? Date.now() - s.lastCheckinAt < 60 * 60 * 1000
+                            : false;
+                    } else {
+                        isActive = nodeStatus
+                            ? isNodeActive(nodeStatus.lastTickChanged)
+                            : false;
+                    }
                 }
                 return {
                     ...s,
@@ -62,6 +83,10 @@ export default function Map() {
                 };
             }) || []
         ).filter((s) => {
+            // always include checkin nodes
+            if (s.isCheckinNode) {
+                return currentService.startsWith(s.type as string);
+            }
             // filter based on service
             if (currentService === "liteNode") {
                 if (s.isBM) {
@@ -111,8 +136,15 @@ export default function Map() {
         updateServersForMap();
     }, []);
 
+    let loading = !mapDataFetched || !statusesFetched;
+
     return (
-        <div className="w-full h-full relative overflow-hidden">
+        <div className={`w-full h-full relative overflow-hidden`}>
+            {loading && (
+                <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 text-white bg-black bg-opacity-50 px-4 py-2 rounded">
+                    Loading map data...
+                </div>
+            )}
             <div className="absolute top-4 left-4 text-white font-bold z-10 flex justify-center w-full space-x-4">
                 <Button
                     onClick={() => setCurrentService("liteNode")}

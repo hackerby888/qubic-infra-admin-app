@@ -11,6 +11,9 @@ function GlobalDataPulseMap({
         lon: number;
         isActive: boolean;
         isBM: boolean;
+        isCheckinNode: boolean;
+        type: string | undefined;
+        lastCheckinAt: number | undefined;
     }[];
 }) {
     console.log("Rendering GlobalDataPulseMap with nodes:", nodes);
@@ -117,7 +120,7 @@ function GlobalDataPulseMap({
                         // @ts-ignore
                         const lonLat = projection.invert([jx, jy]) as [
                             number,
-                            number
+                            number,
                         ];
 
                         if (lonLat && d3.geoContains(country, lonLat)) {
@@ -130,11 +133,16 @@ function GlobalDataPulseMap({
                 xyMap[n.server] = [x, y];
 
                 // check if the point is belong to a country
-                let targetColor = n.isBM
-                    ? "#00ff65"
-                    : n.isActive
-                    ? "#00f2ff"
-                    : "#fb2b2b";
+                let targetColor;
+                if (n.isCheckinNode) {
+                    targetColor = n.isActive ? "#c92bfb" : "#fb2b2b";
+                } else {
+                    targetColor = n.isBM
+                        ? "#00ff65"
+                        : n.isActive
+                          ? "#00f2ff"
+                          : "#fb2b2b";
+                }
                 colorMap[n.server] = targetColor;
 
                 g.append("circle")
