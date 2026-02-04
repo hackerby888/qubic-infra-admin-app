@@ -24,6 +24,7 @@ import {
     Pencil,
     RefreshCcw,
     Trash,
+    Users,
     X,
 } from "lucide-react";
 import {
@@ -61,15 +62,397 @@ import { millisToSeconds } from "@/utils/common";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { MyStorage } from "@/utils/storage";
+
 function tripText(text: string, maxLength: number) {
     if (text.length <= maxLength) {
         return text;
     }
     return text.slice(0, maxLength) + "...";
 }
+
+let bgColorMap: Record<NodeStatus, string> = {
+    active: "bg-blue-500",
+    error: "bg-red-500",
+    setting_up: "bg-yellow-500",
+    stopped: "bg-gray-500",
+    restarting: "bg-purple-500",
+};
+
+const ServerTableRow = memo(
+    ({
+        serverInfo,
+        handleDeleteServers,
+    }: {
+        serverInfo: Server;
+        handleDeleteServers: (servers: string[]) => void;
+    }) => {
+        const queryClient = useQueryClient();
+        const selectedStore = useSelectedServersStore() as SelectedServersState;
+
+        type DialogType = "alias" | "ownership";
+
+        let [dialogsOpen, setDialogsOpen] = useState<{
+            [key in DialogType]: boolean;
+        }>({
+            alias: false,
+            ownership: false,
+        });
+
+        let [currentServerOwner, setCurrentServerOwner] = useState<string>(
+            serverInfo.operator
+        );
+        let [currentAlias, setCurrentAlias] = useState<string>(
+            serverInfo.alias || ""
+        );
+        let {
+            mutate: transferOwnership,
+            isPending: isTransferOwnershipPending,
+        } = useGeneralPost({
+            path: "/transfer-server-ownership",
+            queryKey: ["transfer-server-ownership"],
+        });
+        let { mutate: setServerAlias, isPending: isSetServerAliasPending } =
+            useGeneralPost({
+                queryKey: ["set-server-alias"],
+                path: "/set-server-alias",
+            });
+
+        const handleCheckboxChange = (server: string) => {
+            selectedStore.setSelectedServer(server);
+        };
+
+        const submitOwnershipChange = () => {
+            // Submit the ownership change
+            transferOwnership(
+                {
+                    server: serverInfo.server,
+                    newOwner: currentServerOwner,
+                } as unknown as void,
+                {
+                    onSuccess: () => {
+                        toast.success("Ownership transferred successfully");
+                        // close the dialog
+                        setDialogsOpen((prev) => ({
+                            ...prev,
+                            ["ownership"]: false,
+                        }));
+                    },
+                    onError: (error) => {
+                        toast.error(
+                            "Failed to transfer ownership: " + error.message
+                        );
+                    },
+                }
+            );
+        };
+
+        const handleSaveAlias = () => {
+            setServerAlias(
+                {
+                    server: serverInfo.server,
+                    alias: currentAlias,
+                } as unknown as void,
+                {
+                    onSuccess: () => {
+                        toast.success("Alias updated successfully");
+                        queryClient.setQueryData<{ servers: Server[] }>(
+                            ["my-servers"],
+                            (oldData) => {
+                                // If there's no data in the cache, return the default structure
+                                if (!oldData) return { servers: [] };
+
+                                return {
+                                    ...oldData,
+                                    servers: oldData.servers.map(
+                                        (_serverInfo) =>
+                                            _serverInfo.server ===
+                                            serverInfo.server
+                                                ? {
+                                                      ..._serverInfo,
+                                                      alias: currentAlias,
+                                                  }
+                                                : _serverInfo
+                                    ),
+                                };
+                            }
+                        );
+                        // close the dialog
+                        setDialogsOpen((prev) => ({
+                            ...prev,
+                            ["alias"]: false,
+                        }));
+                    },
+                    onError: (error) => {
+                        toast.error("Failed to update alias: " + error.message);
+                    },
+                }
+            );
+        };
+
+        // Determine if the server is tracking only (no OS and active status, because we skip the setup)
+        let isTrackingOnly = !serverInfo.os && serverInfo.status === "active";
+        let myOperator = MyStorage.getUserInfo()?.username || "unknown";
+
+        return (
+            <TableRow key={serverInfo.server}>
+                <TableCell>
+                    <Checkbox
+                        onCheckedChange={() =>
+                            handleCheckboxChange(serverInfo.server)
+                        }
+                        checked={selectedStore.selectedServers.includes(
+                            serverInfo.server
+                        )}
+                    />
+                </TableCell>
+                <TableCell>
+                    <Dialog
+                        open={dialogsOpen["alias"]}
+                        onOpenChange={(open) =>
+                            setDialogsOpen((prev) => ({
+                                ...prev,
+                                ["alias"]: open,
+                            }))
+                        }
+                    >
+                        <DialogTrigger className="w-full">
+                            <div className="cursor-pointer w-full flex items-center space-x-2">
+                                <div className="flex items-center space-x-2 w-full">
+                                    {serverInfo.alias || "Unknown"}
+                                </div>
+                                {serverInfo.operator !== myOperator && (
+                                    <Badge>{serverInfo.operator}</Badge>
+                                )}
+                                <Pencil size={13} />
+                            </div>
+                        </DialogTrigger>
+                        <DialogContent className="min-w-3/6">
+                            <DialogHeader>
+                                <DialogTitle>Change your alias</DialogTitle>
+                                <DialogDescription>
+                                    Change the alias of your server (
+                                    {serverInfo.server}) here.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <div className="">
+                                <Input
+                                    value={currentAlias}
+                                    onChange={(e) =>
+                                        setCurrentAlias(e.target.value)
+                                    }
+                                    placeholder="Enter new alias"
+                                />
+                            </div>
+                            <div className="flex justify-end">
+                                {!isSetServerAliasPending ? (
+                                    <Button
+                                        onClick={handleSaveAlias}
+                                        className="mt-2 cursor-pointer"
+                                    >
+                                        Save Alias
+                                    </Button>
+                                ) : (
+                                    <Button
+                                        className="mt-2 cursor-not-allowed"
+                                        disabled
+                                    >
+                                        Saving...
+                                    </Button>
+                                )}
+                            </div>
+                        </DialogContent>
+                    </Dialog>
+                </TableCell>
+                <TableCell>
+                    {serverInfo.server}{" "}
+                    <Badge className="ml-1" variant="outline">
+                        {serverInfo.ipInfo?.country}
+                    </Badge>
+                    {isTrackingOnly && (
+                        <Badge className="ml-1 bg-indigo-500">
+                            Tracking Only
+                        </Badge>
+                    )}
+                </TableCell>
+                <TableCell>{serverInfo.os || "N/A"}</TableCell>
+                <TableCell>{serverInfo.cpu || "N/A"}</TableCell>
+                <TableCell>{serverInfo.ram || "N/A"}</TableCell>
+                <TableCell className="space-x-1">
+                    {serverInfo.services.map((service) => {
+                        let haveDeployStatus =
+                            serverInfo.deployStatus &&
+                            service in serverInfo.deployStatus;
+                        let status = haveDeployStatus
+                            ? serverInfo.deployStatus![
+                                  service as keyof typeof serverInfo.deployStatus
+                              ]
+                            : "nothing";
+                        return (
+                            <Tooltip>
+                                <TooltipTrigger>
+                                    <Badge
+                                        key={service}
+                                        variant={"outline"}
+                                        className={`${
+                                            haveDeployStatus &&
+                                            bgColorMap[
+                                                status as keyof typeof bgColorMap
+                                            ]
+                                        } ${
+                                            !haveDeployStatus
+                                                ? "opacity-50"
+                                                : "text-white"
+                                        }`}
+                                    >
+                                        {service}
+                                    </Badge>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    {haveDeployStatus
+                                        ? `Status: ${status}`
+                                        : `No status available`}
+                                </TooltipContent>
+                            </Tooltip>
+                        );
+                    })}
+                </TableCell>
+                <TableCell>
+                    <Tooltip>
+                        <TooltipTrigger>
+                            <Badge
+                                className={bgColorMap[serverInfo.status]}
+                                variant={"default"}
+                            >
+                                {serverInfo.status}
+                            </Badge>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            {`Overall node status: ${serverInfo.status}`}
+                        </TooltipContent>
+                    </Tooltip>
+                </TableCell>
+                <TableCell>
+                    <DropdownMenu modal={false}>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                className="cursor-pointer"
+                                variant="outline"
+                                aria-label="Open menu"
+                                size="icon-sm"
+                            >
+                                <MoreHorizontalIcon />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-40" align="end">
+                            <div className="text-[13px]">
+                                <ViewLogs server={serverInfo.server} />
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <div className="text-red-500 pl-2 flex items-center py-1 cursor-pointer hover:bg-gray-100">
+                                            <Trash size={20} />
+                                            <span className="ml-1">Delete</span>
+                                        </div>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>
+                                                Are you absolutely sure?
+                                            </AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                This action cannot be undone.
+                                                This will permanently delete
+                                                your server.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>
+                                                Cancel
+                                            </AlertDialogCancel>
+                                            <AlertDialogAction
+                                                onClick={() =>
+                                                    handleDeleteServers([
+                                                        serverInfo.server,
+                                                    ])
+                                                }
+                                                className="bg-red-500 hover:bg-red-600 cursor-pointer"
+                                            >
+                                                Delete
+                                            </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                                <Dialog
+                                    open={dialogsOpen["ownership"]}
+                                    onOpenChange={(open) =>
+                                        setDialogsOpen((prev) => ({
+                                            ...prev,
+                                            ["ownership"]: open,
+                                        }))
+                                    }
+                                >
+                                    <DialogTrigger>
+                                        <div>
+                                            <div
+                                                onClick={() => {}}
+                                                className="pl-2 flex items-center py-1 cursor-pointer hover:bg-gray-100"
+                                            >
+                                                <Users size={20} />
+                                                <span className="ml-1">
+                                                    Transfer Ownership
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </DialogTrigger>
+                                    <DialogContent className="min-w-3/6">
+                                        <DialogHeader>
+                                            <DialogTitle>
+                                                Transfer Server Ownership
+                                            </DialogTitle>
+                                            <DialogDescription>
+                                                Transfer the ownership of this
+                                                server to another operator.
+                                            </DialogDescription>
+                                        </DialogHeader>
+                                        <div>
+                                            <Input
+                                                value={currentServerOwner}
+                                                onChange={(e) =>
+                                                    setCurrentServerOwner(
+                                                        e.target.value
+                                                    )
+                                                }
+                                            />
+                                            {!isTransferOwnershipPending ? (
+                                                <Button
+                                                    onClick={
+                                                        submitOwnershipChange
+                                                    }
+                                                    className="mt-2 float-right"
+                                                >
+                                                    Transfer
+                                                </Button>
+                                            ) : (
+                                                <Button
+                                                    className="mt-2 float-right cursor-not-allowed"
+                                                    disabled
+                                                >
+                                                    Transferring...
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </DialogContent>
+                                </Dialog>
+                            </div>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </TableCell>
+            </TableRow>
+        );
+    }
+);
 
 export default function ManageServers() {
     const queryClient = useQueryClient();
@@ -78,14 +461,6 @@ export default function ManageServers() {
 
     let [currentSelectedCommandLogUuid, setCurrentSelectedCommandLogUuid] =
         useState<string>("");
-    let [isAliasDialogOpen, setIsAliasDialogOpen] = useState(false);
-    let [aliasMutationObject, setAliasMutationObject] = useState<{
-        server: string;
-        alias: string;
-    }>({
-        server: "",
-        alias: "",
-    });
     let [currentSortedColumn, setCurrentSortedColumn] = useState<{
         column: string;
         direction: "asc" | "desc";
@@ -102,11 +477,6 @@ export default function ManageServers() {
         queryKey: ["delete-all-command-logs"],
         path: "/delete-all-command-logs",
     });
-    let { mutate: setServerAlias, isPending: isSetServerAliasPending } =
-        useGeneralPost({
-            queryKey: ["set-server-alias"],
-            path: "/set-server-alias",
-        });
 
     let {
         data,
@@ -129,11 +499,6 @@ export default function ManageServers() {
         path: "/command-logs",
     });
 
-    let { mutate: deleteServer } = useGeneralPost({
-        queryKey: ["delete-server"],
-        path: "/delete-server",
-    });
-
     let {
         data: currentCommandUuidLogs,
         isLoading: isLoadingCurrentCommandLogs,
@@ -149,13 +514,36 @@ export default function ManageServers() {
         },
     });
 
-    let bgColorMap: Record<NodeStatus, string> = {
-        active: "bg-blue-500",
-        error: "bg-red-500",
-        setting_up: "bg-yellow-500",
-        stopped: "bg-gray-500",
-        restarting: "bg-purple-500",
+    let { mutate: deleteServer } = useGeneralPost({
+        queryKey: ["delete-server"],
+        path: "/delete-server",
+    });
+
+    const locallyRemoveServer = (server: string) => {
+        queryClient.setQueryData<{ servers: Server[] }>(
+            ["my-servers"],
+            (old) => {
+                return {
+                    servers:
+                        old?.servers.filter((s) => s.server !== server) || [],
+                };
+            }
+        );
     };
+
+    const handleDeleteServers = useCallback((servers: string[]) => {
+        deleteServer({ servers: servers } as unknown as void, {
+            onSuccess: () => {
+                toast.success("Server deleted successfully");
+                for (let server of servers) {
+                    locallyRemoveServer(server);
+                }
+            },
+            onError: (error) => {
+                toast.error("Failed to delete server: " + error.message);
+            },
+        });
+    }, []);
 
     const handleDeleteAllCommandLogs = () => {
         deleteAllCommandLogs({} as unknown as void, {
@@ -208,39 +596,6 @@ export default function ManageServers() {
         }
     };
 
-    const handleDeleteServers = (servers: string[]) => {
-        deleteServer({ servers: servers } as unknown as void, {
-            onSuccess: () => {
-                toast.success("Server deleted successfully");
-                for (let server of servers) {
-                    locallyRemoveServer(server);
-                }
-            },
-            onError: (error) => {
-                toast.error("Failed to delete server: " + error.message);
-            },
-        });
-    };
-
-    const locallyRemoveServer = (server: string) => {
-        if (data) {
-            queryClient.setQueryData<{ servers: Server[] }>(
-                ["my-servers"],
-                (old) => {
-                    return {
-                        servers:
-                            old?.servers.filter((s) => s.server !== server) ||
-                            [],
-                    };
-                }
-            );
-        }
-    };
-
-    const handleCheckboxChange = (server: string) => {
-        selectedStore.setSelectedServer(server);
-    };
-
     const handleGlobalCheckboxChange = (checked: boolean) => {
         if (checked) {
             let allServers = data?.servers.map((s) => s.server) || [];
@@ -259,54 +614,6 @@ export default function ManageServers() {
                 .catch((error) => {
                     toast.error("Failed to refresh servers: " + error.message);
                 });
-    };
-
-    const handleChangeAlias = (alias: string) => {
-        setAliasMutationObject({ ...aliasMutationObject, alias: alias });
-    };
-
-    const handleOpenDialogAlias = (server: string, currentAlias?: string) => {
-        setAliasMutationObject({
-            server: server,
-            alias: currentAlias || "",
-        });
-        setIsAliasDialogOpen(true);
-    };
-
-    const handleSaveAlias = () => {
-        setServerAlias(
-            {
-                server: aliasMutationObject.server,
-                alias: aliasMutationObject.alias,
-            } as unknown as void,
-            {
-                onSuccess: () => {
-                    toast.success("Alias updated successfully");
-                    queryClient.setQueryData<{ servers: Server[] }>(
-                        ["my-servers"],
-                        {
-                            servers:
-                                data?.servers.map((serverInfo) => {
-                                    if (
-                                        serverInfo.server ===
-                                        aliasMutationObject.server
-                                    ) {
-                                        return {
-                                            ...serverInfo,
-                                            alias: aliasMutationObject.alias,
-                                        };
-                                    }
-                                    return serverInfo;
-                                }) || [],
-                        }
-                    );
-                    setIsAliasDialogOpen(false);
-                },
-                onError: (error) => {
-                    toast.error("Failed to update alias: " + error.message);
-                },
-            }
-        );
     };
 
     let commandLogStatusColorMap = {
@@ -352,45 +659,8 @@ export default function ManageServers() {
         return () => window.removeEventListener("keydown", handleKey);
     }, [selectedStore.selectedServers]);
 
-    let myOperator = MyStorage.getUserInfo()?.username || "unknown";
-
     return (
         <>
-            <Dialog
-                open={isAliasDialogOpen}
-                onOpenChange={setIsAliasDialogOpen}
-            >
-                <DialogContent className="min-w-3/6">
-                    <DialogHeader>
-                        <DialogTitle>Change your alias</DialogTitle>
-                        <DialogDescription>
-                            Change the alias of your server (
-                            {aliasMutationObject.server}) here.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="">
-                        <Input
-                            value={aliasMutationObject.alias}
-                            onChange={(e) => handleChangeAlias(e.target.value)}
-                            placeholder="Enter new alias"
-                        />
-                    </div>
-                    <div className="flex justify-end">
-                        {!isSetServerAliasPending ? (
-                            <Button
-                                onClick={handleSaveAlias}
-                                className="cursor-pointer"
-                            >
-                                Save
-                            </Button>
-                        ) : (
-                            <Button className="cursor-not-allowed" disabled>
-                                Saving...
-                            </Button>
-                        )}
-                    </div>
-                </DialogContent>
-            </Dialog>
             <div className="p-4">
                 <h3 className="text-2xl font-bold mb-4">Manage Servers</h3>{" "}
                 <div className="mb-4 rounded shadow-sm p-4 space-x-2 max-h-1/3 overflow-y-auto">
@@ -645,227 +915,14 @@ export default function ManageServers() {
                                     </TableRow>
                                 ) : null}
                                 {data?.servers.map((serverInfo) => {
-                                    // Determine if the server is tracking only (no OS and active status, because we skip the setup)
-                                    let isTrackingOnly =
-                                        !serverInfo.os &&
-                                        serverInfo.status === "active";
                                     return (
-                                        <TableRow key={serverInfo.server}>
-                                            <TableCell>
-                                                <Checkbox
-                                                    onCheckedChange={() =>
-                                                        handleCheckboxChange(
-                                                            serverInfo.server
-                                                        )
-                                                    }
-                                                    checked={selectedStore.selectedServers.includes(
-                                                        serverInfo.server
-                                                    )}
-                                                />
-                                            </TableCell>
-                                            <TableCell>
-                                                <div
-                                                    onClick={() =>
-                                                        handleOpenDialogAlias(
-                                                            serverInfo.server,
-                                                            serverInfo.alias
-                                                        )
-                                                    }
-                                                    className="cursor-pointer w-full flex items-center space-x-2"
-                                                >
-                                                    <div className="flex items-center space-x-2 w-full">
-                                                        {serverInfo.alias ||
-                                                            "Unknown"}
-                                                    </div>
-                                                    {serverInfo.operator !==
-                                                        myOperator && (
-                                                        <Badge>
-                                                            {
-                                                                serverInfo.operator
-                                                            }
-                                                        </Badge>
-                                                    )}
-                                                    <Pencil size={13} />
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                {serverInfo.server}{" "}
-                                                <Badge
-                                                    className="ml-1"
-                                                    variant="outline"
-                                                >
-                                                    {serverInfo.ipInfo?.country}
-                                                </Badge>
-                                                {isTrackingOnly && (
-                                                    <Badge className="ml-1 bg-indigo-500">
-                                                        Tracking Only
-                                                    </Badge>
-                                                )}
-                                            </TableCell>
-                                            <TableCell>
-                                                {serverInfo.os || "N/A"}
-                                            </TableCell>
-                                            <TableCell>
-                                                {serverInfo.cpu || "N/A"}
-                                            </TableCell>
-                                            <TableCell>
-                                                {serverInfo.ram || "N/A"}
-                                            </TableCell>
-                                            <TableCell className="space-x-1">
-                                                {serverInfo.services.map(
-                                                    (service) => {
-                                                        let haveDeployStatus =
-                                                            serverInfo.deployStatus &&
-                                                            service in
-                                                                serverInfo.deployStatus;
-                                                        let status =
-                                                            haveDeployStatus
-                                                                ? serverInfo
-                                                                      .deployStatus![
-                                                                      service as keyof typeof serverInfo.deployStatus
-                                                                  ]
-                                                                : "nothing";
-                                                        return (
-                                                            <Tooltip>
-                                                                <TooltipTrigger>
-                                                                    <Badge
-                                                                        key={
-                                                                            service
-                                                                        }
-                                                                        variant={
-                                                                            "outline"
-                                                                        }
-                                                                        className={`${
-                                                                            haveDeployStatus &&
-                                                                            bgColorMap[
-                                                                                status as keyof typeof bgColorMap
-                                                                            ]
-                                                                        } ${
-                                                                            !haveDeployStatus
-                                                                                ? "opacity-50"
-                                                                                : "text-white"
-                                                                        }`}
-                                                                    >
-                                                                        {
-                                                                            service
-                                                                        }
-                                                                    </Badge>
-                                                                </TooltipTrigger>
-                                                                <TooltipContent>
-                                                                    {haveDeployStatus
-                                                                        ? `Status: ${status}`
-                                                                        : `No status available`}
-                                                                </TooltipContent>
-                                                            </Tooltip>
-                                                        );
-                                                    }
-                                                )}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Tooltip>
-                                                    <TooltipTrigger>
-                                                        <Badge
-                                                            className={
-                                                                bgColorMap[
-                                                                    serverInfo
-                                                                        .status
-                                                                ]
-                                                            }
-                                                            variant={"default"}
-                                                        >
-                                                            {serverInfo.status}
-                                                        </Badge>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent>
-                                                        {`Overall node status: ${serverInfo.status}`}
-                                                    </TooltipContent>
-                                                </Tooltip>
-                                            </TableCell>
-                                            <TableCell>
-                                                <DropdownMenu modal={false}>
-                                                    <DropdownMenuTrigger
-                                                        asChild
-                                                    >
-                                                        <Button
-                                                            className="cursor-pointer"
-                                                            variant="outline"
-                                                            aria-label="Open menu"
-                                                            size="icon-sm"
-                                                        >
-                                                            <MoreHorizontalIcon />
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent
-                                                        className="w-40"
-                                                        align="end"
-                                                    >
-                                                        <div className="text-[13px]">
-                                                            <ViewLogs
-                                                                server={
-                                                                    serverInfo.server
-                                                                }
-                                                            />
-                                                            <AlertDialog>
-                                                                <AlertDialogTrigger
-                                                                    asChild
-                                                                >
-                                                                    <div className="text-red-500 pl-2 flex items-center py-1 cursor-pointer hover:bg-gray-100">
-                                                                        <Trash
-                                                                            size={
-                                                                                20
-                                                                            }
-                                                                        />
-                                                                        <span className="ml-1">
-                                                                            Delete
-                                                                        </span>
-                                                                    </div>
-                                                                </AlertDialogTrigger>
-                                                                <AlertDialogContent>
-                                                                    <AlertDialogHeader>
-                                                                        <AlertDialogTitle>
-                                                                            Are
-                                                                            you
-                                                                            absolutely
-                                                                            sure?
-                                                                        </AlertDialogTitle>
-                                                                        <AlertDialogDescription>
-                                                                            This
-                                                                            action
-                                                                            cannot
-                                                                            be
-                                                                            undone.
-                                                                            This
-                                                                            will
-                                                                            permanently
-                                                                            delete
-                                                                            your
-                                                                            server.
-                                                                        </AlertDialogDescription>
-                                                                    </AlertDialogHeader>
-                                                                    <AlertDialogFooter>
-                                                                        <AlertDialogCancel>
-                                                                            Cancel
-                                                                        </AlertDialogCancel>
-                                                                        <AlertDialogAction
-                                                                            onClick={() =>
-                                                                                handleDeleteServers(
-                                                                                    [
-                                                                                        serverInfo.server,
-                                                                                    ]
-                                                                                )
-                                                                            }
-                                                                            className="bg-red-500 hover:bg-red-600 cursor-pointer"
-                                                                        >
-                                                                            Delete
-                                                                        </AlertDialogAction>
-                                                                    </AlertDialogFooter>
-                                                                </AlertDialogContent>
-                                                            </AlertDialog>
-                                                        </div>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </TableCell>
-                                        </TableRow>
+                                        <ServerTableRow
+                                            key={serverInfo.server}
+                                            serverInfo={serverInfo}
+                                            handleDeleteServers={
+                                                handleDeleteServers
+                                            }
+                                        />
                                     );
                                 })}
                             </TableBody>
