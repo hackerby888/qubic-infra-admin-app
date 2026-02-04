@@ -885,7 +885,6 @@ export default function ManageServers() {
                                         </div>
                                     </TableHead>
                                     <TableHead>
-                                        {" "}
                                         <div
                                             onClick={() =>
                                                 handleChangeSorting("server")
@@ -898,9 +897,41 @@ export default function ManageServers() {
                                             <ArrowDownZA size={17} />
                                         </div>
                                     </TableHead>
-                                    <TableHead>OS</TableHead>
-                                    <TableHead>CPU</TableHead>
-                                    <TableHead>RAM</TableHead>
+                                    <TableHead>
+                                        {" "}
+                                        <div
+                                            onClick={() =>
+                                                handleChangeSorting("os")
+                                            }
+                                            className="cursor-pointer w-full flex items-center space-x-2"
+                                        >
+                                            <span className="w-full">OS</span>{" "}
+                                            <ArrowDownZA size={17} />
+                                        </div>
+                                    </TableHead>
+                                    <TableHead>
+                                        <div
+                                            onClick={() =>
+                                                handleChangeSorting("cpu")
+                                            }
+                                            className="cursor-pointer w-full flex items-center space-x-2"
+                                        >
+                                            <span className="w-full">CPU</span>{" "}
+                                            <ArrowDownZA size={17} />
+                                        </div>
+                                    </TableHead>
+                                    <TableHead>
+                                        {" "}
+                                        <div
+                                            onClick={() =>
+                                                handleChangeSorting("ram")
+                                            }
+                                            className="cursor-pointer w-full flex items-center space-x-2"
+                                        >
+                                            <span className="w-full">RAM</span>{" "}
+                                            <ArrowDownZA size={17} />
+                                        </div>
+                                    </TableHead>
                                     <TableHead>Services</TableHead>
                                     <TableHead>Status</TableHead>
                                     <TableHead>Actions</TableHead>
