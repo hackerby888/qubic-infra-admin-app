@@ -50,6 +50,8 @@ import {
     CollapsibleTrigger,
 } from "../ui/collapsible";
 import { Checkbox } from "../ui/checkbox";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertTriangleIcon } from "lucide-react";
 
 export default function DeployManagement() {
     let queryClient = useQueryClient();
@@ -617,6 +619,14 @@ export default function DeployManagement() {
                             </FieldSet>
                         </TabsContent>
                         <TabsContent className="w-full" value="bobNode">
+                            <Alert className="max-w-md border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-50">
+                                <AlertTriangleIcon />
+                                <AlertTitle>Warning</AlertTitle>
+                                <AlertDescription className="inline-block">
+                                    <b>Deploy</b> operation will wipe existing
+                                    bob node configuration and data!
+                                </AlertDescription>
+                            </Alert>
                             <FieldSet className="mt-4">
                                 <FieldGroup>
                                     <Field>
