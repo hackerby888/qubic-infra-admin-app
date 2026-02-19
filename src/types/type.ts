@@ -71,6 +71,7 @@ export interface Server {
     server: string;
     ipInfo?: IpInfo;
     alias?: string;
+    note?: string;
     operator: string;
     username: string;
     password: string;

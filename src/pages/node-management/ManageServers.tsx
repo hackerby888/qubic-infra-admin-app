@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/table";
 import NewServer from "./components/NewServer";
 import useGeneralPost, { useGeneralGet } from "@/networking/api";
-import type { CommandLog, NodeStatus, Server } from "@/types/type";
+import type { NodeStatus, Server } from "@/types/type";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import {
@@ -25,7 +25,6 @@ import {
     RefreshCcw,
     Trash,
     Users,
-    X,
 } from "lucide-react";
 import {
     AlertDialog,
@@ -52,26 +51,16 @@ import {
     DialogTitle,
     DialogDescription,
 } from "@/components/ui/dialog";
-import LocalTerminal from "@/components/common/LocalTerminal";
 import {
     Tooltip,
     TooltipContent,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { millisToSeconds } from "@/utils/common";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { memo, useCallback, useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { MyStorage } from "@/utils/storage";
-
-function tripText(text: string, maxLength: number) {
-    if (text.length <= maxLength) {
-        return text;
-    }
-    return text.slice(0, maxLength) + "...";
-}
+import ServerNoteTyper from "./components/ServerNoteTyper";
+import CommandLogs from "./components/CommandLogs";
 
 let bgColorMap: Record<NodeStatus, string> = {
     active: "bg-blue-500",
@@ -208,7 +197,7 @@ const ServerTableRow = memo(
                         )}
                     />
                 </TableCell>
-                <TableCell>
+                <TableCell className="flex flex-col">
                     <Dialog
                         open={dialogsOpen["alias"]}
                         onOpenChange={(open) =>
@@ -265,6 +254,10 @@ const ServerTableRow = memo(
                             </div>
                         </DialogContent>
                     </Dialog>
+                    <ServerNoteTyper
+                        server={serverInfo.server}
+                        currentNote={serverInfo.note || ""}
+                    />
                 </TableCell>
                 <TableCell>
                     {serverInfo.server}{" "}
@@ -349,41 +342,6 @@ const ServerTableRow = memo(
                         <DropdownMenuContent className="w-40" align="end">
                             <div className="text-[13px]">
                                 <ViewLogs server={serverInfo.server} />
-                                <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                        <div className="text-red-500 pl-2 flex items-center py-1 cursor-pointer hover:bg-gray-100">
-                                            <Trash size={20} />
-                                            <span className="ml-1">Delete</span>
-                                        </div>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle>
-                                                Are you absolutely sure?
-                                            </AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                                This action cannot be undone.
-                                                This will permanently delete
-                                                your server.
-                                            </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel>
-                                                Cancel
-                                            </AlertDialogCancel>
-                                            <AlertDialogAction
-                                                onClick={() =>
-                                                    handleDeleteServers([
-                                                        serverInfo.server,
-                                                    ])
-                                                }
-                                                className="bg-red-500 hover:bg-red-600 cursor-pointer"
-                                            >
-                                                Delete
-                                            </AlertDialogAction>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
                                 <Dialog
                                     open={dialogsOpen["ownership"]}
                                     onOpenChange={(open) =>
@@ -445,6 +403,41 @@ const ServerTableRow = memo(
                                         </div>
                                     </DialogContent>
                                 </Dialog>
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <div className="text-red-500 pl-2 flex items-center py-1 cursor-pointer hover:bg-gray-100">
+                                            <Trash size={20} />
+                                            <span className="ml-1">Delete</span>
+                                        </div>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>
+                                                Are you absolutely sure?
+                                            </AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                This action cannot be undone.
+                                                This will permanently delete
+                                                your server.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>
+                                                Cancel
+                                            </AlertDialogCancel>
+                                            <AlertDialogAction
+                                                onClick={() =>
+                                                    handleDeleteServers([
+                                                        serverInfo.server,
+                                                    ])
+                                                }
+                                                className="bg-red-500 hover:bg-red-600 cursor-pointer"
+                                            >
+                                                Delete
+                                            </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
                             </div>
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -459,23 +452,12 @@ export default function ManageServers() {
 
     const selectedStore = useSelectedServersStore() as SelectedServersState;
 
-    let [currentSelectedCommandLogUuid, setCurrentSelectedCommandLogUuid] =
-        useState<string>("");
     let [currentSortedColumn, setCurrentSortedColumn] = useState<{
         column: string;
         direction: "asc" | "desc";
     }>({
         column: "alias",
         direction: "asc",
-    });
-
-    let { mutate: deleteCommandLog } = useGeneralPost({
-        queryKey: ["delete-command-log"],
-        path: "/delete-command-log",
-    });
-    let { mutate: deleteAllCommandLogs } = useGeneralPost({
-        queryKey: ["delete-all-command-logs"],
-        path: "/delete-all-command-logs",
     });
 
     let {
@@ -489,29 +471,6 @@ export default function ManageServers() {
     }>({
         queryKey: ["my-servers"],
         path: "/my-servers",
-    });
-    let {
-        data: commandLogs,
-        isLoading: isLoadingCommandsLogs,
-        error: fetchingCommandsLogsError,
-    } = useGeneralGet<{ commandLogs: CommandLog[] }>({
-        queryKey: ["command-logs", "all"],
-        path: "/command-logs",
-    });
-
-    let {
-        data: currentCommandUuidLogs,
-        isLoading: isLoadingCurrentCommandLogs,
-        isFetching: isFetchingCurrentCommandLogs,
-    } = useGeneralGet<{
-        stdout: string;
-        stderr: string;
-    }>({
-        queryKey: ["stdout-command-log", currentSelectedCommandLogUuid],
-        path: "/stdout-command-log",
-        reqQuery: {
-            uuid: currentSelectedCommandLogUuid,
-        },
     });
 
     let { mutate: deleteServer } = useGeneralPost({
@@ -545,57 +504,6 @@ export default function ManageServers() {
         });
     }, []);
 
-    const handleDeleteAllCommandLogs = () => {
-        deleteAllCommandLogs({} as unknown as void, {
-            onSuccess: () => {
-                toast.success("All command logs deleted successfully");
-                locallyRemoveAllCommandLogs();
-            },
-            onError: (error) => {
-                toast.error(
-                    "Failed to delete all command logs: " + error.message
-                );
-            },
-        });
-    };
-
-    const locallyRemoveAllCommandLogs = () => {
-        if (data) {
-            queryClient.setQueryData<{ commandLogs: CommandLog[] }>(
-                ["command-logs", "all"],
-                {
-                    commandLogs: [],
-                }
-            );
-        }
-    };
-
-    const handleDeleteCommandLog = (uuid: string) => {
-        deleteCommandLog({ uuid } as unknown as void, {
-            onSuccess: () => {
-                toast.success("Command log deleted successfully");
-                locallyRemoveCommandLog(uuid);
-            },
-            onError: (error) => {
-                toast.error("Failed to delete command log: " + error.message);
-            },
-        });
-    };
-
-    const locallyRemoveCommandLog = (uuid: string) => {
-        if (data) {
-            queryClient.setQueryData<{ commandLogs: CommandLog[] }>(
-                ["command-logs", "all"],
-                {
-                    commandLogs:
-                        commandLogs?.commandLogs.filter(
-                            (log: CommandLog) => log.uuid !== uuid
-                        ) || [],
-                }
-            );
-        }
-    };
-
     const handleGlobalCheckboxChange = (checked: boolean) => {
         if (checked) {
             let allServers = data?.servers.map((s) => s.server) || [];
@@ -614,12 +522,6 @@ export default function ManageServers() {
                 .catch((error) => {
                     toast.error("Failed to refresh servers: " + error.message);
                 });
-    };
-
-    let commandLogStatusColorMap = {
-        pending: "opacity-50",
-        completed: "",
-        failed: "text-red-500",
     };
 
     console.log("Servers data:", error);
@@ -663,192 +565,7 @@ export default function ManageServers() {
         <>
             <div className="p-4">
                 <h3 className="text-2xl font-bold mb-4">Manage Servers</h3>{" "}
-                <div className="mb-4 rounded shadow-sm p-4 space-x-2 max-h-1/3 overflow-y-auto">
-                    {commandLogs?.commandLogs.map((log) => {
-                        let errorServers = log?.errorServers || [];
-                        return (
-                            <Dialog key={log.uuid}>
-                                <DialogTrigger
-                                    onClick={() => {
-                                        setCurrentSelectedCommandLogUuid(
-                                            log.uuid
-                                        );
-                                    }}
-                                >
-                                    <div className="flex">
-                                        <Badge
-                                            className={`cursor-pointer ${
-                                                commandLogStatusColorMap[
-                                                    log.status
-                                                ]
-                                            }`}
-                                            variant={"secondary"}
-                                        >
-                                            {tripText(log.command, 20)}
-                                            <span
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleDeleteCommandLog(
-                                                        log.uuid
-                                                    );
-                                                }}
-                                            >
-                                                <X className="" size={15} />
-                                            </span>
-                                        </Badge>
-                                    </div>
-                                </DialogTrigger>
-                                <DialogContent className="min-w-3/6">
-                                    <DialogHeader>
-                                        <DialogTitle>Command Logs</DialogTitle>
-                                        <DialogDescription>
-                                            View the logs of your node here.
-                                        </DialogDescription>
-                                    </DialogHeader>
-                                    <div className="space-y-1">
-                                        <div className="bg-gray-100 w-full rounded-sm px-2 py-2 text-sm text-gray-700">
-                                            {log.command}{" "}
-                                            <span className="text-xs text-gray-500">
-                                                {new Date(
-                                                    log.timestamp
-                                                ).toLocaleString()}{" "}
-                                                -{" "}
-                                                <b
-                                                    className={`${
-                                                        log.status ===
-                                                            "failed" &&
-                                                        "text-red-500"
-                                                    }`}
-                                                >
-                                                    {log.status} (
-                                                    {millisToSeconds(
-                                                        log.duration
-                                                    )}{" "}
-                                                    seconds)
-                                                </b>
-                                            </span>
-                                        </div>
-                                        <div className="bg-gray-100 w-full rounded-sm px-2 py-2 text-sm text-gray-700">
-                                            ({log.servers.length} servers){" "}
-                                            <span className="text-xs text-gray-500">
-                                                {log.servers
-                                                    .filter(
-                                                        (server) =>
-                                                            !errorServers.includes(
-                                                                server
-                                                            )
-                                                    )
-                                                    .join(", ")}
-                                            </span>
-                                            <span className="ml-1 text-xs text-red-500">
-                                                {log.servers
-                                                    .filter((server) =>
-                                                        errorServers.includes(
-                                                            server
-                                                        )
-                                                    )
-                                                    .join(", ")}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <Tabs defaultValue="stdout">
-                                        <TabsList>
-                                            <TabsTrigger
-                                                className="cursor-pointer"
-                                                value="stdout"
-                                            >
-                                                stdout
-                                            </TabsTrigger>
-                                            <TabsTrigger
-                                                className="cursor-pointer"
-                                                value="stderr"
-                                            >
-                                                stderr
-                                            </TabsTrigger>
-                                        </TabsList>
-                                        <TabsContent value="stdout">
-                                            <LocalTerminal
-                                                text={
-                                                    isFetchingCurrentCommandLogs ||
-                                                    isLoadingCurrentCommandLogs
-                                                        ? "Loading..."
-                                                        : currentCommandUuidLogs?.stdout ||
-                                                          ""
-                                                }
-                                            />
-                                        </TabsContent>
-                                        <TabsContent value="stderr">
-                                            <LocalTerminal
-                                                text={
-                                                    isFetchingCurrentCommandLogs ||
-                                                    isLoadingCurrentCommandLogs
-                                                        ? "Loading..."
-                                                        : currentCommandUuidLogs?.stderr ||
-                                                          ""
-                                                }
-                                            />
-                                        </TabsContent>
-                                    </Tabs>
-                                </DialogContent>
-                            </Dialog>
-                        );
-                    })}
-                    {isLoadingCommandsLogs && (
-                        <div>
-                            <Skeleton className="h-4 w-40 mr-2 inline-block" />
-                            <Skeleton className="h-4 w-20 mr-2 inline-block" />
-                            <Skeleton className="h-4 w-20 mr-2 inline-block" />
-                            <Skeleton className="h-4 w-30 mr-2 inline-block" />
-                        </div>
-                    )}
-                    {fetchingCommandsLogsError && (
-                        <Alert variant={"destructive"}>
-                            <AlertTitle>
-                                Error, something went wrong while fetching
-                                command logs.
-                            </AlertTitle>
-                            <AlertDescription>
-                                {fetchingCommandsLogsError.message}
-                            </AlertDescription>
-                        </Alert>
-                    )}
-                    <div className="mt-2">
-                        <AlertDialog>
-                            <AlertDialogTrigger>
-                                <Badge
-                                    className="cursor-pointer hover:bg-red-500 hover:text-white"
-                                    variant="default"
-                                >
-                                    <X size={15} className="mr-1" />
-                                    Delete All Command Logs
-                                </Badge>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>
-                                        Are you absolutely sure?
-                                    </AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        This action cannot be undone. This will
-                                        permanently delete all your command
-                                        logs.
-                                    </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel>
-                                        Cancel
-                                    </AlertDialogCancel>
-                                    <AlertDialogAction
-                                        onClick={handleDeleteAllCommandLogs}
-                                        className="bg-red-500 hover:bg-red-600 cursor-pointer"
-                                    >
-                                        Delete All
-                                    </AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
-                    </div>
-                </div>
+                <CommandLogs />
                 <div>
                     <div className="py-2 space-x-1">
                         <NewServer />

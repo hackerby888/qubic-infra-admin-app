@@ -17,3 +17,10 @@ export function mainAuxStatusToString(status: number): string {
         }[status] || "unknown"
     );
 }
+
+export function tripText(text: string, maxLength: number) {
+    if (text.length <= maxLength) {
+        return text;
+    }
+    return text.slice(0, maxLength) + "...";
+}
