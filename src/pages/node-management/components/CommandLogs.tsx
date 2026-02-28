@@ -36,6 +36,19 @@ let commandLogStatusColorMap = {
     failed: "text-red-500",
 };
 
+const keywordsToRemove = ["set -e", "exec 2>&1", "QDONE", "GETHERE  "];
+
+function tripRemoveKeywords(text: string | undefined) {
+    if (!text) return "";
+    return text
+        .split("\n")
+        .filter(
+            (line) =>
+                !keywordsToRemove.some((keyword) => line.includes(keyword))
+        )
+        .join("\n");
+}
+
 export default memo(function CommandLogs() {
     const queryClient = useQueryClient();
 
@@ -221,8 +234,9 @@ export default memo(function CommandLogs() {
                                             isFetchingCurrentCommandLogs ||
                                             isLoadingCurrentCommandLogs
                                                 ? "Loading..."
-                                                : currentCommandUuidLogs?.stdout ||
-                                                  ""
+                                                : tripRemoveKeywords(
+                                                      currentCommandUuidLogs?.stdout
+                                                  ) || ""
                                         }
                                     />
                                 </TabsContent>
