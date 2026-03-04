@@ -132,8 +132,6 @@ export default function MyNodes() {
         }
     };
 
-    useEffect(() => {}, []);
-
     useEffect(() => {
         setIsLoading(true);
         let operatorInfo = MyStorage.getUserInfo();

@@ -20,6 +20,11 @@ import {
 import VisibilityChanger from "../common/VisibilityChanger";
 import { ArrowDownZA, Info } from "lucide-react";
 import { useGeneralGet } from "@/networking/api";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+    useSelectedServersStore,
+    type SelectedServersState,
+} from "@/stores/selected-servers-store";
 
 export default function LiteNodeTable({
     isLoading,
@@ -32,6 +37,7 @@ export default function LiteNodeTable({
     operatorInfo?: User;
     onChangeSorting?: (column: string) => void;
 }) {
+    const selectedStore = useSelectedServersStore() as SelectedServersState;
     let { data: serversData } = useGeneralGet<{
         servers: Server[];
     }>({
@@ -49,22 +55,32 @@ export default function LiteNodeTable({
         });
     }
 
+    const handleCheckboxChange = (server: string) => {
+        selectedStore.setSelectedServer(server);
+    };
+
     return (
         <Table>
             <TableHeader>
                 <TableRow>
                     {operatorInfo && (
-                        <TableHead>
-                            <div
-                                onClick={() =>
-                                    onChangeSorting && onChangeSorting("alias")
-                                }
-                                className="cursor-pointer w-full flex items-center space-x-2"
-                            >
-                                <span className="w-full">Alias</span>{" "}
-                                {onChangeSorting && <ArrowDownZA size={17} />}
-                            </div>
-                        </TableHead>
+                        <>
+                            <TableHead></TableHead>
+                            <TableHead>
+                                <div
+                                    onClick={() =>
+                                        onChangeSorting &&
+                                        onChangeSorting("alias")
+                                    }
+                                    className="cursor-pointer w-full flex items-center space-x-2"
+                                >
+                                    <span className="w-full">Alias</span>{" "}
+                                    {onChangeSorting && (
+                                        <ArrowDownZA size={17} />
+                                    )}
+                                </div>
+                            </TableHead>
+                        </>
                     )}
                     <TableHead>
                         {" "}
@@ -129,9 +145,23 @@ export default function LiteNodeTable({
                                 key={stat.server}
                             >
                                 {operatorInfo && (
-                                    <TableCell>
-                                        {aliasMap[stat.server] || "N/A"}
-                                    </TableCell>
+                                    <>
+                                        <TableCell>
+                                            <Checkbox
+                                                onCheckedChange={() =>
+                                                    handleCheckboxChange(
+                                                        stat.server
+                                                    )
+                                                }
+                                                checked={selectedStore.selectedServers.includes(
+                                                    stat.server
+                                                )}
+                                            />
+                                        </TableCell>
+                                        <TableCell>
+                                            {aliasMap[stat.server] || "N/A"}
+                                        </TableCell>
+                                    </>
                                 )}
                                 <TableCell>
                                     {stat.server}{" "}
