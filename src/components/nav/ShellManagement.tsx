@@ -313,7 +313,7 @@ export default function ShellManagement() {
                         {commandLogs?.commandLogs.map((log) => (
                             <li
                                 onClick={() => setCommand(log.command)}
-                                className="cursor-pointer p-2 bg-gray-100 rounded-sm hover:bg-gray-200"
+                                className="cursor-pointer p-2 bg-gray-100 rounded-sm hover:bg-gray-200 text-wrap break-all"
                                 key={log.uuid}
                             >
                                 {log.command}{" "}

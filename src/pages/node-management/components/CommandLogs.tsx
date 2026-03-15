@@ -173,7 +173,7 @@ export default memo(function CommandLogs() {
                                 </DialogDescription>
                             </DialogHeader>
                             <div className="space-y-1">
-                                <div className="bg-gray-100 w-full rounded-sm px-2 py-2 text-sm text-gray-700">
+                                <div className="bg-gray-100 w-full rounded-sm px-2 py-2 text-sm text-gray-700 text-wrap break-all">
                                     {log.command}{" "}
                                     <span className="text-xs text-gray-500">
                                         {new Date(
