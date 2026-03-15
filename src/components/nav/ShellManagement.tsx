@@ -30,6 +30,7 @@ import {
 const LITE_COMMANDS_MAP = {
     "F8/SaveSnapShot (Lite Node)": "f8/savesnapshot:lite",
     "F10/ClearMemory (Lite Node)": "f10/clearmemory:lite",
+    "F11/StaticMode (Lite Node)": "f11/staticmode:lite",
 };
 
 const BOB_COMMANDS_MAP = {
