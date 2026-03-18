@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/table";
 import NewServer from "./components/NewServer";
 import useGeneralPost, { useGeneralGet } from "@/networking/api";
-import type { NodeStatus, Server } from "@/types/type";
+import type { NodeStatus, Server, ServiceType } from "@/types/type";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import {
@@ -542,6 +542,16 @@ export default function ManageServers() {
         });
     };
 
+    const handleSelectAllType = (type: ServiceType) => {
+        let serversOfType = data?.servers.filter(
+            (server) => server.services.includes(type) && server.username
+        );
+        if (serversOfType) {
+            let serverIds = serversOfType.map((s) => s.server);
+            selectedStore.setSelectedServers(serverIds);
+        }
+    };
+
     useEffect(() => {
         const handleKey = (e: any) => {
             if (e.key === "Delete" || e.keyCode === 46) {
@@ -576,6 +586,22 @@ export default function ManageServers() {
                         >
                             <RefreshCcw size={20} />
                         </Button>
+                        <div className="utils-command py-2 space-x-1">
+                            <Badge
+                                onClick={() => handleSelectAllType("liteNode")}
+                                className="cursor-pointer"
+                                variant={"secondary"}
+                            >
+                                Select all lites
+                            </Badge>
+                            <Badge
+                                onClick={() => handleSelectAllType("bobNode")}
+                                className="cursor-pointer"
+                                variant={"secondary"}
+                            >
+                                Select all bobs
+                            </Badge>
+                        </div>
                     </div>
                     {!error ? (
                         <Table>
