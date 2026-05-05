@@ -98,7 +98,7 @@ export default function Operator() {
         <div className="p-4">
             <h3 className="text-2xl font-bold mb-4">Operator Management</h3>
             <div className="flex flex-col space-y-4">
-                <div className="p-4 bg-white rounded-sm shadow-sm">
+                <div className="p-4 bg-white dark:bg-card rounded-sm shadow-sm">
                     <h4 className="text-lg font-semibold mb-2">Operators</h4>
                     <p className="text-sm text-gray-500">
                         Manage operators who have access to this administration
