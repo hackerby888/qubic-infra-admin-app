@@ -67,6 +67,10 @@ export interface IpInfo {
     isp: string;
 }
 
+export interface LiteNodeCustomParameter {
+    customParameter: string;
+}
+
 export interface Server {
     server: string;
     ipInfo?: IpInfo;

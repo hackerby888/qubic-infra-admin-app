@@ -167,7 +167,7 @@ export default function DeployManagement() {
             {
                 onSuccess: (tags: GithubTag[]) => {
                     toast.success("Refreshed GitHub tags");
-                    queryClient.setQueryData(["github-tags"], tags);
+                    queryClient.setQueryData(["github-tags", currentService], tags);
                 },
                 onError: (error) => {
                     toast.error(

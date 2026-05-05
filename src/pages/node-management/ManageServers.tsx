@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/table";
 import NewServer from "./components/NewServer";
 import useGeneralPost, { useGeneralGet } from "@/networking/api";
-import type { NodeStatus, Server, ServiceType } from "@/types/type";
+import type { LiteNodeCustomParameter, NodeStatus, Server, ServiceType } from "@/types/type";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import {
@@ -23,6 +23,7 @@ import {
     MoreHorizontalIcon,
     Pencil,
     RefreshCcw,
+    SlidersHorizontal,
     Trash,
     Users,
 } from "lucide-react";
@@ -58,6 +59,7 @@ import {
 } from "@/components/ui/tooltip";
 import { memo, useCallback, useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { MyStorage } from "@/utils/storage";
 import ServerNoteTyper from "./components/ServerNoteTyper";
 import CommandLogs from "./components/CommandLogs";
@@ -81,13 +83,14 @@ const ServerTableRow = memo(
         const queryClient = useQueryClient();
         const selectedStore = useSelectedServersStore() as SelectedServersState;
 
-        type DialogType = "alias" | "ownership";
+        type DialogType = "alias" | "ownership" | "customParameter";
 
         let [dialogsOpen, setDialogsOpen] = useState<{
             [key in DialogType]: boolean;
         }>({
             alias: false,
             ownership: false,
+            customParameter: false,
         });
 
         let [currentServerOwner, setCurrentServerOwner] = useState<string>(
@@ -96,6 +99,25 @@ const ServerTableRow = memo(
         let [currentAlias, setCurrentAlias] = useState<string>(
             serverInfo.alias || ""
         );
+        let [currentCustomParameter, setCurrentCustomParameter] =
+            useState<string>("");
+
+        let { data: customParameterData, refetch: refetchCustomParameter } =
+            useGeneralGet<LiteNodeCustomParameter>({
+                queryKey: ["lite-node-custom-parameter", serverInfo.server],
+                path: "/lite-node-custom-parameter",
+                reqQuery: { server: serverInfo.server },
+                enabled: false,
+            });
+
+        let {
+            mutate: setCustomParameter,
+            isPending: isSetCustomParameterPending,
+        } = useGeneralPost({
+            path: "/set-lite-node-custom-parameter",
+            queryKey: ["set-lite-node-custom-parameter"],
+        });
+
         let {
             mutate: transferOwnership,
             isPending: isTransferOwnershipPending,
@@ -176,6 +198,38 @@ const ServerTableRow = memo(
                     },
                     onError: (error) => {
                         toast.error("Failed to update alias: " + error.message);
+                    },
+                }
+            );
+        };
+
+        const handleOpenCustomParameter = () => {
+            refetchCustomParameter().then((result) => {
+                setCurrentCustomParameter(
+                    result.data?.customParameter || ""
+                );
+            });
+            setDialogsOpen((prev) => ({ ...prev, customParameter: true }));
+        };
+
+        const handleSaveCustomParameter = () => {
+            setCustomParameter(
+                {
+                    server: serverInfo.server,
+                    customParameter: currentCustomParameter,
+                } as unknown as void,
+                {
+                    onSuccess: () => {
+                        toast.success("Custom parameter saved successfully");
+                        setDialogsOpen((prev) => ({
+                            ...prev,
+                            customParameter: false,
+                        }));
+                    },
+                    onError: (error) => {
+                        toast.error(
+                            "Failed to save custom parameter: " + error.message
+                        );
                     },
                 }
             );
@@ -403,6 +457,85 @@ const ServerTableRow = memo(
                                         </div>
                                     </DialogContent>
                                 </Dialog>
+                                {(myOperator === serverInfo.operator ||
+                                    myOperator === "admin") &&
+                                    serverInfo.services.includes(
+                                        "liteNode"
+                                    ) && (
+                                        <Dialog
+                                            open={
+                                                dialogsOpen["customParameter"]
+                                            }
+                                            onOpenChange={(open) => {
+                                                if (open) {
+                                                    handleOpenCustomParameter();
+                                                } else {
+                                                    setDialogsOpen((prev) => ({
+                                                        ...prev,
+                                                        customParameter: false,
+                                                    }));
+                                                }
+                                            }}
+                                        >
+                                            <DialogTrigger asChild>
+                                                <div className="pl-2 flex items-center py-1 cursor-pointer hover:bg-gray-100">
+                                                    <SlidersHorizontal
+                                                        size={20}
+                                                    />
+                                                    <span className="ml-1">
+                                                        Custom Parameter
+                                                    </span>
+                                                </div>
+                                            </DialogTrigger>
+                                            <DialogContent className="min-w-3/6">
+                                                <DialogHeader>
+                                                    <DialogTitle>
+                                                        Custom Launch Parameter
+                                                    </DialogTitle>
+                                                    <DialogDescription>
+                                                        Extra CLI arguments
+                                                        appended when launching
+                                                        the lite node on{" "}
+                                                        {serverInfo.server}.
+                                                        Leave empty to use no
+                                                        extra parameters.
+                                                    </DialogDescription>
+                                                </DialogHeader>
+                                                <Textarea
+                                                    value={
+                                                        currentCustomParameter
+                                                    }
+                                                    onChange={(e) =>
+                                                        setCurrentCustomParameter(
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    placeholder="e.g. --some-flag --value 123"
+                                                    className="font-mono text-sm"
+                                                    rows={3}
+                                                />
+                                                <div className="flex justify-end">
+                                                    {!isSetCustomParameterPending ? (
+                                                        <Button
+                                                            onClick={
+                                                                handleSaveCustomParameter
+                                                            }
+                                                            className="cursor-pointer"
+                                                        >
+                                                            Save
+                                                        </Button>
+                                                    ) : (
+                                                        <Button
+                                                            disabled
+                                                            className="cursor-not-allowed"
+                                                        >
+                                                            Saving...
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            </DialogContent>
+                                        </Dialog>
+                                    )}
                                 <AlertDialog>
                                     <AlertDialogTrigger asChild>
                                         <div className="text-red-500 pl-2 flex items-center py-1 cursor-pointer hover:bg-gray-100">
