@@ -10,7 +10,12 @@ import {
 } from "@/components/ui/table";
 import NewServer from "./components/NewServer";
 import useGeneralPost, { useGeneralGet } from "@/networking/api";
-import type { LiteNodeCustomParameter, NodeStatus, Server, ServiceType } from "@/types/type";
+import type {
+    LiteNodeCustomParameter,
+    NodeStatus,
+    Server,
+    ServiceType,
+} from "@/types/type";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import {
@@ -108,7 +113,7 @@ const ServerTableRow = memo(
         let [currentCustomParameter, setCurrentCustomParameter] =
             useState<string>("");
 
-        let { data: customParameterData, refetch: refetchCustomParameter } =
+        let { data: _, refetch: refetchCustomParameter } =
             useGeneralGet<LiteNodeCustomParameter>({
                 queryKey: ["lite-node-custom-parameter", serverInfo.server],
                 path: "/lite-node-custom-parameter",
@@ -211,9 +216,7 @@ const ServerTableRow = memo(
 
         const handleOpenCustomParameter = () => {
             refetchCustomParameter().then((result) => {
-                setCurrentCustomParameter(
-                    result.data?.customParameter || ""
-                );
+                setCurrentCustomParameter(result.data?.customParameter || "");
             });
             setDialogsOpen((prev) => ({ ...prev, customParameter: true }));
         };
@@ -247,362 +250,372 @@ const ServerTableRow = memo(
 
         return (
             <>
-            <TableRow key={serverInfo.server}>
-                <TableCell>
-                    <Checkbox
-                        onCheckedChange={() =>
-                            handleCheckboxChange(serverInfo.server)
-                        }
-                        checked={selectedStore.selectedServers.includes(
-                            serverInfo.server
-                        )}
-                    />
-                </TableCell>
-                <TableCell className="flex flex-col">
-                    <Dialog
-                        open={dialogsOpen["alias"]}
-                        onOpenChange={(open) =>
-                            setDialogsOpen((prev) => ({
-                                ...prev,
-                                ["alias"]: open,
-                            }))
-                        }
-                    >
-                        <DialogTrigger className="w-full">
-                            <div className="cursor-pointer w-full flex items-center space-x-2">
-                                <div className="flex items-center space-x-2 w-full">
-                                    {serverInfo.alias || "Unknown"}
+                <TableRow key={serverInfo.server}>
+                    <TableCell>
+                        <Checkbox
+                            onCheckedChange={() =>
+                                handleCheckboxChange(serverInfo.server)
+                            }
+                            checked={selectedStore.selectedServers.includes(
+                                serverInfo.server
+                            )}
+                        />
+                    </TableCell>
+                    <TableCell className="flex flex-col">
+                        <Dialog
+                            open={dialogsOpen["alias"]}
+                            onOpenChange={(open) =>
+                                setDialogsOpen((prev) => ({
+                                    ...prev,
+                                    ["alias"]: open,
+                                }))
+                            }
+                        >
+                            <DialogTrigger className="w-full">
+                                <div className="cursor-pointer w-full flex items-center space-x-2">
+                                    <div className="flex items-center space-x-2 w-full">
+                                        {serverInfo.alias || "Unknown"}
+                                    </div>
+                                    {serverInfo.operator !== myOperator && (
+                                        <Badge>{serverInfo.operator}</Badge>
+                                    )}
+                                    <Pencil size={13} />
                                 </div>
-                                {serverInfo.operator !== myOperator && (
-                                    <Badge>{serverInfo.operator}</Badge>
-                                )}
-                                <Pencil size={13} />
-                            </div>
-                        </DialogTrigger>
-                        <DialogContent className="min-w-3/6">
-                            <DialogHeader>
-                                <DialogTitle>Change your alias</DialogTitle>
-                                <DialogDescription>
-                                    Change the alias of your server (
-                                    {serverInfo.server}) here.
-                                </DialogDescription>
-                            </DialogHeader>
-                            <div className="">
-                                <Input
-                                    value={currentAlias}
-                                    onChange={(e) =>
-                                        setCurrentAlias(e.target.value)
-                                    }
-                                    placeholder="Enter new alias"
-                                />
-                            </div>
-                            <div className="flex justify-end">
-                                {!isSetServerAliasPending ? (
-                                    <Button
-                                        onClick={handleSaveAlias}
-                                        className="mt-2 cursor-pointer"
-                                    >
-                                        Save Alias
-                                    </Button>
-                                ) : (
-                                    <Button
-                                        className="mt-2 cursor-not-allowed"
-                                        disabled
-                                    >
-                                        Saving...
-                                    </Button>
-                                )}
-                            </div>
-                        </DialogContent>
-                    </Dialog>
-                    <ServerNoteTyper
-                        server={serverInfo.server}
-                        currentNote={serverInfo.note || ""}
-                    />
-                </TableCell>
-                <TableCell>
-                    {serverInfo.server}{" "}
-                    <Badge className="ml-1" variant="outline">
-                        {serverInfo.ipInfo?.country}
-                    </Badge>
-                    {isTrackingOnly && (
-                        <Badge className="ml-1 bg-indigo-500">
-                            Tracking Only
-                        </Badge>
-                    )}
-                </TableCell>
-                <TableCell>{serverInfo.os || "N/A"}</TableCell>
-                <TableCell>{serverInfo.cpu || "N/A"}</TableCell>
-                <TableCell>{serverInfo.ram || "N/A"}</TableCell>
-                <TableCell className="space-x-1">
-                    {serverInfo.services.map((service) => {
-                        let haveDeployStatus =
-                            serverInfo.deployStatus &&
-                            service in serverInfo.deployStatus;
-                        let status = haveDeployStatus
-                            ? serverInfo.deployStatus![
-                                  service as keyof typeof serverInfo.deployStatus
-                              ]
-                            : "nothing";
-                        return (
-                            <Tooltip>
-                                <TooltipTrigger>
-                                    <Badge
-                                        key={service}
-                                        variant={"outline"}
-                                        className={`${
-                                            haveDeployStatus &&
-                                            bgColorMap[
-                                                status as keyof typeof bgColorMap
-                                            ]
-                                        } ${
-                                            !haveDeployStatus
-                                                ? "opacity-50"
-                                                : "text-white"
-                                        }`}
-                                    >
-                                        {service}
-                                    </Badge>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    {haveDeployStatus
-                                        ? `Status: ${status}`
-                                        : `No status available`}
-                                </TooltipContent>
-                            </Tooltip>
-                        );
-                    })}
-                </TableCell>
-                <TableCell>
-                    <Tooltip>
-                        <TooltipTrigger>
-                            <Badge
-                                className={`${bgColorMap[serverInfo.status]} text-white`}
-                                variant={"default"}
-                            >
-                                {serverInfo.status}
-                            </Badge>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            {`Overall node status: ${serverInfo.status}`}
-                        </TooltipContent>
-                    </Tooltip>
-                </TableCell>
-                <TableCell>
-                    <DropdownMenu modal={false}>
-                        <DropdownMenuTrigger asChild>
-                            <Button
-                                className="cursor-pointer"
-                                variant="outline"
-                                aria-label="Open menu"
-                                size="icon-sm"
-                            >
-                                <MoreHorizontalIcon />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-40" align="end">
-                            <div className="text-[13px]">
-                                <ViewLogs server={serverInfo.server} />
-                                <Dialog
-                                    open={dialogsOpen["ownership"]}
-                                    onOpenChange={(open) =>
-                                        setDialogsOpen((prev) => ({
-                                            ...prev,
-                                            ["ownership"]: open,
-                                        }))
-                                    }
-                                >
-                                    <DialogTrigger>
-                                        <div>
-                                            <div
-                                                onClick={() => {}}
-                                                className="pl-2 flex items-center py-1 cursor-pointer hover:bg-gray-100 dark:hover:bg-muted"
-                                            >
-                                                <Users size={20} />
-                                                <span className="ml-1">
-                                                    Transfer Ownership
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </DialogTrigger>
-                                    <DialogContent className="min-w-3/6">
-                                        <DialogHeader>
-                                            <DialogTitle>
-                                                Transfer Server Ownership
-                                            </DialogTitle>
-                                            <DialogDescription>
-                                                Transfer the ownership of this
-                                                server to another operator.
-                                            </DialogDescription>
-                                        </DialogHeader>
-                                        <div>
-                                            <Input
-                                                value={currentServerOwner}
-                                                onChange={(e) =>
-                                                    setCurrentServerOwner(
-                                                        e.target.value
-                                                    )
-                                                }
-                                            />
-                                            {!isTransferOwnershipPending ? (
-                                                <Button
-                                                    onClick={
-                                                        submitOwnershipChange
-                                                    }
-                                                    className="mt-2 float-right"
-                                                >
-                                                    Transfer
-                                                </Button>
-                                            ) : (
-                                                <Button
-                                                    className="mt-2 float-right cursor-not-allowed"
-                                                    disabled
-                                                >
-                                                    Transferring...
-                                                </Button>
-                                            )}
-                                        </div>
-                                    </DialogContent>
-                                </Dialog>
-                                {(myOperator === serverInfo.operator ||
-                                    myOperator === "admin") &&
-                                    serverInfo.services.includes(
-                                        "liteNode"
-                                    ) && (
-                                        <Dialog
-                                            open={
-                                                dialogsOpen["customParameter"]
-                                            }
-                                            onOpenChange={(open) => {
-                                                if (open) {
-                                                    handleOpenCustomParameter();
-                                                } else {
-                                                    setDialogsOpen((prev) => ({
-                                                        ...prev,
-                                                        customParameter: false,
-                                                    }));
-                                                }
-                                            }}
+                            </DialogTrigger>
+                            <DialogContent className="min-w-3/6">
+                                <DialogHeader>
+                                    <DialogTitle>Change your alias</DialogTitle>
+                                    <DialogDescription>
+                                        Change the alias of your server (
+                                        {serverInfo.server}) here.
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <div className="">
+                                    <Input
+                                        value={currentAlias}
+                                        onChange={(e) =>
+                                            setCurrentAlias(e.target.value)
+                                        }
+                                        placeholder="Enter new alias"
+                                    />
+                                </div>
+                                <div className="flex justify-end">
+                                    {!isSetServerAliasPending ? (
+                                        <Button
+                                            onClick={handleSaveAlias}
+                                            className="mt-2 cursor-pointer"
                                         >
-                                            <DialogTrigger asChild>
-                                                <div className="pl-2 flex items-center py-1 cursor-pointer hover:bg-gray-100 dark:hover:bg-muted">
-                                                    <SlidersHorizontal
-                                                        size={20}
-                                                    />
+                                            Save Alias
+                                        </Button>
+                                    ) : (
+                                        <Button
+                                            className="mt-2 cursor-not-allowed"
+                                            disabled
+                                        >
+                                            Saving...
+                                        </Button>
+                                    )}
+                                </div>
+                            </DialogContent>
+                        </Dialog>
+                        <ServerNoteTyper
+                            server={serverInfo.server}
+                            currentNote={serverInfo.note || ""}
+                        />
+                    </TableCell>
+                    <TableCell>
+                        {serverInfo.server}{" "}
+                        <Badge className="ml-1" variant="outline">
+                            {serverInfo.ipInfo?.country}
+                        </Badge>
+                        {isTrackingOnly && (
+                            <Badge className="ml-1 bg-indigo-500">
+                                Tracking Only
+                            </Badge>
+                        )}
+                    </TableCell>
+                    <TableCell>{serverInfo.os || "N/A"}</TableCell>
+                    <TableCell>{serverInfo.cpu || "N/A"}</TableCell>
+                    <TableCell>{serverInfo.ram || "N/A"}</TableCell>
+                    <TableCell className="space-x-1">
+                        {serverInfo.services.map((service) => {
+                            let haveDeployStatus =
+                                serverInfo.deployStatus &&
+                                service in serverInfo.deployStatus;
+                            let status = haveDeployStatus
+                                ? serverInfo.deployStatus![
+                                      service as keyof typeof serverInfo.deployStatus
+                                  ]
+                                : "nothing";
+                            return (
+                                <Tooltip>
+                                    <TooltipTrigger>
+                                        <Badge
+                                            key={service}
+                                            variant={"outline"}
+                                            className={`${
+                                                haveDeployStatus &&
+                                                bgColorMap[
+                                                    status as keyof typeof bgColorMap
+                                                ]
+                                            } ${
+                                                !haveDeployStatus
+                                                    ? "opacity-50"
+                                                    : "text-white"
+                                            }`}
+                                        >
+                                            {service}
+                                        </Badge>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        {haveDeployStatus
+                                            ? `Status: ${status}`
+                                            : `No status available`}
+                                    </TooltipContent>
+                                </Tooltip>
+                            );
+                        })}
+                    </TableCell>
+                    <TableCell>
+                        <Tooltip>
+                            <TooltipTrigger>
+                                <Badge
+                                    className={`${bgColorMap[serverInfo.status]} text-white`}
+                                    variant={"default"}
+                                >
+                                    {serverInfo.status}
+                                </Badge>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                {`Overall node status: ${serverInfo.status}`}
+                            </TooltipContent>
+                        </Tooltip>
+                    </TableCell>
+                    <TableCell>
+                        <DropdownMenu modal={false}>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    className="cursor-pointer"
+                                    variant="outline"
+                                    aria-label="Open menu"
+                                    size="icon-sm"
+                                >
+                                    <MoreHorizontalIcon />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="w-40" align="end">
+                                <div className="text-[13px]">
+                                    <ViewLogs server={serverInfo.server} />
+                                    <Dialog
+                                        open={dialogsOpen["ownership"]}
+                                        onOpenChange={(open) =>
+                                            setDialogsOpen((prev) => ({
+                                                ...prev,
+                                                ["ownership"]: open,
+                                            }))
+                                        }
+                                    >
+                                        <DialogTrigger>
+                                            <div>
+                                                <div
+                                                    onClick={() => {}}
+                                                    className="pl-2 flex items-center py-1 cursor-pointer hover:bg-gray-100 dark:hover:bg-muted"
+                                                >
+                                                    <Users size={20} />
                                                     <span className="ml-1">
-                                                        Custom Parameter
+                                                        Transfer Ownership
                                                     </span>
                                                 </div>
-                                            </DialogTrigger>
-                                            <DialogContent className="min-w-3/6">
-                                                <DialogHeader>
-                                                    <DialogTitle>
-                                                        Custom Launch Parameter
-                                                    </DialogTitle>
-                                                    <DialogDescription>
-                                                        Extra CLI arguments
-                                                        appended when launching
-                                                        the lite node on{" "}
-                                                        {serverInfo.server}.
-                                                        Leave empty to use no
-                                                        extra parameters.
-                                                    </DialogDescription>
-                                                </DialogHeader>
-                                                <Textarea
-                                                    value={
-                                                        currentCustomParameter
-                                                    }
+                                            </div>
+                                        </DialogTrigger>
+                                        <DialogContent className="min-w-3/6">
+                                            <DialogHeader>
+                                                <DialogTitle>
+                                                    Transfer Server Ownership
+                                                </DialogTitle>
+                                                <DialogDescription>
+                                                    Transfer the ownership of
+                                                    this server to another
+                                                    operator.
+                                                </DialogDescription>
+                                            </DialogHeader>
+                                            <div>
+                                                <Input
+                                                    value={currentServerOwner}
                                                     onChange={(e) =>
-                                                        setCurrentCustomParameter(
+                                                        setCurrentServerOwner(
                                                             e.target.value
                                                         )
                                                     }
-                                                    placeholder="e.g. --some-flag --value 123"
-                                                    className="font-mono text-sm"
-                                                    rows={3}
                                                 />
-                                                <div className="flex justify-end">
-                                                    {!isSetCustomParameterPending ? (
-                                                        <Button
-                                                            onClick={
-                                                                handleSaveCustomParameter
-                                                            }
-                                                            className="cursor-pointer"
-                                                        >
-                                                            Save
-                                                        </Button>
-                                                    ) : (
-                                                        <Button
-                                                            disabled
-                                                            className="cursor-not-allowed"
-                                                        >
-                                                            Saving...
-                                                        </Button>
-                                                    )}
-                                                </div>
-                                            </DialogContent>
-                                        </Dialog>
-                                    )}
-                                {(myOperator === serverInfo.operator ||
-                                    myOperator === "admin") && (
-                                    <div
-                                        onClick={() =>
-                                            setSshConsoleOpen(true)
-                                        }
-                                        className="pl-2 flex items-center py-1 cursor-pointer hover:bg-gray-100 dark:hover:bg-muted"
-                                    >
-                                        <TerminalIcon size={20} />
-                                        <span className="ml-1">
-                                            SSH Console
-                                        </span>
-                                    </div>
-                                )}
-                                <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                        <div className="text-red-500 pl-2 flex items-center py-1 cursor-pointer hover:bg-gray-100 dark:hover:bg-muted">
-                                            <Trash size={20} />
-                                            <span className="ml-1">Delete</span>
-                                        </div>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle>
-                                                Are you absolutely sure?
-                                            </AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                                This action cannot be undone.
-                                                This will permanently delete
-                                                your server.
-                                            </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel>
-                                                Cancel
-                                            </AlertDialogCancel>
-                                            <AlertDialogAction
-                                                onClick={() =>
-                                                    handleDeleteServers([
-                                                        serverInfo.server,
-                                                    ])
+                                                {!isTransferOwnershipPending ? (
+                                                    <Button
+                                                        onClick={
+                                                            submitOwnershipChange
+                                                        }
+                                                        className="mt-2 float-right"
+                                                    >
+                                                        Transfer
+                                                    </Button>
+                                                ) : (
+                                                    <Button
+                                                        className="mt-2 float-right cursor-not-allowed"
+                                                        disabled
+                                                    >
+                                                        Transferring...
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        </DialogContent>
+                                    </Dialog>
+                                    {(myOperator === serverInfo.operator ||
+                                        myOperator === "admin") &&
+                                        serverInfo.services.includes(
+                                            "liteNode"
+                                        ) && (
+                                            <Dialog
+                                                open={
+                                                    dialogsOpen[
+                                                        "customParameter"
+                                                    ]
                                                 }
-                                                className="bg-red-500 hover:bg-red-600 cursor-pointer"
+                                                onOpenChange={(open) => {
+                                                    if (open) {
+                                                        handleOpenCustomParameter();
+                                                    } else {
+                                                        setDialogsOpen(
+                                                            (prev) => ({
+                                                                ...prev,
+                                                                customParameter: false,
+                                                            })
+                                                        );
+                                                    }
+                                                }}
                                             >
-                                                Delete
-                                            </AlertDialogAction>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
-                            </div>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </TableCell>
-            </TableRow>
-            <SshConsoleDialog
-                server={serverInfo.server}
-                open={sshConsoleOpen}
-                onOpenChange={setSshConsoleOpen}
-            />
-        </>
+                                                <DialogTrigger asChild>
+                                                    <div className="pl-2 flex items-center py-1 cursor-pointer hover:bg-gray-100 dark:hover:bg-muted">
+                                                        <SlidersHorizontal
+                                                            size={20}
+                                                        />
+                                                        <span className="ml-1">
+                                                            Custom Parameter
+                                                        </span>
+                                                    </div>
+                                                </DialogTrigger>
+                                                <DialogContent className="min-w-3/6">
+                                                    <DialogHeader>
+                                                        <DialogTitle>
+                                                            Custom Launch
+                                                            Parameter
+                                                        </DialogTitle>
+                                                        <DialogDescription>
+                                                            Extra CLI arguments
+                                                            appended when
+                                                            launching the lite
+                                                            node on{" "}
+                                                            {serverInfo.server}.
+                                                            Leave empty to use
+                                                            no extra parameters.
+                                                        </DialogDescription>
+                                                    </DialogHeader>
+                                                    <Textarea
+                                                        value={
+                                                            currentCustomParameter
+                                                        }
+                                                        onChange={(e) =>
+                                                            setCurrentCustomParameter(
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                        placeholder="e.g. --some-flag --value 123"
+                                                        className="font-mono text-sm"
+                                                        rows={3}
+                                                    />
+                                                    <div className="flex justify-end">
+                                                        {!isSetCustomParameterPending ? (
+                                                            <Button
+                                                                onClick={
+                                                                    handleSaveCustomParameter
+                                                                }
+                                                                className="cursor-pointer"
+                                                            >
+                                                                Save
+                                                            </Button>
+                                                        ) : (
+                                                            <Button
+                                                                disabled
+                                                                className="cursor-not-allowed"
+                                                            >
+                                                                Saving...
+                                                            </Button>
+                                                        )}
+                                                    </div>
+                                                </DialogContent>
+                                            </Dialog>
+                                        )}
+                                    {(myOperator === serverInfo.operator ||
+                                        myOperator === "admin") && (
+                                        <div
+                                            onClick={() =>
+                                                setSshConsoleOpen(true)
+                                            }
+                                            className="pl-2 flex items-center py-1 cursor-pointer hover:bg-gray-100 dark:hover:bg-muted"
+                                        >
+                                            <TerminalIcon size={20} />
+                                            <span className="ml-1">
+                                                SSH Console
+                                            </span>
+                                        </div>
+                                    )}
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <div className="text-red-500 pl-2 flex items-center py-1 cursor-pointer hover:bg-gray-100 dark:hover:bg-muted">
+                                                <Trash size={20} />
+                                                <span className="ml-1">
+                                                    Delete
+                                                </span>
+                                            </div>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>
+                                                    Are you absolutely sure?
+                                                </AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                    This action cannot be
+                                                    undone. This will
+                                                    permanently delete your
+                                                    server.
+                                                </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel>
+                                                    Cancel
+                                                </AlertDialogCancel>
+                                                <AlertDialogAction
+                                                    onClick={() =>
+                                                        handleDeleteServers([
+                                                            serverInfo.server,
+                                                        ])
+                                                    }
+                                                    className="bg-red-500 hover:bg-red-600 cursor-pointer"
+                                                >
+                                                    Delete
+                                                </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                </div>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </TableCell>
+                </TableRow>
+                <SshConsoleDialog
+                    server={serverInfo.server}
+                    open={sshConsoleOpen}
+                    onOpenChange={setSshConsoleOpen}
+                />
+            </>
         );
     }
 );
