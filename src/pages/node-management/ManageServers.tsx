@@ -20,9 +20,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
     ArrowDownZA,
+    Bot,
     MoreHorizontalIcon,
     Pencil,
     RefreshCcw,
+    Server as ServerIcon,
     SlidersHorizontal,
     TerminalIcon,
     Trash,
@@ -735,31 +737,35 @@ export default function ManageServers() {
                 <h3 className="text-2xl font-bold mb-4">Manage Servers</h3>{" "}
                 <CommandLogs />
                 <div>
-                    <div className="py-2 space-x-1">
+                    <div className="py-2 flex items-center gap-2">
                         <NewServer />
                         <Button
                             onClick={handleRefreshServers}
                             variant={"ghost"}
+                            size={"icon-sm"}
                             className="cursor-pointer"
                         >
-                            <RefreshCcw size={20} />
+                            <RefreshCcw size={16} />
                         </Button>
-                        <div className="utils-command py-2 space-x-1">
-                            <Badge
-                                onClick={() => handleSelectAllType("liteNode")}
-                                className="cursor-pointer"
-                                variant={"secondary"}
-                            >
-                                Select all lites
-                            </Badge>
-                            <Badge
-                                onClick={() => handleSelectAllType("bobNode")}
-                                className="cursor-pointer"
-                                variant={"secondary"}
-                            >
-                                Select all bobs
-                            </Badge>
-                        </div>
+                        <div className="h-5 w-px bg-border mx-1" />
+                        <Button
+                            onClick={() => handleSelectAllType("liteNode")}
+                            variant={"outline"}
+                            size={"sm"}
+                            className="cursor-pointer h-8 text-xs gap-1.5"
+                        >
+                            <ServerIcon size={13} />
+                            Select Lite Nodes
+                        </Button>
+                        <Button
+                            onClick={() => handleSelectAllType("bobNode")}
+                            variant={"outline"}
+                            size={"sm"}
+                            className="cursor-pointer h-8 text-xs gap-1.5"
+                        >
+                            <Bot size={13} />
+                            Select Bob Nodes
+                        </Button>
                     </div>
                     {!error ? (
                         <Table>
