@@ -24,6 +24,7 @@ import {
     Pencil,
     RefreshCcw,
     SlidersHorizontal,
+    TerminalIcon,
     Trash,
     Users,
 } from "lucide-react";
@@ -39,6 +40,7 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import ViewLogs from "./components/ViewLogs";
+import SshConsoleDialog from "./components/SshConsoleDialog";
 import { useQueryClient } from "@tanstack/react-query";
 import {
     useSelectedServersStore,
@@ -92,6 +94,8 @@ const ServerTableRow = memo(
             ownership: false,
             customParameter: false,
         });
+
+        let [sshConsoleOpen, setSshConsoleOpen] = useState(false);
 
         let [currentServerOwner, setCurrentServerOwner] = useState<string>(
             serverInfo.operator
@@ -240,6 +244,7 @@ const ServerTableRow = memo(
         let myOperator = MyStorage.getUserInfo()?.username || "unknown";
 
         return (
+            <>
             <TableRow key={serverInfo.server}>
                 <TableCell>
                     <Checkbox
@@ -536,6 +541,20 @@ const ServerTableRow = memo(
                                             </DialogContent>
                                         </Dialog>
                                     )}
+                                {(myOperator === serverInfo.operator ||
+                                    myOperator === "admin") && (
+                                    <div
+                                        onClick={() =>
+                                            setSshConsoleOpen(true)
+                                        }
+                                        className="pl-2 flex items-center py-1 cursor-pointer hover:bg-gray-100"
+                                    >
+                                        <TerminalIcon size={20} />
+                                        <span className="ml-1">
+                                            SSH Console
+                                        </span>
+                                    </div>
+                                )}
                                 <AlertDialog>
                                     <AlertDialogTrigger asChild>
                                         <div className="text-red-500 pl-2 flex items-center py-1 cursor-pointer hover:bg-gray-100">
@@ -576,6 +595,12 @@ const ServerTableRow = memo(
                     </DropdownMenu>
                 </TableCell>
             </TableRow>
+            <SshConsoleDialog
+                server={serverInfo.server}
+                open={sshConsoleOpen}
+                onOpenChange={setSshConsoleOpen}
+            />
+        </>
         );
     }
 );
