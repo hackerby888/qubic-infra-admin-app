@@ -40,7 +40,7 @@ export default function ViewLogs({ server }: { server: string }) {
     return (
         <Dialog>
             <DialogTrigger className="w-full">
-                <div className="pl-2 w-full flex items-center py-1 cursor-pointer hover:bg-gray-100">
+                <div className="pl-2 w-full flex items-center py-1 cursor-pointer hover:bg-gray-100 dark:hover:bg-muted">
                     <SquareTerminal size={20} />
                     <span className="ml-1">View Logs</span>
                 </div>

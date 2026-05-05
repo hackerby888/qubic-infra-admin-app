@@ -140,7 +140,7 @@ export default function LiteNodeTable({
                                 className={`${
                                     !nodeAlive &&
                                     !stat.isSavingSnapshot &&
-                                    "bg-red-100 hover:bg-red-200"
+                                    "bg-red-100 hover:bg-red-200 dark:bg-red-950/60 dark:hover:bg-red-950/80"
                                 }`}
                                 key={stat.server}
                             >

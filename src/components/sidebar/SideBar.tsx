@@ -76,7 +76,7 @@ export default function SideBar() {
     return (
         <Sidebar className="">
             <SidebarHeader />
-            <SidebarContent className={`${isLoggedIn && "bg-white"}`}>
+            <SidebarContent>
                 <SidebarGroup>
                     <div className="px-3 py-3">
                         <div className="flex">
@@ -199,7 +199,7 @@ export default function SideBar() {
                                         className={`${
                                             route.path == location.pathname
                                                 ? "bg-blue-500 text-white hover:bg-blue-600"
-                                                : "hover:bg-gray-100"
+                                                : "hover:bg-gray-100 dark:hover:bg-sidebar-accent"
                                         } p-2 rounded-sm cursor-pointer flex`}
                                     >
                                         <route.icon

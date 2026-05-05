@@ -46,7 +46,7 @@ export default function ServerNoteTyper({
             value={note}
             onChange={(e) => setNote(e.target.value)}
             placeholder="Tap to add note"
-            className="text-[0.8rem] text-gray-700 bg-gray-100 rounded mt-2 p-1 cursor-pointer placeholder:italic placeholder:text-[0.7rem]"
+            className="text-[0.8rem] text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded mt-2 p-1 cursor-pointer placeholder:italic placeholder:text-[0.7rem]"
         />
     );
 }

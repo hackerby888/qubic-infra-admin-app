@@ -300,7 +300,7 @@ export default function ShellManagement() {
                             </li>
                         ))}
                         {shortcutCommandsServer?.commands.length === 0 && (
-                            <li className="text-gray-500 text-sm">
+                            <li className="text-gray-500 dark:text-muted-foreground text-sm">
                                 No custom commands found
                             </li>
                         )}
@@ -313,11 +313,11 @@ export default function ShellManagement() {
                         {commandLogs?.commandLogs.map((log) => (
                             <li
                                 onClick={() => setCommand(log.command)}
-                                className="cursor-pointer p-2 bg-gray-100 rounded-sm hover:bg-gray-200 text-wrap break-all"
+                                className="cursor-pointer p-2 bg-gray-100 dark:bg-muted hover:bg-gray-200 dark:hover:bg-muted/70 rounded-sm text-wrap break-all"
                                 key={log.uuid}
                             >
                                 {log.command}{" "}
-                                <span className="text-xs text-gray-500">
+                                <span className="text-xs text-gray-500 dark:text-muted-foreground">
                                     {new Date(log.timestamp).toLocaleString()}
                                 </span>
                             </li>

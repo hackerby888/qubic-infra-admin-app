@@ -40,7 +40,7 @@ export default function RealTimeLogViewer({
     return (
         <div className="relative">
             {!isSubscribed && (
-                <div className="absolute inset-0 bg-gray-100 bg-opacity-90 flex items-center justify-center z-10 cursor-pointer">
+                <div className="absolute inset-0 bg-gray-100 dark:bg-muted bg-opacity-90 flex items-center justify-center z-10 cursor-pointer">
                     <Button onClick={handleSubscribe} variant={"outline"}>
                         Load Logs
                     </Button>

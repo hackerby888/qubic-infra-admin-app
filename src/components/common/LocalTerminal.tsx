@@ -19,7 +19,7 @@ export default function LocalTerminal({
     };
 
     return (
-        <div className="w-full bg-gray-100 p-4 text-sm rounded h-96 overflow-x-auto relative">
+        <div className="w-full bg-gray-100 dark:bg-muted p-4 text-sm rounded h-96 overflow-x-auto relative">
             <Button
                 onClick={() => handleCopy(text)}
                 variant={"outline"}

@@ -1,4 +1,4 @@
-import { ChevronRight, PanelLeftClose } from "lucide-react";
+import { ChevronRight, Moon, PanelLeftClose, Sun } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import LoginButton from "@/components/login/Login";
 import PowerManagement from "@/components/nav/PowerManagement";
@@ -10,6 +10,7 @@ import {
     useLoginReloadStore,
     type LoginReloadState,
 } from "@/stores/login-reload-store";
+import { useThemeStore } from "@/stores/theme-store";
 
 function getPathsFromLocation(paths: string) {
     return paths.split("/").filter((path) => path !== "");
@@ -27,6 +28,7 @@ function normlizePathName(path: string) {
 
 export default function Nav() {
     const loginReload = useLoginReloadStore() as LoginReloadState;
+    const { isDark, toggle } = useThemeStore();
     let location = useLocation();
     let paths = getPathsFromLocation(location.pathname);
     let totalPaths = paths.length;
@@ -39,8 +41,10 @@ export default function Nav() {
     console.log(loginReload.reloadFlag);
     return (
         <nav
-            className={`w-full pl-2 py-3 border-b border-gray-200 flex justify-between ${
-                isLoggedIn && "bg-nav-gradient text-white"
+            className={`w-full pl-2 py-3 border-b flex justify-between ${
+                isLoggedIn
+                    ? "bg-nav-gradient dark:bg-none dark:bg-sidebar border-transparent dark:border-sidebar-border text-white"
+                    : "border-gray-200 dark:border-border"
             }`}
         >
             <div className="flex items-center">
@@ -105,6 +109,13 @@ export default function Nav() {
                 ) : (
                     <></>
                 )}
+                <button
+                    onClick={toggle}
+                    className="cursor-pointer p-1.5 rounded-md hover:bg-white/20 transition-colors mr-3"
+                    aria-label="Toggle dark mode"
+                >
+                    {isDark ? <Sun size={17} /> : <Moon size={17} />}
+                </button>
                 <LoginButton />
             </div>
         </nav>

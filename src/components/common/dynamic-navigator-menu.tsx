@@ -46,7 +46,7 @@ export default function DynamicNavigatorMenu({
                     className={`${
                         isMatchRoot
                             ? "bg-blue-500 text-white hover:bg-blue-600"
-                            : "hover:bg-gray-100"
+                            : "hover:bg-gray-100 dark:hover:bg-sidebar-accent"
                     } p-2 rounded-sm cursor-pointer flex w-full`}
                 >
                     <Icon size={20} className="mr-2" />
@@ -66,9 +66,9 @@ export default function DynamicNavigatorMenu({
                             className={`${
                                 isPathActive(item.path, location.pathname) &&
                                 isMatchRoot
-                                    ? "border-l-blue-500 bg-blue-100 text-blue-700"
-                                    : "border-l-gray-300"
-                            } border-l-2 pl-2 py-2 hover:bg-gray-100 cursor-pointer flex`}
+                                    ? "border-l-blue-500 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300"
+                                    : "border-l-gray-300 dark:border-l-gray-600"
+                            } border-l-2 pl-2 py-2 hover:bg-gray-100 dark:hover:bg-sidebar-accent cursor-pointer flex`}
                         >
                             {item.label}
                         </li>

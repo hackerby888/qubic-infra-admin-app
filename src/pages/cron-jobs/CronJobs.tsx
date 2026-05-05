@@ -192,7 +192,7 @@ export default function CronJobs() {
                                     onChange={(e) =>
                                         setCronName(e.target.value)
                                     }
-                                    className="w-full border border-gray-300 rounded px-3 py-2"
+                                    className="w-full border border-gray-300 dark:border-border rounded px-3 py-2"
                                 />
                             </div>
                             <div>
@@ -205,7 +205,7 @@ export default function CronJobs() {
                                     onChange={(e) =>
                                         setCronSchedule(e.target.value)
                                     }
-                                    className="w-full border border-gray-300 rounded px-3 py-2"
+                                    className="w-full border border-gray-300 dark:border-border rounded px-3 py-2"
                                 />
                             </div>
                             <div>
@@ -218,7 +218,7 @@ export default function CronJobs() {
                                     onChange={(e) =>
                                         setCronCommand(e.target.value)
                                     }
-                                    className="w-full border border-gray-300 rounded px-3 py-2"
+                                    className="w-full border border-gray-300 dark:border-border rounded px-3 py-2"
                                 />
                             </div>
                             <div>
@@ -234,7 +234,7 @@ export default function CronJobs() {
                                                 | "custom"
                                         )
                                     }
-                                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                                    className="w-full border border-gray-300 dark:border-border dark:bg-background dark:text-foreground rounded px-3 py-2 text-sm"
                                 >
                                     <option value="system">System</option>
                                     <option value="custom">Custom</option>
@@ -250,12 +250,12 @@ export default function CronJobs() {
                                             "auto-save-snapshot"
                                         );
                                     }}
-                                    className="cursor-pointer p-2 bg-gray-100 rounded-sm hover:bg-gray-200"
+                                    className="cursor-pointer p-2 bg-gray-100 dark:bg-muted hover:bg-gray-200 dark:hover:bg-muted/70 rounded-sm"
                                 >
                                     <span className="text-sm">
                                         Auto Save Snapshot
                                     </span>
-                                    <span className="text-xs text-gray-500 ml-1">
+                                    <span className="text-xs text-gray-500 dark:text-muted-foreground ml-1">
                                         (Auto press `F8` key on Lite Node to
                                         save snapshot periodically)
                                     </span>

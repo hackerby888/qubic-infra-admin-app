@@ -22,7 +22,7 @@ export default function FlashText({
     return (
         <span
             className={`transition-colors duration-500 ${
-                highlight ? "text-green-500" : "text-black"
+                highlight ? "text-green-500" : "text-foreground"
             }`}
         >
             {value}

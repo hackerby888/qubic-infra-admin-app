@@ -377,7 +377,7 @@ const ServerTableRow = memo(
                     <Tooltip>
                         <TooltipTrigger>
                             <Badge
-                                className={bgColorMap[serverInfo.status]}
+                                className={`${bgColorMap[serverInfo.status]} text-white`}
                                 variant={"default"}
                             >
                                 {serverInfo.status}
@@ -416,7 +416,7 @@ const ServerTableRow = memo(
                                         <div>
                                             <div
                                                 onClick={() => {}}
-                                                className="pl-2 flex items-center py-1 cursor-pointer hover:bg-gray-100"
+                                                className="pl-2 flex items-center py-1 cursor-pointer hover:bg-gray-100 dark:hover:bg-muted"
                                             >
                                                 <Users size={20} />
                                                 <span className="ml-1">
@@ -485,7 +485,7 @@ const ServerTableRow = memo(
                                             }}
                                         >
                                             <DialogTrigger asChild>
-                                                <div className="pl-2 flex items-center py-1 cursor-pointer hover:bg-gray-100">
+                                                <div className="pl-2 flex items-center py-1 cursor-pointer hover:bg-gray-100 dark:hover:bg-muted">
                                                     <SlidersHorizontal
                                                         size={20}
                                                     />
@@ -549,7 +549,7 @@ const ServerTableRow = memo(
                                         onClick={() =>
                                             setSshConsoleOpen(true)
                                         }
-                                        className="pl-2 flex items-center py-1 cursor-pointer hover:bg-gray-100"
+                                        className="pl-2 flex items-center py-1 cursor-pointer hover:bg-gray-100 dark:hover:bg-muted"
                                     >
                                         <TerminalIcon size={20} />
                                         <span className="ml-1">
@@ -559,7 +559,7 @@ const ServerTableRow = memo(
                                 )}
                                 <AlertDialog>
                                     <AlertDialogTrigger asChild>
-                                        <div className="text-red-500 pl-2 flex items-center py-1 cursor-pointer hover:bg-gray-100">
+                                        <div className="text-red-500 pl-2 flex items-center py-1 cursor-pointer hover:bg-gray-100 dark:hover:bg-muted">
                                             <Trash size={20} />
                                             <span className="ml-1">Delete</span>
                                         </div>

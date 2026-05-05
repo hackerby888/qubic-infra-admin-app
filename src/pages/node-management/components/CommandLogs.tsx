@@ -173,9 +173,9 @@ export default memo(function CommandLogs() {
                                 </DialogDescription>
                             </DialogHeader>
                             <div className="space-y-1">
-                                <div className="bg-gray-100 w-full rounded-sm px-2 py-2 text-sm text-gray-700 text-wrap break-all">
+                                <div className="bg-gray-100 dark:bg-muted w-full rounded-sm px-2 py-2 text-sm text-gray-700 dark:text-muted-foreground text-wrap break-all">
                                     {log.command}{" "}
-                                    <span className="text-xs text-gray-500">
+                                    <span className="text-xs text-gray-500 dark:text-muted-foreground">
                                         {new Date(
                                             log.timestamp
                                         ).toLocaleString()}{" "}
@@ -192,9 +192,9 @@ export default memo(function CommandLogs() {
                                         </b>
                                     </span>
                                 </div>
-                                <div className="bg-gray-100 w-full rounded-sm px-2 py-2 text-sm text-gray-700">
+                                <div className="bg-gray-100 dark:bg-muted w-full rounded-sm px-2 py-2 text-sm text-gray-700 dark:text-muted-foreground">
                                     ({log.servers.length} servers){" "}
-                                    <span className="text-xs text-gray-500">
+                                    <span className="text-xs text-gray-500 dark:text-muted-foreground">
                                         {log.servers
                                             .filter(
                                                 (server) =>
