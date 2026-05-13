@@ -62,7 +62,16 @@ export default memo(function CommandLogs() {
     } = useGeneralGet<{ commandLogs: CommandLog[] }>({
         queryKey: ["command-logs", "all"],
         path: "/command-logs",
+        refetchInterval: (query) => {
+            const logs = query.state.data?.commandLogs;
+            return logs?.some((l) => l.status === "pending") ? 1500 : false;
+        },
     });
+
+    const isSelectedLogPending = !!commandLogs?.commandLogs.find(
+        (l) =>
+            l.uuid === currentSelectedCommandLogUuid && l.status === "pending"
+    );
 
     let { mutate: deleteCommandLog } = useGeneralPost({
         queryKey: ["delete-command-log"],
@@ -86,6 +95,8 @@ export default memo(function CommandLogs() {
         reqQuery: {
             uuid: currentSelectedCommandLogUuid,
         },
+        // Stream live output while the parent log is still pending.
+        refetchInterval: isSelectedLogPending ? 1500 : false,
     });
 
     const handleDeleteAllCommandLogs = () => {

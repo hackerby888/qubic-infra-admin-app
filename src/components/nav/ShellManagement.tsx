@@ -31,12 +31,18 @@ const LITE_COMMANDS_MAP = {
     "F8/SaveSnapShot (Lite Node)": "f8/savesnapshot:lite",
     "F10/ClearMemory (Lite Node)": "f10/clearmemory:lite",
     "F11/StaticMode (Lite Node)": "f11/staticmode:lite",
+    "PlaceBinary (Lite Node)": "placebinary:lite::<url>",
 };
 
 const BOB_COMMANDS_MAP = {
     "PlaceBinary (Bob Node)": "placebinary:bob::<url>",
     "Restart Kvrocks (Bob Node)": "restartkvrocks:bob",
     "Restart Keydb (Bob Node)": "restartkeydb:bob",
+};
+
+const SERVER_COMMANDS_MAP = {
+    "Install ttyd (direct shell on :7681)": "installttyd:server",
+    "Uninstall ttyd": "uninstallttyd:server",
 };
 
 export default function ShellManagement() {
@@ -98,6 +104,11 @@ export default function ShellManagement() {
         reqQuery: {
             isStandardCommand: "false",
             limit: "7",
+        },
+        // Poll only while at least one log is still pending; stop once settled.
+        refetchInterval: (query) => {
+            const logs = query.state.data?.commandLogs;
+            return logs?.some((l) => l.status === "pending") ? 1500 : false;
         },
     });
 
@@ -213,6 +224,21 @@ export default function ShellManagement() {
                     </ul>
                     <ul className="mt-2 space-y-1 text-sm flex space-x-1">
                         {Object.entries(BOB_COMMANDS_MAP).map(
+                            ([label, cmd]) => (
+                                <li>
+                                    <Button
+                                        onClick={() => setCommand(cmd)}
+                                        variant={"outline"}
+                                        className="cursor-pointer text-[12px]"
+                                    >
+                                        {label}
+                                    </Button>
+                                </li>
+                            )
+                        )}
+                    </ul>
+                    <ul className="mt-2 space-y-1 text-sm flex space-x-1">
+                        {Object.entries(SERVER_COMMANDS_MAP).map(
                             ([label, cmd]) => (
                                 <li>
                                     <Button

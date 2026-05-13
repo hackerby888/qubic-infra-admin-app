@@ -8,14 +8,78 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import socket from "@/networking/socket";
 import { MyStorage } from "@/utils/storage";
+import { API_SERVER } from "@/consts/api-server";
 import { TerminalIcon } from "lucide-react";
+
+type Status = "connecting" | "connected" | "error" | "closed";
 
 interface SshConsoleDialogProps {
     server: string;
     open: boolean;
     onOpenChange: (open: boolean) => void;
+}
+
+interface TtydCredentials {
+    host: string;
+    port: number;
+    token: string;
+}
+
+// ttyd WebSocket protocol — one ASCII byte prefix per frame.
+// https://github.com/tsl0922/ttyd/blob/main/src/protocol.c
+const ClientMsg = {
+    INPUT: "0",
+    RESIZE: "1",
+    PAUSE: "2",
+    RESUME: "3",
+    JSON_DATA: "{",
+};
+const ServerMsg = {
+    OUTPUT: 0x30, // '0'
+    SET_WINDOW_TITLE: 0x31, // '1'
+    SET_PREFERENCES: 0x32, // '2'
+};
+
+function buildTtydUrl(creds: TtydCredentials) {
+    // ttyd serves TLS only — always use wss so https frontends don't trip
+    // mixed-content blocking and http frontends still work fine.
+    return `wss://${creds.host}:${creds.port}/${creds.token}/ws`;
+}
+
+function buildTtydTrustUrl(creds: TtydCredentials) {
+    return `https://${creds.host}:${creds.port}/${creds.token}/`;
+}
+
+async function fetchTtydCredentials(host: string): Promise<TtydCredentials> {
+    const token = MyStorage.getLoginCredential();
+    const res = await fetch(`${API_SERVER}/ttyd-credentials`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ host }),
+    });
+    if (!res.ok) {
+        let msg = `Failed to fetch ttyd credentials (${res.status})`;
+        try {
+            const body = await res.json();
+            if (body?.error) msg = body.error;
+        } catch {}
+        throw new Error(msg);
+    }
+    return (await res.json()) as TtydCredentials;
+}
+
+function encodeClientMsg(type: string, data: string | Uint8Array): Uint8Array {
+    const head = new TextEncoder().encode(type);
+    const body =
+        typeof data === "string" ? new TextEncoder().encode(data) : data;
+    const out = new Uint8Array(head.length + body.length);
+    out.set(head, 0);
+    out.set(body, head.length);
+    return out;
 }
 
 export default function SshConsoleDialog({
@@ -26,13 +90,16 @@ export default function SshConsoleDialog({
     let termRef = useRef<HTMLDivElement>(null);
     let termInstance = useRef<Terminal | null>(null);
     let fitAddon = useRef<FitAddon | null>(null);
-    let [status, setStatus] = useState<"connecting" | "connected" | "error" | "closed">("connecting");
+    let wsRef = useRef<WebSocket | null>(null);
+    let [status, setStatus] = useState<Status>("connecting");
     let [errorMsg, setErrorMsg] = useState<string>("");
-    let isSubscribed = useRef(false);
+    let [credentials, setCredentials] = useState<TtydCredentials | null>(null);
+    let [retryNonce, setRetryNonce] = useState(0);
 
     useEffect(() => {
         if (!open) return;
 
+        let cancelled = false;
         const term = new Terminal({
             cursorBlink: true,
             fontSize: 13,
@@ -64,84 +131,133 @@ export default function SshConsoleDialog({
         term.loadAddon(fit);
         termInstance.current = term;
         fitAddon.current = fit;
+        setStatus("connecting");
+        setErrorMsg("");
+        setCredentials(null);
 
-        // Small delay to let Dialog finish rendering before opening the terminal
-        const mountTimer = setTimeout(() => {
-            if (!termRef.current) return;
+        const sendResize = (cols: number, rows: number) => {
+            const ws = wsRef.current;
+            if (!ws || ws.readyState !== WebSocket.OPEN) return;
+            ws.send(
+                encodeClientMsg(
+                    ClientMsg.RESIZE,
+                    JSON.stringify({ columns: cols, rows })
+                )
+            );
+        };
+
+        const mountTimer = setTimeout(async () => {
+            if (cancelled || !termRef.current) return;
             term.open(termRef.current);
             fit.fit();
+            term.write(`\r\nConnecting to ${server}...\r\n`);
 
-            const token = MyStorage.getLoginCredential();
-            const { cols, rows } = term;
+            let creds: TtydCredentials;
+            try {
+                creds = await fetchTtydCredentials(server);
+            } catch (err) {
+                if (cancelled) return;
+                const msg = (err as Error).message;
+                setStatus("error");
+                setErrorMsg(msg);
+                term.write(`\r\n\x1b[31mError: ${msg}\x1b[0m\r\n`);
+                return;
+            }
+            if (cancelled) return;
+            setCredentials(creds);
 
-            socket.emit("subscribeToSshConsole", {
-                host: server,
-                token,
-                cols,
-                rows,
+            const ws = new WebSocket(buildTtydUrl(creds), ["tty"]);
+            ws.binaryType = "arraybuffer";
+            wsRef.current = ws;
+
+            ws.onopen = () => {
+                if (cancelled) {
+                    ws.close();
+                    return;
+                }
+                // ttyd expects an initial JSON_DATA frame before it will accept input.
+                // With HTTP Basic auth the body can be an empty object.
+                ws.send(encodeClientMsg(ClientMsg.JSON_DATA, "{}"));
+                sendResize(term.cols, term.rows);
+                setStatus("connected");
+            };
+
+            ws.onmessage = (ev) => {
+                if (!(ev.data instanceof ArrayBuffer)) return;
+                const view = new Uint8Array(ev.data);
+                if (view.length === 0) return;
+                const type = view[0];
+                const payload = view.subarray(1);
+                if (type === ServerMsg.OUTPUT) {
+                    term.write(payload);
+                }
+                // SET_WINDOW_TITLE / SET_PREFERENCES — ignored.
+            };
+
+            ws.onerror = () => {
+                if (cancelled) return;
+                setStatus("error");
+                setErrorMsg("WebSocket error");
+                term.write(
+                    `\r\n\x1b[31mError: failed to connect to ttyd on ${server}:${creds.port}\x1b[0m\r\n`
+                );
+            };
+
+            ws.onclose = (ev) => {
+                if (cancelled) return;
+                setStatus((s) => (s === "error" ? s : "closed"));
+                if (ev.code !== 1000 && ev.code !== 1005) {
+                    term.write(
+                        `\r\n\x1b[33mConnection closed (code ${ev.code}).\x1b[0m\r\n`
+                    );
+                } else {
+                    term.write(
+                        `\r\n\x1b[33mConnection closed.\x1b[0m\r\n`
+                    );
+                }
+            };
+
+            term.onData((data) => {
+                if (ws.readyState !== WebSocket.OPEN) return;
+                ws.send(encodeClientMsg(ClientMsg.INPUT, data));
             });
-            isSubscribed.current = true;
-            setStatus("connecting");
-            term.write("\r\nConnecting to " + server + "...\r\n");
         }, 100);
-
-        const handleOutput = (data: string) => {
-            if (status !== "connected") setStatus("connected");
-            term.write(data);
-        };
-        const handleError = (msg: string) => {
-            setStatus("error");
-            setErrorMsg(msg);
-            term.write(`\r\n\x1b[31mError: ${msg}\x1b[0m\r\n`);
-        };
-        const handleClose = () => {
-            setStatus("closed");
-            term.write("\r\n\x1b[33mConnection closed.\x1b[0m\r\n");
-        };
-
-        socket.on("sshConsoleOutput", handleOutput);
-        socket.on("sshConsoleError", handleError);
-        socket.on("sshConsoleClose", handleClose);
-
-        term.onData((data) => {
-            socket.emit("sshConsoleInput", data);
-        });
 
         const handleResize = () => {
             if (!fitAddon.current || !termInstance.current) return;
             fitAddon.current.fit();
-            socket.emit("sshConsoleResize", {
-                cols: termInstance.current.cols,
-                rows: termInstance.current.rows,
-            });
+            const t = termInstance.current;
+            sendResize(t.cols, t.rows);
         };
         window.addEventListener("resize", handleResize);
 
         return () => {
+            cancelled = true;
             clearTimeout(mountTimer);
             window.removeEventListener("resize", handleResize);
-            socket.off("sshConsoleOutput", handleOutput);
-            socket.off("sshConsoleError", handleError);
-            socket.off("sshConsoleClose", handleClose);
-            if (isSubscribed.current) {
-                socket.emit("unsubscribeFromSshConsole");
-                isSubscribed.current = false;
-            }
+            try {
+                wsRef.current?.close();
+            } catch {}
+            wsRef.current = null;
             term.dispose();
             termInstance.current = null;
             fitAddon.current = null;
         };
-    }, [open, server]);
+    }, [open, server, retryNonce]);
 
-    // Refit when dialog finishes opening
     useEffect(() => {
         if (open && fitAddon.current && termInstance.current) {
             setTimeout(() => {
                 fitAddon.current?.fit();
-                socket.emit("sshConsoleResize", {
-                    cols: termInstance.current!.cols,
-                    rows: termInstance.current!.rows,
-                });
+                const t = termInstance.current!;
+                const ws = wsRef.current;
+                if (!ws || ws.readyState !== WebSocket.OPEN) return;
+                ws.send(
+                    encodeClientMsg(
+                        "1",
+                        JSON.stringify({ columns: t.cols, rows: t.rows })
+                    )
+                );
             }, 150);
         }
     }, [open]);
@@ -152,7 +268,7 @@ export default function SshConsoleDialog({
                 <DialogHeader className="shrink-0">
                     <DialogTitle className="flex items-center gap-2">
                         <TerminalIcon size={18} />
-                        SSH Console — {server}
+                        Shell — {server}
                         {status === "connecting" && (
                             <span className="text-xs text-yellow-500 font-normal">connecting...</span>
                         )}
@@ -172,6 +288,28 @@ export default function SshConsoleDialog({
                     className="flex-1 rounded overflow-hidden bg-[#0d1117] min-h-0"
                     style={{ padding: "4px" }}
                 />
+                {status === "error" && credentials && (
+                    <div className="shrink-0 text-xs flex items-center gap-3 rounded bg-yellow-500/10 border border-yellow-500/40 px-3 py-2">
+                        <span className="text-yellow-200">
+                            First time connecting? The node uses a self-signed cert your browser doesn't trust yet.
+                        </span>
+                        <a
+                            href={buildTtydTrustUrl(credentials)}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="underline text-yellow-100 hover:text-yellow-50"
+                        >
+                            Open node in new tab to trust the certificate
+                        </a>
+                        <button
+                            type="button"
+                            onClick={() => setRetryNonce((n) => n + 1)}
+                            className="ml-auto rounded bg-yellow-500/20 hover:bg-yellow-500/30 px-2 py-1 text-yellow-100"
+                        >
+                            Retry
+                        </button>
+                    </div>
+                )}
             </DialogContent>
         </Dialog>
     );

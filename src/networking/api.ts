@@ -1,5 +1,5 @@
 import { API_SERVER } from "@/consts/api-server";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, type Query } from "@tanstack/react-query";
 import { MyStorage } from "@/utils/storage";
 import { useNavigate } from "react-router";
 
@@ -22,6 +22,11 @@ export async function handleApiResponse(
     return json;
 }
 
+type RefetchInterval<T> =
+    | number
+    | false
+    | ((query: Query<T, Error, T, readonly unknown[]>) => number | false | undefined);
+
 export function useGeneralGet<T>({
     queryKey,
     path,
@@ -35,7 +40,7 @@ export function useGeneralGet<T>({
     reqQuery?: {
         [key: string]: any;
     };
-    refetchInterval?: number;
+    refetchInterval?: RefetchInterval<T>;
 }) {
     let navigate = useNavigate();
     return useQuery<T>({
