@@ -168,3 +168,10 @@ export interface TickEvent {
     tick: number;
     logs: LogEvent[];
 }
+
+export interface CrashReport {
+    ip: string;
+    type: string;
+    logs: string;
+    timestamp: number;
+}

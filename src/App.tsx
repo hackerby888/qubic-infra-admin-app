@@ -13,6 +13,7 @@ import ManageServers from "./pages/node-management/ManageServers";
 import Map from "./pages/map/Map";
 import CronJobs from "./pages/cron-jobs/CronJobs";
 import LogsRealTime from "./pages/logs-realtime/LogsRealtime";
+import CrashReports from "./pages/crash-reports/CrashReports";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -88,6 +89,12 @@ function App() {
                                                             path="cron-jobs"
                                                             element={
                                                                 <CronJobs />
+                                                            }
+                                                        />
+                                                        <Route
+                                                            path="crash-reports"
+                                                            element={
+                                                                <CrashReports />
                                                             }
                                                         />
                                                         <Route

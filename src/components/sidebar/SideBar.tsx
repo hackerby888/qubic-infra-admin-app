@@ -1,4 +1,10 @@
-import { House, LaptopMinimal, Map, UserRoundPlus } from "lucide-react";
+import {
+    AlertTriangle,
+    House,
+    LaptopMinimal,
+    Map,
+    UserRoundPlus,
+} from "lucide-react";
 import {
     Sidebar,
     SidebarContent,
@@ -50,6 +56,7 @@ const availableRoutesPrivate = {
             icon: LaptopMinimal,
         },
         { name: "Cron Jobs", path: "/cron-jobs", icon: LaptopMinimal },
+        { name: "Crash Reports", path: "/crash-reports", icon: AlertTriangle },
         { name: "Authentication", path: "/auth", icon: LaptopMinimal },
     ],
 };
