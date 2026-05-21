@@ -183,7 +183,7 @@ export default function NewServer() {
                                             For enhanced security, it is
                                             recommended to use this{" "}
                                             <a
-                                                className="text-blue-500"
+                                                className="text-primary"
                                                 href="https://github.com/hackerby888/qubic-core-lite/tree/main/docker/ubuntu-env"
                                             >
                                                 ubuntu docker image
@@ -286,13 +286,13 @@ export default function NewServer() {
                                     </InputGroup>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="w-fit hover:bg-accent/50 flex items-start gap-3 rounded-lg border p-3 has-[[aria-checked=true]]:border-blue-600 has-[[aria-checked=true]]:bg-blue-50 dark:has-[[aria-checked=true]]:border-blue-900 dark:has-[[aria-checked=true]]:bg-blue-950">
+                                    <Label className="w-fit hover:bg-accent/50 flex items-start gap-3 rounded-lg border p-3 has-[[aria-checked=true]]:border-primary has-[[aria-checked=true]]:bg-primary/10">
                                         <Checkbox
                                             checked={authType === "password"}
                                             onCheckedChange={() => {
                                                 setAuthType("password");
                                             }}
-                                            className="data-[state=checked]:border-blue-600 data-[state=checked]:bg-blue-600 data-[state=checked]:text-white dark:data-[state=checked]:border-blue-700 dark:data-[state=checked]:bg-blue-700"
+                                            className="data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
                                         />
                                         <div className="grid gap-1.5 font-normal">
                                             <p className="text-sm leading-none font-medium">
@@ -301,14 +301,14 @@ export default function NewServer() {
                                             <p className="text-muted-foreground text-sm"></p>
                                         </div>
                                     </Label>
-                                    <Label className="w-fit hover:bg-accent/50 flex items-start gap-3 rounded-lg border p-3 has-[[aria-checked=true]]:border-blue-600 has-[[aria-checked=true]]:bg-blue-50 dark:has-[[aria-checked=true]]:border-blue-900 dark:has-[[aria-checked=true]]:bg-blue-950">
+                                    <Label className="w-fit hover:bg-accent/50 flex items-start gap-3 rounded-lg border p-3 has-[[aria-checked=true]]:border-primary has-[[aria-checked=true]]:bg-primary/10">
                                         <Checkbox
                                             checked={authType === "sshKey"}
                                             onCheckedChange={() => {
                                                 setAuthType("sshKey");
                                                 setPassword("");
                                             }}
-                                            className="data-[state=checked]:border-blue-600 data-[state=checked]:bg-blue-600 data-[state=checked]:text-white dark:data-[state=checked]:border-blue-700 dark:data-[state=checked]:bg-blue-700"
+                                            className="data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
                                         />
                                         <div className="grid gap-1.5 font-normal">
                                             <p className="text-sm leading-none font-medium">
@@ -318,7 +318,7 @@ export default function NewServer() {
                                                 We will use the SSH keys you
                                                 have previously set up{" "}
                                                 <Link
-                                                    className="text-blue-600"
+                                                    className="text-primary"
                                                     to={"/node-management/auth"}
                                                 >
                                                     here
@@ -328,7 +328,7 @@ export default function NewServer() {
                                             </p>
                                         </div>
                                     </Label>
-                                    <Label className="w-fit hover:bg-accent/50 flex items-start gap-3 rounded-lg border p-3 has-[[aria-checked=true]]:border-blue-600 has-[[aria-checked=true]]:bg-blue-50 dark:has-[[aria-checked=true]]:border-blue-900 dark:has-[[aria-checked=true]]:bg-blue-950">
+                                    <Label className="w-fit hover:bg-accent/50 flex items-start gap-3 rounded-lg border p-3 has-[[aria-checked=true]]:border-primary has-[[aria-checked=true]]:bg-primary/10">
                                         <Checkbox
                                             checked={authType === "tracking"}
                                             onCheckedChange={() => {
@@ -336,7 +336,7 @@ export default function NewServer() {
                                                 setUsername("");
                                                 setPassword("");
                                             }}
-                                            className="data-[state=checked]:border-blue-600 data-[state=checked]:bg-blue-600 data-[state=checked]:text-white dark:data-[state=checked]:border-blue-700 dark:data-[state=checked]:bg-blue-700"
+                                            className="data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
                                         />
                                         <div className="grid gap-1.5 font-normal">
                                             <p className="text-sm leading-none font-medium">

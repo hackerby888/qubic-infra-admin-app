@@ -6,7 +6,7 @@ export function calculateTimeDiffInSeconds(timestamp: number): number {
 
 export function badgeOperatorColor(operator: string) {
     let bgMap = {
-        "core-tech": "bg-red-400 text-white",
+        "core-tech": "bg-[var(--red)] text-background",
         unknown: "",
     };
 

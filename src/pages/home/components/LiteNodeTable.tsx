@@ -140,7 +140,7 @@ export default function LiteNodeTable({
                                 className={`${
                                     !nodeAlive &&
                                     !stat.isSavingSnapshot &&
-                                    "bg-red-100 hover:bg-red-200 dark:bg-red-950/60 dark:hover:bg-red-950/80"
+                                    "bg-destructive/15 hover:bg-destructive/25"
                                 }`}
                                 key={stat.server}
                             >
@@ -166,7 +166,7 @@ export default function LiteNodeTable({
                                 <TableCell>
                                     {stat.server}{" "}
                                     {operatorInfo && (
-                                        <Badge className="ml-1 bg-blue-600">
+                                        <Badge className="ml-1 bg-primary text-primary-foreground">
                                             {mainAuxStatusToString(
                                                 stat.mainAuxStatus
                                             )}
@@ -183,7 +183,7 @@ export default function LiteNodeTable({
                                     {Boolean(stat.isSavingSnapshot) && (
                                         <Badge
                                             variant={"outline"}
-                                            className="ml-1 bg-yellow-500 text-white"
+                                            className="ml-1 bg-[var(--amber)] text-background"
                                         >
                                             {"Saving Snapshot"}
                                         </Badge>

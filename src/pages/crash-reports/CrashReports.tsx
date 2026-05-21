@@ -303,7 +303,7 @@ export default function CrashReports() {
 
     return (
         <div className="p-4">
-            <h3 className="text-2xl font-bold mb-4">Crash Reports</h3>
+            <h3 className="text-2xl font-bold mb-4 font-display">Crash Reports</h3>
 
             <div className="flex flex-wrap gap-3 items-end mb-4">
                 <div>
@@ -407,7 +407,7 @@ export default function CrashReports() {
                             <TableCell>
                                 <span
                                     onClick={() => setSelected(r)}
-                                    className="text-blue-500 cursor-pointer"
+                                    className="text-primary cursor-pointer"
                                 >
                                     View
                                 </span>

@@ -30,9 +30,9 @@ export default React.memo(function TickEventViewer({
     }, [tickEvent.logs.length]);
 
     return (
-        <div className="border rounded-sm bg-white p-2 cursor-pointer">
+        <div className="accent-panel p-2 cursor-pointer">
             <div>
-                <span className="text-sm font-bold text-gray-700">
+                <span className="text-sm font-bold text-foreground">
                     Tick: {tickEvent.tick.toLocaleString()} (
                     {tickEvent.logs.length} logs)
                 </span>
@@ -47,7 +47,7 @@ export default React.memo(function TickEventViewer({
                     <>
                         {!isExpanded && (
                             <div
-                                className="text-sm text-blue-500 hover:underline mt-1"
+                                className="text-sm text-primary hover:underline mt-1"
                                 onClick={() => setIsExpanded(true)}
                             >
                                 Show more...
@@ -55,7 +55,7 @@ export default React.memo(function TickEventViewer({
                         )}
                         {isExpanded && (
                             <div
-                                className="text-sm text-blue-500 hover:underline mt-1"
+                                className="text-sm text-primary hover:underline mt-1"
                                 onClick={() => setIsExpanded(false)}
                             >
                                 Show less...

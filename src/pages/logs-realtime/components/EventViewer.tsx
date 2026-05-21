@@ -13,7 +13,7 @@ const StandardLogTypeToLabel: Record<number, string> = {
 
 export default function EventViewer({ log }: { log: LogEvent }) {
     return (
-        <span className="text-sm text-gray-500">
+        <span className="text-sm text-muted-foreground">
             [{log.message.timestamp}] {log.message.logTypename}:{" "}
             <Dialog>
                 <DialogTrigger>
@@ -23,12 +23,12 @@ export default function EventViewer({ log }: { log: LogEvent }) {
                 </DialogTrigger>
                 <DialogContent className="[&>button[data-slot='dialog-close']]:hidden">
                     <div className="text-sm">
-                        <div className="bg-gray-50 p-2 rounded">
+                        <div className="bg-muted p-2 rounded">
                             <div>
-                                <span className="font-semibold text-gray-700">
+                                <span className="font-semibold text-foreground">
                                     Log Type:
                                 </span>{" "}
-                                <span className="text-gray-600">
+                                <span className="text-muted-foreground">
                                     {StandardLogTypeToLabel[log.message.type] ||
                                         `Unknown (${log.message.type})`}
                                     <span className="ml-1">
@@ -38,22 +38,22 @@ export default function EventViewer({ log }: { log: LogEvent }) {
                                 <span></span>
                             </div>
                             <div>
-                                <span className="font-semibold text-gray-700">
+                                <span className="font-semibold text-foreground">
                                     Digest:
                                 </span>{" "}
-                                <span className="text-gray-600">
+                                <span className="text-muted-foreground">
                                     {log.message.logDigest}
                                 </span>
                             </div>
                         </div>
-                        <div className="mt-2 bg-gray-50 p-2 rounded">
+                        <div className="mt-2 bg-muted p-2 rounded">
                             {Object.entries(log.message.body).map(
                                 ([key, value]) => (
                                     <div key={key} className="mb-2">
-                                        <span className="font-semibold text-gray-700">
+                                        <span className="font-semibold text-foreground">
                                             {key}:
                                         </span>{" "}
-                                        <span className="text-gray-600 text-wrap wrap-anywhere">
+                                        <span className="text-muted-foreground text-wrap wrap-anywhere">
                                             {String(value)}
                                         </span>
                                     </div>

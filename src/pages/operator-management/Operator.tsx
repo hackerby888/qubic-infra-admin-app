@@ -96,11 +96,13 @@ export default function Operator() {
 
     return (
         <div className="p-4">
-            <h3 className="text-2xl font-bold mb-4">Operator Management</h3>
+            <h3 className="text-2xl font-bold mb-4 font-display">
+                Operator Management
+            </h3>
             <div className="flex flex-col space-y-4">
-                <div className="p-4 bg-white dark:bg-card rounded-sm shadow-sm">
+                <div className="accent-panel p-4 shadow-sm">
                     <h4 className="text-lg font-semibold mb-2">Operators</h4>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-muted-foreground">
                         Manage operators who have access to this administration
                         panel.
                     </p>
@@ -146,7 +148,7 @@ export default function Operator() {
                                                 }
                                                 type="text"
                                                 id="username"
-                                                className="border border-gray-300 rounded-sm p-2"
+                                                className="border border-border rounded-sm p-2"
                                                 placeholder="Enter username"
                                             />
                                         </div>
@@ -164,7 +166,7 @@ export default function Operator() {
                                                 }
                                                 type="password"
                                                 id="password"
-                                                className="border border-gray-300 rounded-sm p-2"
+                                                className="border border-border rounded-sm p-2"
                                                 placeholder="Enter password"
                                             />
                                         </div>
@@ -213,14 +215,14 @@ export default function Operator() {
                                                 <Button
                                                     onClick={handleSubmit}
                                                     type="submit"
-                                                    className="cursor-pointer text-sm bg-blue-500 text-white px-4 py-2 rounded-sm hover:bg-blue-600 w-fit float-right"
+                                                    className="cursor-pointer text-sm bg-primary text-primary-foreground px-4 py-2 rounded-sm hover:bg-primary/90 w-fit float-right"
                                                 >
                                                     Add Operator
                                                 </Button>
                                             ) : (
                                                 <Button
                                                     disabled
-                                                    className="cursor-pointer text-sm bg-gray-400 text-white px-4 py-2 rounded-sm w-fit float-right"
+                                                    className="cursor-pointer text-sm bg-muted text-muted-foreground px-4 py-2 rounded-sm w-fit float-right"
                                                 >
                                                     Adding...
                                                 </Button>
@@ -262,7 +264,7 @@ export default function Operator() {
                                         <TableCell>
                                             {!isDeletingOperator ? (
                                                 <span
-                                                    className="text-red-500 cursor-pointer hover:underline"
+                                                    className="text-destructive cursor-pointer hover:underline"
                                                     onClick={() =>
                                                         handleDelete(
                                                             operator.username
@@ -272,7 +274,7 @@ export default function Operator() {
                                                     Remove
                                                 </span>
                                             ) : (
-                                                <span className="text-gray-400">
+                                                <span className="text-muted-foreground">
                                                     Deleting...
                                                 </span>
                                             )}

@@ -1,4 +1,4 @@
-import { ChevronRight, Moon, PanelLeftClose, Sun } from "lucide-react";
+import { ChevronRight, PanelLeftClose } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import LoginButton from "@/components/login/Login";
 import PowerManagement from "@/components/nav/PowerManagement";
@@ -26,9 +26,32 @@ function normlizePathName(path: string) {
         .join(" ");
 }
 
+function ThemePicker() {
+    const { themes, current, setTheme } = useThemeStore();
+    return (
+        <div className="flex items-center gap-1.5 mr-3" title="Accent theme">
+            {themes.map((t) => (
+                <button
+                    key={t.name}
+                    title={t.name}
+                    aria-label={`${t.name} theme`}
+                    onClick={() => setTheme(t.name)}
+                    className={`h-[18px] w-[18px] rounded-full cursor-pointer transition-transform hover:scale-110 ${
+                        current === t.name
+                            ? "ring-2 ring-foreground ring-offset-2 ring-offset-background"
+                            : "border border-[var(--border-hi)]"
+                    }`}
+                    style={{
+                        background: `linear-gradient(135deg, ${t.primary} 0 50%, ${t.secondary} 50% 100%)`,
+                    }}
+                />
+            ))}
+        </div>
+    );
+}
+
 export default function Nav() {
     const loginReload = useLoginReloadStore() as LoginReloadState;
-    const { isDark, toggle } = useThemeStore();
     let location = useLocation();
     let paths = getPathsFromLocation(location.pathname);
     let totalPaths = paths.length;
@@ -40,59 +63,55 @@ export default function Nav() {
 
     console.log(loginReload.reloadFlag);
     return (
-        <nav
-            className={`w-full pl-2 py-3 border-b flex justify-between ${
-                isLoggedIn
-                    ? "bg-nav-gradient dark:bg-none dark:bg-sidebar border-transparent dark:border-sidebar-border text-white"
-                    : "border-gray-200 dark:border-border"
-            }`}
-        >
+        <nav className="w-full pl-2 py-3 border-b border-border bg-sidebar text-foreground flex justify-between items-center">
             <div className="flex items-center">
                 <div className="p-2 rounded-sm cursor-pointer flex w-fit">
                     <SidebarTrigger className="cursor-pointer">
-                        <PanelLeftClose className="text-black" size={20} />
+                        <PanelLeftClose
+                            className="text-foreground"
+                            size={20}
+                        />
                     </SidebarTrigger>
                 </div>
-                <div style={{ width: "0.5px" }} className="bg-white h-5"></div>
+                <span className="font-display text-primary glow-primary text-sm tracking-widest mr-3 select-none hidden md:inline">
+                    ◈ QUBIC <span className="text-muted-foreground">// NODES</span>
+                </span>
+                <div className="w-px bg-border h-5"></div>
                 <span className="ml-3 text-sm md:flex hidden">
                     {totalPaths === 0 ? (
-                        <span className="cursor-pointer hover:underline">
+                        <span className="cursor-pointer hover:underline text-primary">
                             Home
                         </span>
                     ) : (
                         paths
                             .map((path) => normlizePathName(path))
-                            .map((pathClean, index) => (
-                                <div className="flex items-center" key={index}>
-                                    {" "}
-                                    <span
-                                        className={`${
-                                            index != totalPaths - 1 &&
-                                            "font-semibold"
-                                        } cursor-pointer hover:underline ${
-                                            isLoggedIn
-                                                ? "text-white"
-                                                : "text-gray-600"
-                                        }`}
-                                        key={pathClean}
+                            .map((pathClean, index) => {
+                                const isLast = index === totalPaths - 1;
+                                return (
+                                    <div
+                                        className="flex items-center"
+                                        key={index}
                                     >
-                                        {pathClean}{" "}
-                                    </span>
-                                    {index < totalPaths - 1 && (
-                                        <ChevronRight
+                                        {" "}
+                                        <span
                                             className={`${
-                                                index != totalPaths - 1 &&
-                                                "font-semibold"
-                                            } ${
-                                                isLoggedIn
-                                                    ? "text-white"
-                                                    : "text-gray-600"
-                                            }`}
-                                            size={15}
-                                        />
-                                    )}
-                                </div>
-                            ))
+                                                isLast
+                                                    ? "font-semibold text-primary"
+                                                    : "text-muted-foreground"
+                                            } cursor-pointer hover:underline`}
+                                            key={pathClean}
+                                        >
+                                            {pathClean}{" "}
+                                        </span>
+                                        {index < totalPaths - 1 && (
+                                            <ChevronRight
+                                                className="text-muted-foreground"
+                                                size={15}
+                                            />
+                                        )}
+                                    </div>
+                                );
+                            })
                     )}
                 </span>
             </div>
@@ -104,18 +123,12 @@ export default function Nav() {
                             <DeployManagement />
                             <ShellManagement />
                         </div>
-                        <div className="w-1 h-1 bg-white mr-3"></div>
+                        <div className="w-1 h-1 bg-primary mr-3"></div>
                     </>
                 ) : (
                     <></>
                 )}
-                <button
-                    onClick={toggle}
-                    className="cursor-pointer p-1.5 rounded-md hover:bg-white/20 transition-colors mr-3"
-                    aria-label="Toggle dark mode"
-                >
-                    {isDark ? <Sun size={17} /> : <Moon size={17} />}
-                </button>
+                <ThemePicker />
                 <LoginButton />
             </div>
         </nav>

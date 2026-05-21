@@ -383,7 +383,7 @@ export default function DeployManagement() {
                                     return (
                                         <span
                                             key={server}
-                                            className="cursor-pointer w-fit inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700"
+                                            className="cursor-pointer w-fit inline-block bg-muted rounded-full px-3 py-1 text-sm font-semibold text-foreground"
                                         >
                                             {server}
                                         </span>
@@ -472,7 +472,7 @@ export default function DeployManagement() {
                                             </TabsList>
                                             <TabsContent value="main">
                                                 <div className="w-full">
-                                                    <div className="mb-2 text-sm w-full text-gray-800">
+                                                    <div className="mb-2 text-sm w-full text-foreground">
                                                         <span>Added</span>
                                                         <Badge className="ml-1 text-[11px]">
                                                             +{totalIdsAdded}
@@ -482,7 +482,7 @@ export default function DeployManagement() {
                                                         </span>
                                                     </div>
                                                     {isThereInvalidId && (
-                                                        <div className="mb-2 text-sm w-full text-red-600">
+                                                        <div className="mb-2 text-sm w-full text-destructive">
                                                             Some seeds are
                                                             invalid. Each seed
                                                             should be exactly 55
@@ -619,7 +619,7 @@ export default function DeployManagement() {
                             </FieldSet>
                         </TabsContent>
                         <TabsContent className="w-full" value="bobNode">
-                            <Alert className="max-w-md border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-50">
+                            <Alert className="max-w-md border-[var(--amber)]/40 bg-[var(--amber)]/10 text-[var(--amber)]">
                                 <AlertTriangleIcon />
                                 <AlertTitle>Warning</AlertTitle>
                                 <AlertDescription className="inline-block">
@@ -915,7 +915,7 @@ maxmemory-policy allkeys-lru`}
                         {!isDeploying ? (
                             <Button
                                 onClick={() => handleDeploy()}
-                                className="mt-4 cursor-pointer float-right bg-blue-600"
+                                className="mt-4 cursor-pointer float-right bg-primary text-primary-foreground"
                             >
                                 Deploy
                             </Button>

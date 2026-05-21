@@ -89,9 +89,9 @@ export default function SideBar() {
                 <SidebarGroup>
                     <div className="px-3 py-3">
                         <div className="flex">
-                            <div className="w-10 bg-linear-to-r from-cyan-500 to-blue-500 rounded-sm"></div>
+                            <div className="w-10 bg-linear-to-b from-primary to-[var(--accent-2)] rounded-sm"></div>
                             <div className="flex flex-col justify-center align-middle pl-2">
-                                <span className="text-sm font-semibold">
+                                <span className="text-sm font-semibold font-display">
                                     Qubic Network Nodes
                                 </span>
                                 <span className="text-sm">Global</span>
@@ -207,8 +207,8 @@ export default function SideBar() {
                                         }
                                         className={`${
                                             route.path == location.pathname
-                                                ? "bg-blue-500 text-white hover:bg-blue-600"
-                                                : "hover:bg-gray-100 dark:hover:bg-sidebar-accent"
+                                                ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                                                : "hover:bg-sidebar-accent"
                                         } p-2 rounded-sm cursor-pointer flex`}
                                     >
                                         <route.icon

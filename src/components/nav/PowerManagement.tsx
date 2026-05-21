@@ -119,7 +119,7 @@ export default function PowerManagement() {
             </DropdownMenuTrigger>
             <DropdownMenuContent className="flex flex-col">
                 {Object.entries(availableCommands).map(([key, commandData]) => (
-                    <div className="border-b border-b-gray-100 dark:border-b-border py-2 flex items-center text-sm font-semibold cursor-pointer p-1 hover:bg-gray-100 dark:hover:bg-muted">
+                    <div className="border-b border-b-border py-2 flex items-center text-sm font-semibold cursor-pointer p-1 hover:bg-muted">
                         <Dialog
                             open={isOpenObj[key as CommandType]}
                             onOpenChange={(value) =>
@@ -156,8 +156,8 @@ export default function PowerManagement() {
                                             onClick={() => toggleService(index)}
                                             className={`cursor-pointer text-sm rounded-sm w-full px-2 py-1 ${
                                                 service.enabled
-                                                    ? "bg-gray-200 dark:bg-muted"
-                                                    : "bg-gray-100 dark:bg-muted/50 opacity-50"
+                                                    ? "bg-muted"
+                                                    : "bg-muted/50 opacity-50"
                                             }`}
                                         >
                                             {service.name}
@@ -165,7 +165,7 @@ export default function PowerManagement() {
                                     ))}
                                 </div>
                                 <DialogFooter>
-                                    <DialogClose className="cursor-pointer bg-gray-200 dark:bg-muted hover:bg-gray-300 dark:hover:bg-muted/70 px-4 py-2 rounded-md">
+                                    <DialogClose className="cursor-pointer bg-muted hover:bg-muted/70 px-4 py-2 rounded-md">
                                         Cancel
                                     </DialogClose>
                                     {!isSendingCommand ? (
@@ -173,14 +173,14 @@ export default function PowerManagement() {
                                             onClick={() =>
                                                 handleSubmitCommand()
                                             }
-                                            className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                                            className="cursor-pointer bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90"
                                         >
                                             Confirm
                                         </button>
                                     ) : (
                                         <button
                                             disabled
-                                            className="cursor-not-allowed bg-gray-400 text-white px-4 py-2 rounded-md"
+                                            className="cursor-not-allowed bg-muted text-muted-foreground px-4 py-2 rounded-md"
                                         >
                                             Sending...
                                         </button>

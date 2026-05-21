@@ -98,7 +98,7 @@ export default function VisibilityChanger({
                         }
                         variant={"secondary"}
                         className={`${
-                            stat.isPrivate && "bg-blue-500 text-white"
+                            stat.isPrivate && "bg-primary text-primary-foreground"
                         } cursor-pointer mr-2`}
                     >
                         Private
@@ -109,7 +109,7 @@ export default function VisibilityChanger({
                         }
                         variant={"secondary"}
                         className={`${
-                            !stat.isPrivate && "bg-blue-500 text-white"
+                            !stat.isPrivate && "bg-primary text-primary-foreground"
                         } cursor-pointer`}
                     >
                         Public

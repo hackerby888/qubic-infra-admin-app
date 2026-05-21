@@ -141,32 +141,36 @@ export default function Map() {
     return (
         <div className={`w-full h-full relative overflow-hidden`}>
             {loading && (
-                <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 text-white bg-black bg-opacity-50 px-4 py-2 rounded">
+                <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 text-foreground bg-card/80 border border-border px-4 py-2 rounded">
                     Loading map data...
                 </div>
             )}
-            <div className="absolute top-4 left-4 text-white font-bold z-10 flex justify-center w-full space-x-4">
+            <div className="absolute top-4 left-4 text-foreground font-bold z-10 flex justify-center w-full space-x-4">
                 <Button
                     onClick={() => setCurrentService("liteNode")}
-                    className={`cursor-pointer hover:bg-cyan-500 ${
-                        currentService === "liteNode" ? "bg-cyan-600" : ""
+                    className={`cursor-pointer hover:bg-primary/80 ${
+                        currentService === "liteNode"
+                            ? "bg-primary text-primary-foreground"
+                            : ""
                     }`}
                 >
                     BM Nodes
                 </Button>
                 <Button
                     onClick={() => setCurrentService("bobNode")}
-                    className={`cursor-pointer hover:bg-cyan-500 ${
-                        currentService === "bobNode" ? "bg-cyan-600" : ""
+                    className={`cursor-pointer hover:bg-primary/80 ${
+                        currentService === "bobNode"
+                            ? "bg-primary text-primary-foreground"
+                            : ""
                     }`}
                 >
                     Bob Nodes
                 </Button>
             </div>
-            <div className="absolute p-2 right-2 top-2 bg-white-600 text-white">
+            <div className="absolute p-2 right-2 top-2 bg-card/80 border border-border text-foreground">
                 <ul className="">
                     {Object.entries(countryCounts).map(([country, count]) => (
-                        <li key={country} className="text-xs text-white">
+                        <li key={country} className="text-xs text-foreground">
                             {country}: {count}
                         </li>
                     ))}

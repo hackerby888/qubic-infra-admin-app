@@ -165,7 +165,7 @@ export default function MyNodes() {
     let shouldRender = operatorToken && operatorInfo;
     return (
         <div className="p-4">
-            <h3 className="text-2xl font-bold mb-4">My Nodes</h3>
+            <h3 className="text-2xl font-bold mb-4 font-display">My Nodes</h3>
             {shouldRender ? (
                 <>
                     <div className="flex space-x-4 flex-col md:flex-row">

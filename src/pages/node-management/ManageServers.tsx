@@ -74,11 +74,11 @@ import ServerNoteTyper from "./components/ServerNoteTyper";
 import CommandLogs from "./components/CommandLogs";
 
 let bgColorMap: Record<NodeStatus, string> = {
-    active: "bg-blue-500",
-    error: "bg-red-500",
-    setting_up: "bg-yellow-500",
-    stopped: "bg-gray-500",
-    restarting: "bg-purple-500",
+    active: "bg-primary",
+    error: "bg-[var(--red)]",
+    setting_up: "bg-[var(--amber)]",
+    stopped: "bg-muted-foreground",
+    restarting: "bg-[var(--magenta)]",
 };
 
 const ServerTableRow = memo(
@@ -329,7 +329,7 @@ const ServerTableRow = memo(
                             {serverInfo.ipInfo?.country}
                         </Badge>
                         {isTrackingOnly && (
-                            <Badge className="ml-1 bg-indigo-500">
+                            <Badge className="ml-1 bg-[var(--accent-2)] text-background">
                                 Tracking Only
                             </Badge>
                         )}
@@ -361,7 +361,7 @@ const ServerTableRow = memo(
                                             } ${
                                                 !haveDeployStatus
                                                     ? "opacity-50"
-                                                    : "text-white"
+                                                    : "text-background"
                                             }`}
                                         >
                                             {service}
@@ -380,7 +380,7 @@ const ServerTableRow = memo(
                         <Tooltip>
                             <TooltipTrigger>
                                 <Badge
-                                    className={`${bgColorMap[serverInfo.status]} text-white`}
+                                    className={`${bgColorMap[serverInfo.status]} text-background`}
                                     variant={"default"}
                                 >
                                     {serverInfo.status}
@@ -415,17 +415,12 @@ const ServerTableRow = memo(
                                             }))
                                         }
                                     >
-                                        <DialogTrigger>
-                                            <div>
-                                                <div
-                                                    onClick={() => {}}
-                                                    className="pl-2 flex items-center py-1 cursor-pointer hover:bg-gray-100 dark:hover:bg-muted"
-                                                >
-                                                    <Users size={20} />
-                                                    <span className="ml-1">
-                                                        Transfer Ownership
-                                                    </span>
-                                                </div>
+                                        <DialogTrigger asChild>
+                                            <div className="pl-2 flex items-center py-1 cursor-pointer hover:bg-muted">
+                                                <Users size={20} />
+                                                <span className="ml-1">
+                                                    Transfer Ownership
+                                                </span>
                                             </div>
                                         </DialogTrigger>
                                         <DialogContent className="min-w-3/6">
@@ -493,7 +488,7 @@ const ServerTableRow = memo(
                                                 }}
                                             >
                                                 <DialogTrigger asChild>
-                                                    <div className="pl-2 flex items-center py-1 cursor-pointer hover:bg-gray-100 dark:hover:bg-muted">
+                                                    <div className="pl-2 flex items-center py-1 cursor-pointer hover:bg-muted">
                                                         <SlidersHorizontal
                                                             size={20}
                                                         />
@@ -559,7 +554,7 @@ const ServerTableRow = memo(
                                             onClick={() =>
                                                 setSshConsoleOpen(true)
                                             }
-                                            className="pl-2 flex items-center py-1 cursor-pointer hover:bg-gray-100 dark:hover:bg-muted"
+                                            className="pl-2 flex items-center py-1 cursor-pointer hover:bg-muted"
                                         >
                                             <TerminalIcon size={20} />
                                             <span className="ml-1">
@@ -569,7 +564,7 @@ const ServerTableRow = memo(
                                     )}
                                     <AlertDialog>
                                         <AlertDialogTrigger asChild>
-                                            <div className="text-red-500 pl-2 flex items-center py-1 cursor-pointer hover:bg-gray-100 dark:hover:bg-muted">
+                                            <div className="text-destructive pl-2 flex items-center py-1 cursor-pointer hover:bg-muted">
                                                 <Trash size={20} />
                                                 <span className="ml-1">
                                                     Delete
@@ -598,7 +593,7 @@ const ServerTableRow = memo(
                                                             serverInfo.server,
                                                         ])
                                                     }
-                                                    className="bg-red-500 hover:bg-red-600 cursor-pointer"
+                                                    className="bg-destructive hover:bg-destructive/90 cursor-pointer"
                                                 >
                                                     Delete
                                                 </AlertDialogAction>
@@ -747,7 +742,7 @@ export default function ManageServers() {
     return (
         <>
             <div className="p-4">
-                <h3 className="text-2xl font-bold mb-4">Manage Servers</h3>{" "}
+                <h3 className="text-2xl font-bold mb-4 font-display">Manage Servers</h3>{" "}
                 <CommandLogs />
                 <div>
                     <div className="py-2 flex items-center gap-2">
@@ -879,7 +874,7 @@ export default function ManageServers() {
                             </TableBody>
                         </Table>
                     ) : (
-                        <div className="text-red-500">
+                        <div className="text-destructive">
                             Error loading servers: {error.message}
                         </div>
                     )}

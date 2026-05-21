@@ -126,7 +126,7 @@ export default function BobNodeTable({
                     return (
                         <TableRow
                             className={`${
-                                !nodeAlive && "bg-red-100 hover:bg-red-200 dark:bg-red-950/60 dark:hover:bg-red-950/80"
+                                !nodeAlive && "bg-destructive/15 hover:bg-destructive/25"
                             }`}
                             key={stat.server}
                         >

@@ -54,7 +54,7 @@ export default function Auth() {
 
     return (
         <div className="p-4">
-            <h3 className="text-2xl font-bold mb-4">Authentication</h3>
+            <h3 className="text-2xl font-bold mb-4 font-display">Authentication</h3>
             <div className="w-full flex justify-center">
                 <div className="w-full max-w-md">
                     <FieldGroup>
@@ -109,7 +109,7 @@ AAAECGg2FOENZjU33HbSdr71fLtLfBAJQoHu/cgYA3X+wsS9WFSIskCedU7H/qXw/GnTR5
                             <Skeleton className="w-full h-10 rounded-sm"></Skeleton>
                         )}
                         {getMyInfoError && (
-                            <p className="text-red-500 mt-2">
+                            <p className="text-destructive mt-2">
                                 Error loading user info:{" "}
                                 {getMyInfoError.message}
                             </p>

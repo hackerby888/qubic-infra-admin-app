@@ -31,7 +31,7 @@ function GlobalDataPulseMap({
             .append("svg")
             .attr("width", width)
             .attr("height", height)
-            .style("background", "#05070a");
+            .style("background", "#07080a");
 
         const g = svg.append("g");
 
@@ -135,13 +135,13 @@ function GlobalDataPulseMap({
                 // check if the point is belong to a country
                 let targetColor;
                 if (n.isCheckinNode) {
-                    targetColor = n.isActive ? "#c92bfb" : "#fb2b2b";
+                    targetColor = n.isActive ? "#ff5cf0" : "#ff3b30";
                 } else {
                     targetColor = n.isBM
-                        ? "#00ff65"
+                        ? "#22ee9a"
                         : n.isActive
-                          ? "#00f2ff"
-                          : "#fb2b2b";
+                          ? "#2de2e6"
+                          : "#ff3b30";
                 }
                 colorMap[n.server] = targetColor;
 

@@ -149,8 +149,10 @@ export default function Blacklist() {
 
     return (
         <div className="p-4">
-            <h3 className="text-2xl font-bold mb-1">Blacklisted Peers</h3>
-            <p className="text-sm text-gray-500 dark:text-muted-foreground mb-4">
+            <h3 className="text-2xl font-bold mb-1 font-display">
+                Blacklisted Peers
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4">
                 Blacklisted IPs are ignored (never returned) by the random-peers
                 API.
             </p>
@@ -165,7 +167,7 @@ export default function Blacklist() {
                         value={ipsInput}
                         placeholder="e.g. 1.2.3.4, 5.6.7.8, 9.10.11.12"
                         onChange={(e) => setIpsInput(e.target.value)}
-                        className="w-full border border-gray-300 dark:border-border rounded px-3 py-2"
+                        className="w-full border border-border rounded px-3 py-2"
                     />
                 </div>
                 <div className="w-full sm:w-56">
@@ -175,7 +177,7 @@ export default function Blacklist() {
                         value={note}
                         placeholder="reason"
                         onChange={(e) => setNote(e.target.value)}
-                        className="w-full border border-gray-300 dark:border-border rounded px-3 py-2"
+                        className="w-full border border-border rounded px-3 py-2"
                     />
                 </div>
                 <Button className="cursor-pointer" onClick={handleAdd}>
@@ -235,7 +237,7 @@ export default function Blacklist() {
                             <TableCell>
                                 <span
                                     onClick={() => handleDelete([peer.ip])}
-                                    className="text-red-500 cursor-pointer"
+                                    className="text-destructive cursor-pointer"
                                 >
                                     Delete
                                 </span>

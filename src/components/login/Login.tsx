@@ -118,7 +118,7 @@ export default function LoginButton() {
                                     value={username}
                                     id="username"
                                     type="text"
-                                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-full rounded-md border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
                                 />
                             </div>
                             <div className="grid gap-2">
@@ -135,7 +135,7 @@ export default function LoginButton() {
                                     value={password}
                                     id="password"
                                     type="password"
-                                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-full rounded-md border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
                                 />
                             </div>
                         </div>
@@ -153,7 +153,7 @@ export default function LoginButton() {
                             <Button
                                 disabled={isPending}
                                 onClick={() => handleLogin()}
-                                className="cursor-pointer bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+                                className="cursor-pointer bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90"
                             >
                                 {isPending ? "Logging in..." : "Login"}
                             </Button>

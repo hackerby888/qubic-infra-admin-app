@@ -119,14 +119,14 @@ export default function LogsRealtime() {
     return (
         <div className="w-full h-full">
             <div className="h-full w-full flex flex-col p-4">
-                <div className="rounded p-2 bg-gray-50 mt-2">
-                    <span className="text-gray-700 text-sm font-semibold">
+                <div className="rounded p-2 bg-card border border-border mt-2">
+                    <span className="text-foreground text-sm font-semibold">
                         Real-time Logs Viewer (Serve by Bob Node){" "}
                         {candidateBobNode &&
                             `@ ws://${candidateBobNode}:40420/ws/logs`}
                     </span>
                 </div>
-                <div className="rounded p-2 bg-gray-50 mt-2 flex-1 overflow-auto space-y-2">
+                <div className="rounded p-2 bg-card border border-border mt-2 flex-1 overflow-auto space-y-2">
                     {isSubscribed ? (
                         sortedTickEvents.map((tickEvent) => (
                             <TickEventViewer
@@ -135,7 +135,7 @@ export default function LogsRealtime() {
                             />
                         ))
                     ) : (
-                        <div className="text-center text-gray-500">
+                        <div className="text-center text-muted-foreground">
                             {
                                 "Connecting to Bob node and subscribing to real-time logs..."
                             }

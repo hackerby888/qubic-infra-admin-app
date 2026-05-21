@@ -33,7 +33,7 @@ import { useQueryClient } from "@tanstack/react-query";
 let commandLogStatusColorMap = {
     pending: "opacity-50",
     completed: "",
-    failed: "text-red-500",
+    failed: "text-destructive",
 };
 
 const keywordsToRemove = ["set -e", "exec 2>&1", "QDONE", "GETHERE  "];
@@ -184,9 +184,9 @@ export default memo(function CommandLogs() {
                                 </DialogDescription>
                             </DialogHeader>
                             <div className="space-y-1">
-                                <div className="bg-gray-100 dark:bg-muted w-full rounded-sm px-2 py-2 text-sm text-gray-700 dark:text-muted-foreground text-wrap break-all">
+                                <div className="bg-muted w-full rounded-sm px-2 py-2 text-sm text-muted-foreground text-wrap break-all">
                                     {log.command}{" "}
-                                    <span className="text-xs text-gray-500 dark:text-muted-foreground">
+                                    <span className="text-xs text-muted-foreground">
                                         {new Date(
                                             log.timestamp
                                         ).toLocaleString()}{" "}
@@ -194,7 +194,7 @@ export default memo(function CommandLogs() {
                                         <b
                                             className={`${
                                                 log.status === "failed" &&
-                                                "text-red-500"
+                                                "text-destructive"
                                             }`}
                                         >
                                             {log.status} (
@@ -203,9 +203,9 @@ export default memo(function CommandLogs() {
                                         </b>
                                     </span>
                                 </div>
-                                <div className="bg-gray-100 dark:bg-muted w-full rounded-sm px-2 py-2 text-sm text-gray-700 dark:text-muted-foreground">
+                                <div className="bg-muted w-full rounded-sm px-2 py-2 text-sm text-muted-foreground">
                                     ({log.servers.length} servers){" "}
-                                    <span className="text-xs text-gray-500 dark:text-muted-foreground">
+                                    <span className="text-xs text-muted-foreground">
                                         {log.servers
                                             .filter(
                                                 (server) =>
@@ -215,7 +215,7 @@ export default memo(function CommandLogs() {
                                             )
                                             .join(", ")}
                                     </span>
-                                    <span className="ml-1 text-xs text-red-500">
+                                    <span className="ml-1 text-xs text-destructive">
                                         {log.servers
                                             .filter((server) =>
                                                 errorServers.includes(server)
@@ -289,7 +289,7 @@ export default memo(function CommandLogs() {
                 <AlertDialog>
                     <AlertDialogTrigger>
                         <Badge
-                            className="cursor-pointer hover:bg-red-500 hover:text-white"
+                            className="cursor-pointer hover:bg-destructive hover:text-background"
                             variant="default"
                         >
                             <X size={15} className="mr-1" />
@@ -310,7 +310,7 @@ export default memo(function CommandLogs() {
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
                             <AlertDialogAction
                                 onClick={handleDeleteAllCommandLogs}
-                                className="bg-red-500 hover:bg-red-600 cursor-pointer"
+                                className="bg-destructive hover:bg-destructive/90 cursor-pointer"
                             >
                                 Delete All
                             </AlertDialogAction>

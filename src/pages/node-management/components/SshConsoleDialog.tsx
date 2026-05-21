@@ -105,9 +105,9 @@ export default function SshConsoleDialog({
             fontSize: 13,
             fontFamily: '"Cascadia Code", "Fira Code", "Menlo", monospace',
             theme: {
-                background: "#0d1117",
-                foreground: "#c9d1d9",
-                cursor: "#58a6ff",
+                background: "#07080a",
+                foreground: "#f4f4f5",
+                cursor: "#2de2e6",
                 selectionBackground: "#264f78",
                 black: "#484f58",
                 red: "#ff7b72",
@@ -270,41 +270,41 @@ export default function SshConsoleDialog({
                         <TerminalIcon size={18} />
                         Shell — {server}
                         {status === "connecting" && (
-                            <span className="text-xs text-yellow-500 font-normal">connecting...</span>
+                            <span className="text-xs text-[var(--amber)] font-normal">connecting...</span>
                         )}
                         {status === "connected" && (
-                            <span className="text-xs text-green-500 font-normal">connected</span>
+                            <span className="text-xs text-[var(--green)] font-normal">connected</span>
                         )}
                         {status === "error" && (
-                            <span className="text-xs text-red-500 font-normal">error: {errorMsg}</span>
+                            <span className="text-xs text-destructive font-normal">error: {errorMsg}</span>
                         )}
                         {status === "closed" && (
-                            <span className="text-xs text-gray-400 font-normal">closed</span>
+                            <span className="text-xs text-muted-foreground font-normal">closed</span>
                         )}
                     </DialogTitle>
                 </DialogHeader>
                 <div
                     ref={termRef}
-                    className="flex-1 rounded overflow-hidden bg-[#0d1117] min-h-0"
+                    className="flex-1 rounded overflow-hidden bg-background border border-border min-h-0"
                     style={{ padding: "4px" }}
                 />
                 {status === "error" && credentials && (
-                    <div className="shrink-0 text-xs flex items-center gap-3 rounded bg-yellow-500/10 border border-yellow-500/40 px-3 py-2">
-                        <span className="text-yellow-200">
+                    <div className="shrink-0 text-xs flex items-center gap-3 rounded bg-[var(--amber)]/10 border border-[var(--amber)]/40 px-3 py-2">
+                        <span className="text-[var(--amber)]">
                             First time connecting? The node uses a self-signed cert your browser doesn't trust yet.
                         </span>
                         <a
                             href={buildTtydTrustUrl(credentials)}
                             target="_blank"
                             rel="noreferrer"
-                            className="underline text-yellow-100 hover:text-yellow-50"
+                            className="underline text-[var(--amber)] hover:text-foreground"
                         >
                             Open node in new tab to trust the certificate
                         </a>
                         <button
                             type="button"
                             onClick={() => setRetryNonce((n) => n + 1)}
-                            className="ml-auto rounded bg-yellow-500/20 hover:bg-yellow-500/30 px-2 py-1 text-yellow-100"
+                            className="ml-auto rounded bg-[var(--amber)]/20 hover:bg-[var(--amber)]/30 px-2 py-1 text-[var(--amber)]"
                         >
                             Retry
                         </button>

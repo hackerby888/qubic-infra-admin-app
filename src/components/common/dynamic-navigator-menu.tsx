@@ -45,14 +45,14 @@ export default function DynamicNavigatorMenu({
                 <div
                     className={`${
                         isMatchRoot
-                            ? "bg-blue-500 text-white hover:bg-blue-600"
-                            : "hover:bg-gray-100 dark:hover:bg-sidebar-accent"
+                            ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                            : "hover:bg-sidebar-accent"
                     } p-2 rounded-sm cursor-pointer flex w-full`}
                 >
                     <Icon size={20} className="mr-2" />
                     <span className="flex-1 text-left">{title}</span>
                     <ChevronUp
-                        className={`${isMatchRoot ? "white" : "text-gray-500"}`}
+                        className={`${isMatchRoot ? "text-primary-foreground" : "text-muted-foreground"}`}
                         size={20}
                     />
                 </div>
@@ -66,9 +66,9 @@ export default function DynamicNavigatorMenu({
                             className={`${
                                 isPathActive(item.path, location.pathname) &&
                                 isMatchRoot
-                                    ? "border-l-blue-500 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300"
-                                    : "border-l-gray-300 dark:border-l-gray-600"
-                            } border-l-2 pl-2 py-2 hover:bg-gray-100 dark:hover:bg-sidebar-accent cursor-pointer flex`}
+                                    ? "border-l-primary bg-primary/10 text-primary"
+                                    : "border-l-border"
+                            } border-l-2 pl-2 py-2 hover:bg-sidebar-accent cursor-pointer flex`}
                         >
                             {item.label}
                         </li>

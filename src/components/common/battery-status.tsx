@@ -7,10 +7,10 @@ export default function BatteryStatus({
 }) {
     let filledBars = Math.floor((percentage / 100) * 4);
     let colorMap = [
-        "bg-red-600",
-        "bg-yellow-500",
-        "bg-green-400",
-        "bg-green-600",
+        "bg-[var(--red)]",
+        "bg-[var(--amber)]",
+        "bg-[var(--green)]",
+        "bg-[var(--green)]",
     ];
     return (
         <div className="flex space-x-0.5 justify-center items-center h-full">
@@ -24,7 +24,7 @@ export default function BatteryStatus({
                     className={`w-1 h-3.5 rounded-sm ${
                         idx < filledBars
                             ? forceColor || colorMap[filledBars - 1]
-                            : "bg-gray-300"
+                            : "bg-[var(--border-hi)]"
                     }`}
                 ></div>
             ))}
