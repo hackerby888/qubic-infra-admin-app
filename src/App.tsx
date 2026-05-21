@@ -14,6 +14,7 @@ import Map from "./pages/map/Map";
 import CronJobs from "./pages/cron-jobs/CronJobs";
 import LogsRealTime from "./pages/logs-realtime/LogsRealtime";
 import CrashReports from "./pages/crash-reports/CrashReports";
+import Blacklist from "./pages/blacklist/Blacklist";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -69,6 +70,12 @@ function App() {
                                                             path="operator"
                                                             element={
                                                                 <Operator />
+                                                            }
+                                                        />
+                                                        <Route
+                                                            path="blacklist"
+                                                            element={
+                                                                <Blacklist />
                                                             }
                                                         />
                                                     </Route>

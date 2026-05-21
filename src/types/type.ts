@@ -175,3 +175,10 @@ export interface CrashReport {
     logs: string;
     timestamp: number;
 }
+
+export interface BlacklistedPeer {
+    ip: string;
+    note?: string;
+    operator: string;
+    createdAt: number;
+}

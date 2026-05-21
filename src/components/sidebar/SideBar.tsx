@@ -1,5 +1,6 @@
 import {
     AlertTriangle,
+    Ban,
     House,
     LaptopMinimal,
     Map,
@@ -47,6 +48,7 @@ const availableRoutesPublic = [
 const availableRoutesPrivate = {
     "operator-management": [
         { name: "Operator", path: "/operator", icon: UserRoundPlus },
+        { name: "Blacklist Peers", path: "/blacklist", icon: Ban },
     ],
     "node-management": [
         { name: "My Nodes", path: "/my-nodes", icon: LaptopMinimal },
