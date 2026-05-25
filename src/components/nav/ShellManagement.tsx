@@ -207,7 +207,7 @@ export default function ShellManagement() {
                 </div>
                 <div>
                     <span className="font-semibold">Quick Commands</span>
-                    <ul className="mt-2 space-y-1 text-sm flex space-x-1">
+                    <ul className="mt-2 text-sm flex flex-wrap gap-1">
                         {Object.entries(LITE_COMMANDS_MAP).map(
                             ([label, cmd]) => (
                                 <li>
@@ -222,7 +222,7 @@ export default function ShellManagement() {
                             )
                         )}
                     </ul>
-                    <ul className="mt-2 space-y-1 text-sm flex space-x-1">
+                    <ul className="mt-2 text-sm flex flex-wrap gap-1">
                         {Object.entries(BOB_COMMANDS_MAP).map(
                             ([label, cmd]) => (
                                 <li>
@@ -237,7 +237,7 @@ export default function ShellManagement() {
                             )
                         )}
                     </ul>
-                    <ul className="mt-2 space-y-1 text-sm flex space-x-1">
+                    <ul className="mt-2 text-sm flex flex-wrap gap-1">
                         {Object.entries(SERVER_COMMANDS_MAP).map(
                             ([label, cmd]) => (
                                 <li>
@@ -302,7 +302,7 @@ export default function ShellManagement() {
                             </CollapsibleContent>
                         </Collapsible>
                     </div>
-                    <ul className="mt-2 space-y-1 text-sm flex space-x-1">
+                    <ul className="mt-2 text-sm flex flex-wrap gap-1">
                         {shortcutCommandsServer?.commands.map((command) => (
                             <li key={command.name}>
                                 <Button
