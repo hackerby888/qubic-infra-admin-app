@@ -26,6 +26,7 @@ import {
 import {
     ArrowDownZA,
     Bot,
+    KeyRound,
     MoreHorizontalIcon,
     Pencil,
     RefreshCcw,
@@ -68,6 +69,7 @@ import {
 } from "@/components/ui/tooltip";
 import { memo, useCallback, useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { MyStorage } from "@/utils/storage";
 import ServerNoteTyper from "./components/ServerNoteTyper";
@@ -92,7 +94,11 @@ const ServerTableRow = memo(
         const queryClient = useQueryClient();
         const selectedStore = useSelectedServersStore() as SelectedServersState;
 
-        type DialogType = "alias" | "ownership" | "customParameter";
+        type DialogType =
+            | "alias"
+            | "ownership"
+            | "customParameter"
+            | "promote";
 
         let [dialogsOpen, setDialogsOpen] = useState<{
             [key in DialogType]: boolean;
@@ -100,9 +106,16 @@ const ServerTableRow = memo(
             alias: false,
             ownership: false,
             customParameter: false,
+            promote: false,
         });
 
         let [sshConsoleOpen, setSshConsoleOpen] = useState(false);
+
+        let [promoteAuthType, setPromoteAuthType] = useState<
+            "password" | "sshKey"
+        >("password");
+        let [promoteUsername, setPromoteUsername] = useState<string>("");
+        let [promotePassword, setPromotePassword] = useState<string>("");
 
         let [currentServerOwner, setCurrentServerOwner] = useState<string>(
             serverInfo.operator
@@ -140,6 +153,11 @@ const ServerTableRow = memo(
             useGeneralPost({
                 queryKey: ["set-server-alias"],
                 path: "/set-server-alias",
+            });
+        let { mutate: promoteServer, isPending: isPromoteServerPending } =
+            useGeneralPost({
+                queryKey: ["promote-tracking-server"],
+                path: "/promote-tracking-server",
             });
 
         const handleCheckboxChange = (server: string) => {
@@ -239,6 +257,60 @@ const ServerTableRow = memo(
                         toast.error(
                             "Failed to save custom parameter: " + error.message
                         );
+                    },
+                }
+            );
+        };
+
+        const handlePromoteServer = () => {
+            if (!promoteUsername.trim()) {
+                toast.error("Username cannot be empty.");
+                return;
+            }
+            if (promoteAuthType === "password" && !promotePassword.trim()) {
+                toast.error("Password cannot be empty.");
+                return;
+            }
+            promoteServer(
+                {
+                    server: serverInfo.server,
+                    authType: promoteAuthType,
+                    username: promoteUsername.trim(),
+                    password:
+                        promoteAuthType === "password"
+                            ? promotePassword.trim()
+                            : "",
+                } as unknown as void,
+                {
+                    onSuccess: () => {
+                        toast.success(
+                            "Promotion started. Setup is running on the server."
+                        );
+                        queryClient.setQueryData<{ servers: Server[] }>(
+                            ["my-servers"],
+                            (oldData) => {
+                                if (!oldData) return { servers: [] };
+                                return {
+                                    ...oldData,
+                                    servers: oldData.servers.map((_serverInfo) =>
+                                        _serverInfo.server === serverInfo.server
+                                            ? {
+                                                  ..._serverInfo,
+                                                  username:
+                                                      promoteUsername.trim(),
+                                                  status: "setting_up",
+                                              }
+                                            : _serverInfo
+                                    ),
+                                };
+                            }
+                        );
+                        setPromoteUsername("");
+                        setPromotePassword("");
+                        setDialogsOpen((prev) => ({ ...prev, promote: false }));
+                    },
+                    onError: (error) => {
+                        toast.error("Failed to promote server: " + error.message);
                     },
                 }
             );
@@ -549,7 +621,137 @@ const ServerTableRow = memo(
                                             </Dialog>
                                         )}
                                     {(myOperator === serverInfo.operator ||
-                                        myOperator === "admin") && (
+                                        myOperator === "admin") &&
+                                        isTrackingOnly && (
+                                            <Dialog
+                                                open={dialogsOpen["promote"]}
+                                                onOpenChange={(open) =>
+                                                    setDialogsOpen((prev) => ({
+                                                        ...prev,
+                                                        ["promote"]: open,
+                                                    }))
+                                                }
+                                            >
+                                                <DialogTrigger asChild>
+                                                    <div className="pl-2 flex items-center py-1 cursor-pointer hover:bg-muted">
+                                                        <KeyRound size={20} />
+                                                        <span className="ml-1">
+                                                            Add Credentials
+                                                        </span>
+                                                    </div>
+                                                </DialogTrigger>
+                                                <DialogContent className="min-w-3/6">
+                                                    <DialogHeader>
+                                                        <DialogTitle>
+                                                            Promote to Managed
+                                                            Node
+                                                        </DialogTitle>
+                                                        <DialogDescription>
+                                                            Add SSH credentials
+                                                            for{" "}
+                                                            {serverInfo.server}{" "}
+                                                            to run setup and
+                                                            convert this
+                                                            tracking-only server
+                                                            into a managed node.
+                                                        </DialogDescription>
+                                                    </DialogHeader>
+                                                    <div className="space-y-3">
+                                                        <Input
+                                                            value={
+                                                                promoteUsername
+                                                            }
+                                                            onChange={(e) =>
+                                                                setPromoteUsername(
+                                                                    e.target
+                                                                        .value
+                                                                )
+                                                            }
+                                                            placeholder="SSH username"
+                                                        />
+                                                        {promoteAuthType ===
+                                                            "password" && (
+                                                            <Input
+                                                                type="password"
+                                                                value={
+                                                                    promotePassword
+                                                                }
+                                                                onChange={(e) =>
+                                                                    setPromotePassword(
+                                                                        e.target
+                                                                            .value
+                                                                    )
+                                                                }
+                                                                placeholder="SSH password"
+                                                            />
+                                                        )}
+                                                        <div className="flex flex-col gap-2">
+                                                            <Label className="hover:bg-accent/50 flex items-start gap-3 rounded-lg border p-3 has-[[aria-checked=true]]:border-primary has-[[aria-checked=true]]:bg-primary/10">
+                                                                <Checkbox
+                                                                    checked={
+                                                                        promoteAuthType ===
+                                                                        "password"
+                                                                    }
+                                                                    onCheckedChange={() =>
+                                                                        setPromoteAuthType(
+                                                                            "password"
+                                                                        )
+                                                                    }
+                                                                    className="data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+                                                                />
+                                                                <span className="text-sm leading-none font-medium">
+                                                                    Use Password
+                                                                    Authentication
+                                                                </span>
+                                                            </Label>
+                                                            <Label className="hover:bg-accent/50 flex items-start gap-3 rounded-lg border p-3 has-[[aria-checked=true]]:border-primary has-[[aria-checked=true]]:bg-primary/10">
+                                                                <Checkbox
+                                                                    checked={
+                                                                        promoteAuthType ===
+                                                                        "sshKey"
+                                                                    }
+                                                                    onCheckedChange={() => {
+                                                                        setPromoteAuthType(
+                                                                            "sshKey"
+                                                                        );
+                                                                        setPromotePassword(
+                                                                            ""
+                                                                        );
+                                                                    }}
+                                                                    className="data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+                                                                />
+                                                                <span className="text-sm leading-none font-medium">
+                                                                    Use SSH Key
+                                                                    Authentication
+                                                                </span>
+                                                            </Label>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex justify-end">
+                                                        {!isPromoteServerPending ? (
+                                                            <Button
+                                                                onClick={
+                                                                    handlePromoteServer
+                                                                }
+                                                                className="cursor-pointer"
+                                                            >
+                                                                Promote
+                                                            </Button>
+                                                        ) : (
+                                                            <Button
+                                                                disabled
+                                                                className="cursor-not-allowed"
+                                                            >
+                                                                Promoting...
+                                                            </Button>
+                                                        )}
+                                                    </div>
+                                                </DialogContent>
+                                            </Dialog>
+                                        )}
+                                    {(myOperator === serverInfo.operator ||
+                                        myOperator === "admin") &&
+                                        !isTrackingOnly && (
                                         <div
                                             onClick={() =>
                                                 setSshConsoleOpen(true)
