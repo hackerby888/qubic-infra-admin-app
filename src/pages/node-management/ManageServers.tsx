@@ -27,6 +27,8 @@ import {
     ArrowDownZA,
     Bot,
     KeyRound,
+    ListChecks,
+    ListX,
     MoreHorizontalIcon,
     Pencil,
     RefreshCcw,
@@ -159,6 +161,10 @@ const ServerTableRow = memo(
                 queryKey: ["promote-tracking-server"],
                 path: "/promote-tracking-server",
             });
+        let { mutate: setBulkSkip } = useGeneralPost({
+            queryKey: ["set-server-bulk-skip"],
+            path: "/set-server-bulk-skip",
+        });
 
         const handleCheckboxChange = (server: string) => {
             selectedStore.setSelectedServer(server);
@@ -316,6 +322,47 @@ const ServerTableRow = memo(
             );
         };
 
+        const handleToggleBulkSkip = () => {
+            let newSkip = !serverInfo.skipBulkSelect;
+            setBulkSkip(
+                {
+                    server: serverInfo.server,
+                    skip: newSkip,
+                } as unknown as void,
+                {
+                    onSuccess: () => {
+                        toast.success(
+                            newSkip
+                                ? "Excluded from bulk select"
+                                : "Included in bulk select"
+                        );
+                        queryClient.setQueryData<{ servers: Server[] }>(
+                            ["my-servers"],
+                            (oldData) => {
+                                if (!oldData) return { servers: [] };
+                                return {
+                                    ...oldData,
+                                    servers: oldData.servers.map((_serverInfo) =>
+                                        _serverInfo.server === serverInfo.server
+                                            ? {
+                                                  ..._serverInfo,
+                                                  skipBulkSelect: newSkip,
+                                              }
+                                            : _serverInfo
+                                    ),
+                                };
+                            }
+                        );
+                    },
+                    onError: (error) => {
+                        toast.error(
+                            "Failed to update bulk-select: " + error.message
+                        );
+                    },
+                }
+            );
+        };
+
         // Determine if the server is tracking only (no OS and active status, because we skip the setup)
         let isTrackingOnly = !serverInfo.os && serverInfo.status === "active";
         let myOperator = MyStorage.getUserInfo()?.username || "unknown";
@@ -396,15 +443,20 @@ const ServerTableRow = memo(
                         />
                     </TableCell>
                     <TableCell>
-                        {serverInfo.server}{" "}
-                        <Badge className="ml-1" variant="outline">
-                            {serverInfo.ipInfo?.country}
-                        </Badge>
-                        {isTrackingOnly && (
-                            <Badge className="ml-1 bg-[var(--accent-2)] text-background">
-                                Tracking Only
+                        <div className="flex flex-wrap items-center gap-1">
+                            <span>{serverInfo.server}</span>
+                            <Badge variant="outline">
+                                {serverInfo.ipInfo?.country}
                             </Badge>
-                        )}
+                            {isTrackingOnly && (
+                                <Badge className="bg-[var(--accent-2)] text-background">
+                                    Tracking Only
+                                </Badge>
+                            )}
+                            {serverInfo.skipBulkSelect && (
+                                <Badge variant="secondary">No bulk</Badge>
+                            )}
+                        </div>
                     </TableCell>
                     <TableCell>{serverInfo.os || "N/A"}</TableCell>
                     <TableCell>{serverInfo.cpu || "N/A"}</TableCell>
@@ -764,6 +816,29 @@ const ServerTableRow = memo(
                                             </span>
                                         </div>
                                     )}
+                                    {(myOperator === serverInfo.operator ||
+                                        myOperator === "admin") && (
+                                        <div
+                                            onClick={handleToggleBulkSkip}
+                                            className="pl-2 flex items-center py-1 cursor-pointer hover:bg-muted"
+                                        >
+                                            {serverInfo.skipBulkSelect ? (
+                                                <>
+                                                    <ListChecks size={20} />
+                                                    <span className="ml-1">
+                                                        Include in Select-All
+                                                    </span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <ListX size={20} />
+                                                    <span className="ml-1">
+                                                        Exclude from Select-All
+                                                    </span>
+                                                </>
+                                            )}
+                                        </div>
+                                    )}
                                     <AlertDialog>
                                         <AlertDialogTrigger asChild>
                                             <div className="text-destructive pl-2 flex items-center py-1 cursor-pointer hover:bg-muted">
@@ -914,7 +989,10 @@ export default function ManageServers() {
 
     const handleSelectAllType = (type: ServiceType) => {
         let serversOfType = data?.servers.filter(
-            (server) => server.services.includes(type) && server.username
+            (server) =>
+                server.services.includes(type) &&
+                server.username &&
+                !server.skipBulkSelect
         );
         if (serversOfType) {
             let serverIds = serversOfType.map((s) => s.server);

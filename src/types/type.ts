@@ -76,6 +76,7 @@ export interface Server {
     ipInfo?: IpInfo;
     alias?: string;
     note?: string;
+    skipBulkSelect?: boolean;
     operator: string;
     username: string;
     password: string;
