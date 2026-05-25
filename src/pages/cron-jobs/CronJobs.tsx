@@ -23,6 +23,11 @@ const systemCronJobs = {
         schedule: "Auto determined",
         type: "system",
     },
+    "auto-promote-main": {
+        name: "Auto Promote Main",
+        schedule: "Auto determined",
+        type: "system",
+    },
 };
 
 export default function CronJobs() {
@@ -258,6 +263,24 @@ export default function CronJobs() {
                                     <span className="text-xs text-muted-foreground ml-1">
                                         (Auto press `F8` key on Lite Node to
                                         save snapshot periodically)
+                                    </span>
+                                </li>
+                                <li
+                                    onClick={() => {
+                                        handleSetSystemCronCommand(
+                                            "auto-promote-main"
+                                        );
+                                    }}
+                                    className="cursor-pointer p-2 bg-muted hover:bg-muted/70 rounded-sm"
+                                >
+                                    <span className="text-sm">
+                                        Auto Promote Main
+                                    </span>
+                                    <span className="text-xs text-muted-foreground ml-1">
+                                        (Auto press `F12` to promote a healthy
+                                        node to Main when a group's Main is
+                                        down or missing — keeps 1 Main per
+                                        group)
                                     </span>
                                 </li>
                             </ul>

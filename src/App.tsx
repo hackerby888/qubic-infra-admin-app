@@ -15,6 +15,14 @@ import CronJobs from "./pages/cron-jobs/CronJobs";
 import LogsRealTime from "./pages/logs-realtime/LogsRealtime";
 import CrashReports from "./pages/crash-reports/CrashReports";
 import Blacklist from "./pages/blacklist/Blacklist";
+import { useEffect } from "react";
+import socket from "@/networking/socket";
+import { toast } from "sonner";
+import { MyStorage } from "@/utils/storage";
+import {
+    useLoginReloadStore,
+    type LoginReloadState,
+} from "@/stores/login-reload-store";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -34,6 +42,38 @@ function App() {
         subdomain = null;
     }
     console.log("Subdomain detected:", subdomain);
+
+    const loginReload = useLoginReloadStore() as LoginReloadState;
+
+    useEffect(() => {
+        if (!MyStorage.getUserInfo()?.username) return;
+        const register = () => {
+            const operator = MyStorage.getUserInfo()?.username;
+            if (operator) socket.emit("registerNotifications", { operator });
+        };
+        register();
+        socket.on("connect", register);
+        const onMainNodeEvent = (e: {
+            type: "promote" | "demote";
+            server: string;
+            groupId: string;
+            reason: string;
+        }) => {
+            toast(
+                e.type === "promote"
+                    ? `Main promoted: ${e.server}`
+                    : `Main demoted: ${e.server}`,
+                {
+                    description: `${e.reason} (group ${e.groupId.slice(0, 8)})`,
+                }
+            );
+        };
+        socket.on("mainNodeEvent", onMainNodeEvent);
+        return () => {
+            socket.off("connect", register);
+            socket.off("mainNodeEvent", onMainNodeEvent);
+        };
+    }, [loginReload.reloadFlag]);
 
     return (
         <BrowserRouter>
