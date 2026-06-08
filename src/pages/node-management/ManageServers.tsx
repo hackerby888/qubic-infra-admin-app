@@ -923,6 +923,36 @@ export default function ManageServers() {
         path: "/delete-server",
     });
 
+    let [bulkLiteParamOpen, setBulkLiteParamOpen] = useState(false);
+    let [bulkLiteParam, setBulkLiteParam] = useState<string>("");
+    let {
+        mutate: setAllLiteNodesCustomParameter,
+        isPending: isApplyAllLiteParamPending,
+    } = useGeneralPost({
+        queryKey: ["set-all-lite-nodes-custom-parameter"],
+        path: "/set-all-lite-nodes-custom-parameter",
+    });
+
+    const handleApplyAllLiteParam = () => {
+        setAllLiteNodesCustomParameter(
+            { customParameter: bulkLiteParam } as unknown as void,
+            {
+                onSuccess: (res: any) => {
+                    toast.success(
+                        `Applied to lite nodes: ${res.updated} updated, ` +
+                            `${res.skipped} unchanged (of ${res.total}).`
+                    );
+                    setBulkLiteParamOpen(false);
+                },
+                onError: (error) => {
+                    toast.error(
+                        "Failed to apply custom parameter: " + error.message
+                    );
+                },
+            }
+        );
+    };
+
     const locallyRemoveServer = (server: string) => {
         queryClient.setQueryData<{ servers: Server[] }>(
             ["my-servers"],
@@ -1054,6 +1084,64 @@ export default function ManageServers() {
                             <Bot size={13} />
                             Select Bob Nodes
                         </Button>
+                        <div className="h-5 w-px bg-border mx-1" />
+                        <Dialog
+                            open={bulkLiteParamOpen}
+                            onOpenChange={setBulkLiteParamOpen}
+                        >
+                            <DialogTrigger asChild>
+                                <Button
+                                    variant={"outline"}
+                                    size={"sm"}
+                                    className="cursor-pointer h-8 text-xs gap-1.5"
+                                >
+                                    <SlidersHorizontal size={13} />
+                                    Custom Param: All Lite Nodes
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent className="min-w-3/6">
+                                <DialogHeader>
+                                    <DialogTitle>
+                                        Custom Launch Parameter — All Lite Nodes
+                                    </DialogTitle>
+                                    <DialogDescription>
+                                        Extra CLI arguments appended when
+                                        launching every lite node you own. Saved
+                                        now; takes effect on each node's next
+                                        deploy/restart. Nodes that already have
+                                        this exact value are left unchanged.
+                                        Leave empty to clear the parameter on all
+                                        lite nodes.
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <Textarea
+                                    value={bulkLiteParam}
+                                    onChange={(e) =>
+                                        setBulkLiteParam(e.target.value)
+                                    }
+                                    placeholder="e.g. --some-flag --value 123"
+                                    className="font-mono text-sm"
+                                    rows={3}
+                                />
+                                <div className="flex justify-end">
+                                    {!isApplyAllLiteParamPending ? (
+                                        <Button
+                                            onClick={handleApplyAllLiteParam}
+                                            className="cursor-pointer"
+                                        >
+                                            Apply to All Lite Nodes
+                                        </Button>
+                                    ) : (
+                                        <Button
+                                            disabled
+                                            className="cursor-not-allowed"
+                                        >
+                                            Applying...
+                                        </Button>
+                                    )}
+                                </div>
+                            </DialogContent>
+                        </Dialog>
                     </div>
                     {!error ? (
                         <Table>
