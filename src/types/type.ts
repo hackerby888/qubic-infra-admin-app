@@ -71,6 +71,14 @@ export interface LiteNodeCustomParameter {
     customParameter: string;
 }
 
+export interface AllLiteNodesCustomParameter {
+    // Shared value when every lite node has the same custom parameter,
+    // otherwise "" (see `uniform`).
+    value: string;
+    uniform: boolean;
+    total: number;
+}
+
 export interface Server {
     server: string;
     ipInfo?: IpInfo;

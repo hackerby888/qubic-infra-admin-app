@@ -11,6 +11,7 @@ import {
 import NewServer from "./components/NewServer";
 import useGeneralPost, { useGeneralGet } from "@/networking/api";
 import type {
+    AllLiteNodesCustomParameter,
     LiteNodeCustomParameter,
     NodeStatus,
     Server,
@@ -128,13 +129,16 @@ const ServerTableRow = memo(
         let [currentCustomParameter, setCurrentCustomParameter] =
             useState<string>("");
 
-        let { data: _, refetch: refetchCustomParameter } =
-            useGeneralGet<LiteNodeCustomParameter>({
-                queryKey: ["lite-node-custom-parameter", serverInfo.server],
-                path: "/lite-node-custom-parameter",
-                reqQuery: { server: serverInfo.server },
-                enabled: false,
-            });
+        let {
+            data: _,
+            refetch: refetchCustomParameter,
+            isFetching: isCustomParameterFetching,
+        } = useGeneralGet<LiteNodeCustomParameter>({
+            queryKey: ["lite-node-custom-parameter", serverInfo.server],
+            path: "/lite-node-custom-parameter",
+            reqQuery: { server: serverInfo.server },
+            enabled: false,
+        });
 
         let {
             mutate: setCustomParameter,
@@ -633,25 +637,39 @@ const ServerTableRow = memo(
                                                             launching the lite
                                                             node on{" "}
                                                             {serverInfo.server}.
+                                                            Saved now; applied on
+                                                            the node's next
+                                                            restart or redeploy.
                                                             Leave empty to use
                                                             no extra parameters.
                                                         </DialogDescription>
                                                     </DialogHeader>
                                                     <Textarea
                                                         value={
-                                                            currentCustomParameter
+                                                            isCustomParameterFetching
+                                                                ? ""
+                                                                : currentCustomParameter
                                                         }
                                                         onChange={(e) =>
                                                             setCurrentCustomParameter(
                                                                 e.target.value
                                                             )
                                                         }
-                                                        placeholder="e.g. --some-flag --value 123"
+                                                        disabled={
+                                                            isCustomParameterFetching ||
+                                                            isSetCustomParameterPending
+                                                        }
+                                                        placeholder={
+                                                            isCustomParameterFetching
+                                                                ? "Loading current value…"
+                                                                : "e.g. --some-flag --value 123"
+                                                        }
                                                         className="font-mono text-sm"
                                                         rows={3}
                                                     />
                                                     <div className="flex justify-end">
-                                                        {!isSetCustomParameterPending ? (
+                                                        {!isSetCustomParameterPending &&
+                                                        !isCustomParameterFetching ? (
                                                             <Button
                                                                 onClick={
                                                                     handleSaveCustomParameter
@@ -665,7 +683,9 @@ const ServerTableRow = memo(
                                                                 disabled
                                                                 className="cursor-not-allowed"
                                                             >
-                                                                Saving...
+                                                                {isCustomParameterFetching
+                                                                    ? "Loading…"
+                                                                    : "Saving..."}
                                                             </Button>
                                                         )}
                                                     </div>
@@ -925,12 +945,22 @@ export default function ManageServers() {
 
     let [bulkLiteParamOpen, setBulkLiteParamOpen] = useState(false);
     let [bulkLiteParam, setBulkLiteParam] = useState<string>("");
+    // True when lite nodes currently hold differing values (prefilled blank).
+    let [bulkParamMixed, setBulkParamMixed] = useState(false);
     let {
         mutate: setAllLiteNodesCustomParameter,
         isPending: isApplyAllLiteParamPending,
     } = useGeneralPost({
         queryKey: ["set-all-lite-nodes-custom-parameter"],
         path: "/set-all-lite-nodes-custom-parameter",
+    });
+    let {
+        refetch: refetchAllLiteParam,
+        isFetching: isAllLiteParamFetching,
+    } = useGeneralGet<AllLiteNodesCustomParameter>({
+        queryKey: ["all-lite-nodes-custom-parameter"],
+        path: "/all-lite-nodes-custom-parameter",
+        enabled: false,
     });
 
     const handleApplyAllLiteParam = () => {
@@ -1087,7 +1117,18 @@ export default function ManageServers() {
                         <div className="h-5 w-px bg-border mx-1" />
                         <Dialog
                             open={bulkLiteParamOpen}
-                            onOpenChange={setBulkLiteParamOpen}
+                            onOpenChange={(open) => {
+                                setBulkLiteParamOpen(open);
+                                if (open) {
+                                    setBulkParamMixed(false);
+                                    refetchAllLiteParam().then((r) => {
+                                        if (r.data) {
+                                            setBulkLiteParam(r.data.value || "");
+                                            setBulkParamMixed(!r.data.uniform);
+                                        }
+                                    });
+                                }
+                            }}
                         >
                             <DialogTrigger asChild>
                                 <Button
@@ -1112,19 +1153,40 @@ export default function ManageServers() {
                                         this exact value are left unchanged.
                                         Leave empty to clear the parameter on all
                                         lite nodes.
+                                        {bulkParamMixed &&
+                                            !isAllLiteParamFetching && (
+                                                <span className="block mt-1 text-amber-600">
+                                                    Lite nodes currently have
+                                                    different values — applying
+                                                    will overwrite them all.
+                                                </span>
+                                            )}
                                     </DialogDescription>
                                 </DialogHeader>
                                 <Textarea
-                                    value={bulkLiteParam}
+                                    value={
+                                        isAllLiteParamFetching
+                                            ? ""
+                                            : bulkLiteParam
+                                    }
                                     onChange={(e) =>
                                         setBulkLiteParam(e.target.value)
                                     }
-                                    placeholder="e.g. --some-flag --value 123"
+                                    disabled={
+                                        isAllLiteParamFetching ||
+                                        isApplyAllLiteParamPending
+                                    }
+                                    placeholder={
+                                        isAllLiteParamFetching
+                                            ? "Loading current value…"
+                                            : "e.g. --some-flag --value 123"
+                                    }
                                     className="font-mono text-sm"
                                     rows={3}
                                 />
                                 <div className="flex justify-end">
-                                    {!isApplyAllLiteParamPending ? (
+                                    {!isApplyAllLiteParamPending &&
+                                    !isAllLiteParamFetching ? (
                                         <Button
                                             onClick={handleApplyAllLiteParam}
                                             className="cursor-pointer"
@@ -1136,7 +1198,9 @@ export default function ManageServers() {
                                             disabled
                                             className="cursor-not-allowed"
                                         >
-                                            Applying...
+                                            {isAllLiteParamFetching
+                                                ? "Loading…"
+                                                : "Applying..."}
                                         </Button>
                                     )}
                                 </div>
