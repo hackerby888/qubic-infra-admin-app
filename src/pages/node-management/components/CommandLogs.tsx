@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import LocalTerminal from "@/components/common/LocalTerminal";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
-import { X } from "lucide-react";
+import { CircleAlert, X } from "lucide-react";
 import useGeneralPost, { useGeneralGet } from "@/networking/api";
 import type { CommandLog } from "@/types/type";
 import { millisToSeconds, tripText } from "@/utils/common";
@@ -49,8 +49,25 @@ function tripRemoveKeywords(text: string | undefined) {
         .join("\n");
 }
 
-export default memo(function CommandLogs() {
+export default memo(function CommandLogs({
+    isStandardCommand,
+    showDeleteAll = true,
+}: {
+    // undefined = all commands; true = standard (shutdown/restart); false = custom
+    isStandardCommand?: boolean;
+    showDeleteAll?: boolean;
+} = {}) {
     const queryClient = useQueryClient();
+
+    // Separate cache entries per filter so multiple instances (e.g. "all" in
+    // ManageServers vs "standard" in the Power menu) don't clobber each other.
+    const filterKey =
+        isStandardCommand === undefined
+            ? "all"
+            : isStandardCommand
+            ? "standard"
+            : "custom";
+    const listQueryKey = ["command-logs", filterKey];
 
     let [currentSelectedCommandLogUuid, setCurrentSelectedCommandLogUuid] =
         useState<string>("");
@@ -60,8 +77,12 @@ export default memo(function CommandLogs() {
         isLoading: isLoadingCommandsLogs,
         error: fetchingCommandsLogsError,
     } = useGeneralGet<{ commandLogs: CommandLog[] }>({
-        queryKey: ["command-logs", "all"],
+        queryKey: listQueryKey,
         path: "/command-logs",
+        reqQuery:
+            isStandardCommand !== undefined
+                ? { isStandardCommand: String(isStandardCommand) }
+                : undefined,
         refetchInterval: (query) => {
             const logs = query.state.data?.commandLogs;
             return logs?.some((l) => l.status === "pending") ? 1500 : false;
@@ -115,7 +136,7 @@ export default memo(function CommandLogs() {
 
     const locallyRemoveAllCommandLogs = () => {
         queryClient.setQueryData<{ commandLogs: CommandLog[] }>(
-            ["command-logs", "all"],
+            listQueryKey,
             {
                 commandLogs: [],
             }
@@ -124,7 +145,7 @@ export default memo(function CommandLogs() {
 
     const locallyRemoveCommandLog = (uuid: string) => {
         queryClient.setQueryData<{ commandLogs: CommandLog[] }>(
-            ["command-logs", "all"],
+            listQueryKey,
             {
                 commandLogs:
                     commandLogs?.commandLogs.filter(
@@ -224,6 +245,16 @@ export default memo(function CommandLogs() {
                                     </span>
                                 </div>
                             </div>
+                            {log.status === "failed" && (
+                                <Alert variant="destructive">
+                                    <CircleAlert className="h-4 w-4" />
+                                    <AlertTitle>Command failed</AlertTitle>
+                                    <AlertDescription>
+                                        {log.errorMessage ||
+                                            "Something went wrong — see the stderr tab below."}
+                                    </AlertDescription>
+                                </Alert>
+                            )}
                             <Tabs defaultValue="stdout">
                                 <TabsList>
                                     <TabsTrigger
@@ -285,6 +316,7 @@ export default memo(function CommandLogs() {
                     </AlertDescription>
                 </Alert>
             )}
+            {showDeleteAll && (
             <div className="mt-2">
                 <AlertDialog>
                     <AlertDialogTrigger>
@@ -318,6 +350,7 @@ export default memo(function CommandLogs() {
                     </AlertDialogContent>
                 </AlertDialog>
             </div>
+            )}
         </div>
     );
 });

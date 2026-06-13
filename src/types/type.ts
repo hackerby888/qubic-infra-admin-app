@@ -126,6 +126,7 @@ export interface CommandLog {
     duration: number;
     servers: string[];
     errorServers?: string[];
+    errorMessage?: string;
 }
 
 export interface ShortcutCommand {

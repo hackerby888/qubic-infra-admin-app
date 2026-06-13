@@ -1,4 +1,4 @@
-import { Power, PowerOff, RotateCcw } from "lucide-react";
+import { Power, PowerOff, RotateCcw, ScrollText } from "lucide-react";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -23,6 +23,7 @@ import {
 import useGeneralPost from "@/networking/api";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import CommandLogs from "@/pages/node-management/components/CommandLogs";
 export default function PowerManagement() {
     let queryClient = useQueryClient();
     const availableCommands = {
@@ -44,6 +45,7 @@ export default function PowerManagement() {
         restart: false,
     });
     let [command, setCommand] = useState<"shutdown" | "restart">("shutdown");
+    let [logsOpen, setLogsOpen] = useState(false);
     let [services, setServices] = useState<
         { name: string; enabled: boolean }[]
     >([
@@ -101,7 +103,7 @@ export default function PowerManagement() {
                 ]);
                 toggleOpen(command, false);
                 queryClient.invalidateQueries({
-                    queryKey: ["command-logs", "all"],
+                    queryKey: ["command-logs"],
                 });
             },
             onError: () => {
@@ -194,6 +196,29 @@ export default function PowerManagement() {
                     <RotateCcw className="mr-1" size={15} />
                     Restart
                 </div> */}
+                <div className="py-2 flex items-center text-sm font-semibold cursor-pointer p-1 hover:bg-muted">
+                    <Dialog open={logsOpen} onOpenChange={setLogsOpen}>
+                        <DialogTrigger className="w-full flex items-center cursor-pointer">
+                            <ScrollText className="mr-1" size={15} />
+                            View Logs
+                        </DialogTrigger>
+                        <DialogContent className="min-w-3/6 max-h-[80vh] overflow-y-auto">
+                            <DialogHeader>
+                                <DialogTitle>
+                                    Shutdown / Restart Logs
+                                </DialogTitle>
+                                <DialogDescription>
+                                    Output and status of the power commands
+                                    you've sent.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <CommandLogs
+                                isStandardCommand={true}
+                                showDeleteAll={false}
+                            />
+                        </DialogContent>
+                    </Dialog>
+                </div>
             </DropdownMenuContent>
         </DropdownMenu>
     );
