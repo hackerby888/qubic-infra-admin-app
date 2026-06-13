@@ -52,10 +52,14 @@ function tripRemoveKeywords(text: string | undefined) {
 export default memo(function CommandLogs({
     isStandardCommand,
     showDeleteAll = true,
+    containerClassName = "mb-4 rounded shadow-sm p-4 space-x-2 max-h-1/3 overflow-y-auto",
 }: {
     // undefined = all commands; true = standard (shutdown/restart); false = custom
     isStandardCommand?: boolean;
     showDeleteAll?: boolean;
+    // Override the root wrapper classes — e.g. drop the max-h-1/3 cap when
+    // embedded in a dialog that already provides its own scroll height.
+    containerClassName?: string;
 } = {}) {
     const queryClient = useQueryClient();
 
@@ -168,7 +172,7 @@ export default memo(function CommandLogs({
     };
 
     return (
-        <div className="mb-4 rounded shadow-sm p-4 space-x-2 max-h-1/3 overflow-y-auto">
+        <div className={containerClassName}>
             {commandLogs?.commandLogs.map((log) => {
                 let errorServers = log?.errorServers || [];
                 return (

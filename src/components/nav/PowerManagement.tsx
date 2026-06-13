@@ -215,6 +215,7 @@ export default function PowerManagement() {
                             <CommandLogs
                                 isStandardCommand={true}
                                 showDeleteAll={false}
+                                containerClassName="p-2 space-x-2 space-y-2 leading-loose"
                             />
                         </DialogContent>
                     </Dialog>
