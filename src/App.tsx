@@ -87,9 +87,9 @@ function App() {
                                     <Toaster />
                                     <div className="flex w-full h-full">
                                         <SideBar />
-                                        <main className="w-full flex flex-col h-full">
+                                        <main className="flex-1 min-w-0 flex flex-col h-full">
                                             <Nav />
-                                            <div className="overflow-y-auto w-full h-full">
+                                            <div className="overflow-y-auto w-full min-w-0 h-full">
                                                 <Routes>
                                                     <Route
                                                         path="/"

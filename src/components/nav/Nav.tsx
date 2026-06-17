@@ -29,7 +29,10 @@ function normlizePathName(path: string) {
 function ThemePicker() {
     const { themes, current, setTheme } = useThemeStore();
     return (
-        <div className="flex items-center gap-1.5 mr-3" title="Accent theme">
+        <div
+            className="hidden sm:flex items-center gap-1.5 mr-3"
+            title="Accent theme"
+        >
             {themes.map((t) => (
                 <button
                     key={t.name}
