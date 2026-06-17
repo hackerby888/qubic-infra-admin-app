@@ -118,7 +118,6 @@ export default function DeployManagement() {
     let {
         data: tags,
         isLoading: tagsLoading,
-        isFetching: isTagsFetching,
     } = useGeneralGet<GithubTag[]>({
         queryKey: ["github-tags", currentService],
         path: "/github-tags",
@@ -464,7 +463,7 @@ export default function DeployManagement() {
                                         </FieldLabel>
                                         <div className="flex space-x-2">
                                             {!(
-                                                tagsLoading || isTagsFetching
+                                                tagsLoading
                                             ) ? (
                                                 <Select
                                                     value={tag}
@@ -703,7 +702,7 @@ export default function DeployManagement() {
                                         </FieldLabel>
                                         <div className="flex space-x-2">
                                             {!(
-                                                tagsLoading || isTagsFetching
+                                                tagsLoading
                                             ) ? (
                                                 <Select
                                                     open={isSelectTagOpen}
