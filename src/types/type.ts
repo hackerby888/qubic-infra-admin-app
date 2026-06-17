@@ -33,6 +33,13 @@ export interface BobNodeTickInfo {
     isPrivate: boolean;
 }
 
+export interface GithubAsset {
+    name: string;
+    browser_download_url: string;
+    size: number;
+    content_type: string;
+}
+
 export interface GithubTag {
     name: string;
     zipball_url: string;
@@ -42,6 +49,7 @@ export interface GithubTag {
         url: string;
     };
     node_id: string;
+    assets?: GithubAsset[];
 }
 
 export interface User {

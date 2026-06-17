@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import type { GithubTag, ServiceType } from "@/types/type";
+import type { GithubAsset, GithubTag, ServiceType } from "@/types/type";
 import useGeneralPost, { useGeneralGet } from "@/networking/api";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -53,6 +53,44 @@ import { Checkbox } from "../ui/checkbox";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangleIcon } from "lucide-react";
 
+// Dropdown for picking a specific release binary (avx2/avx512/arm/...).
+// Renders nothing when the selected tag has no downloadable assets, so deploy
+// falls back to the default binary name.
+function BinarySelect({
+    assets,
+    value,
+    onChange,
+}: {
+    assets: GithubAsset[];
+    value: string;
+    onChange: (v: string) => void;
+}) {
+    if (!assets || assets.length === 0) return null;
+    return (
+        <Field>
+            <FieldLabel htmlFor="binary">Binary</FieldLabel>
+            <Select value={value} onValueChange={onChange}>
+                <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Binary" />
+                </SelectTrigger>
+                <SelectContent className="max-h-72 overflow-y-auto">
+                    <SelectGroup>
+                        <SelectLabel>Binary</SelectLabel>
+                        {assets.map((asset) => (
+                            <SelectItem key={asset.name} value={asset.name}>
+                                {asset.name}
+                            </SelectItem>
+                        ))}
+                    </SelectGroup>
+                </SelectContent>
+            </Select>
+            <FieldDescription>
+                Pick the build variant (e.g. avx2, avx512, arm).
+            </FieldDescription>
+        </Field>
+    );
+}
+
 export default function DeployManagement() {
     let queryClient = useQueryClient();
 
@@ -61,6 +99,7 @@ export default function DeployManagement() {
     let [isOpen, setIsOpen] = useState(false);
     let [currentService, setCurrentService] = useState<ServiceType>("liteNode");
     let [tag, setTag] = useState<string>("");
+    let [binaryName, setBinaryName] = useState<string>("");
     let [epochFile, setEpochFile] = useState<string>("");
     let [peers, setPeers] = useState<string>("");
     let [ids, setIds] = useState<string>("");
@@ -118,6 +157,29 @@ export default function DeployManagement() {
         queryKey: ["deploy"],
         path: "/deploy",
     });
+
+    let selectedTagAssets: GithubAsset[] =
+        tags?.find((t) => t.name === tag)?.assets ?? [];
+
+    // Keep binaryName valid for the selected tag: when the tag (or its assets)
+    // change, default to the service's main binary if present, else the first
+    // asset. Clears when the tag has no assets (deploy uses the default name).
+    useEffect(() => {
+        let assets = tags?.find((t) => t.name === tag)?.assets ?? [];
+        if (assets.length === 0) {
+            setBinaryName("");
+            return;
+        }
+        if (assets.some((a) => a.name === binaryName)) return;
+        let preferred = currentService === "liteNode" ? "Qubic" : "bob";
+        let match =
+            assets.find((a) => a.name === preferred) ||
+            assets.find((a) =>
+                a.name.toLowerCase().includes(preferred.toLowerCase())
+            ) ||
+            assets[0];
+        setBinaryName(match?.name ?? "");
+    }, [tag, tags, currentService]);
 
     const handleOnKeyDownCustomBinary = (e: React.KeyboardEvent) => {
         if (e.key === "Enter") {
@@ -292,6 +354,7 @@ export default function DeployManagement() {
             servers: selectedStore.selectedServers,
             service: currentService,
             tag: tag,
+            binaryName: binaryName || undefined,
             extraData: {
                 epochFile: epochFile,
                 peers: peersArray,
@@ -451,6 +514,11 @@ export default function DeployManagement() {
                                             Select the version to deploy.
                                         </FieldDescription>
                                     </Field>
+                                    <BinarySelect
+                                        assets={selectedTagAssets}
+                                        value={binaryName}
+                                        onChange={setBinaryName}
+                                    />
                                     <Field>
                                         {" "}
                                         <FieldLabel htmlFor="epoch-file">
@@ -724,6 +792,11 @@ export default function DeployManagement() {
                                             Select the version to deploy.
                                         </FieldDescription>
                                     </Field>
+                                    <BinarySelect
+                                        assets={selectedTagAssets}
+                                        value={binaryName}
+                                        onChange={setBinaryName}
+                                    />
                                     <Field>
                                         {" "}
                                         <FieldLabel htmlFor="epoch-file">
