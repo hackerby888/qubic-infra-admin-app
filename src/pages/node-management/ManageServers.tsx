@@ -30,6 +30,9 @@ import {
     KeyRound,
     ListChecks,
     ListX,
+    X,
+    Plus,
+    Loader2,
     MoreHorizontalIcon,
     Pencil,
     RefreshCcw,
@@ -169,6 +172,61 @@ const ServerTableRow = memo(
             queryKey: ["set-server-bulk-skip"],
             path: "/set-server-bulk-skip",
         });
+        let { mutate: removeServerService } = useGeneralPost({
+            queryKey: ["remove-server-service"],
+            path: "/remove-server-service",
+        });
+        let [removingService, setRemovingService] =
+            useState<ServiceType | null>(null);
+
+        const handleRemoveService = (service: ServiceType) => {
+            setRemovingService(service);
+            removeServerService(
+                { server: serverInfo.server, service } as unknown as void,
+                {
+                    onSuccess: () => {
+                        toast.success(
+                            `Removed ${service} — stopping on host in background`
+                        );
+                        queryClient.invalidateQueries({
+                            queryKey: ["my-servers"],
+                        });
+                    },
+                    onError: (error) => {
+                        toast.error(
+                            "Failed to remove service: " + error.message
+                        );
+                    },
+                    onSettled: () => setRemovingService(null),
+                }
+            );
+        };
+
+        let { mutate: addServerService } = useGeneralPost({
+            queryKey: ["add-server-service"],
+            path: "/add-server-service",
+        });
+
+        const handleAddService = (service: ServiceType) => {
+            addServerService(
+                { server: serverInfo.server, service } as unknown as void,
+                {
+                    onSuccess: (res: any) => {
+                        toast.success(
+                            res?.setupStarted
+                                ? `Adding ${service} — running setup on host…`
+                                : `Added ${service}`
+                        );
+                        queryClient.invalidateQueries({
+                            queryKey: ["my-servers"],
+                        });
+                    },
+                    onError: (error) => {
+                        toast.error("Failed to add service: " + error.message);
+                    },
+                }
+            );
+        };
 
         const handleCheckboxChange = (server: string) => {
             selectedStore.setSelectedServer(server);
@@ -475,34 +533,139 @@ const ServerTableRow = memo(
                                       service as keyof typeof serverInfo.deployStatus
                                   ]
                                 : "nothing";
+                            let canManage =
+                                myOperator === serverInfo.operator ||
+                                myOperator === "admin";
                             return (
-                                <Tooltip>
-                                    <TooltipTrigger>
-                                        <Badge
-                                            key={service}
-                                            variant={"outline"}
-                                            className={`${
-                                                haveDeployStatus &&
-                                                bgColorMap[
-                                                    status as keyof typeof bgColorMap
-                                                ]
-                                            } ${
-                                                !haveDeployStatus
-                                                    ? "opacity-50"
-                                                    : "text-background"
-                                            }`}
-                                        >
-                                            {service}
-                                        </Badge>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        {haveDeployStatus
-                                            ? `Status: ${status}`
-                                            : `No status available`}
-                                    </TooltipContent>
-                                </Tooltip>
+                                <Badge
+                                    key={service}
+                                    variant={"outline"}
+                                    className={`group/svc ${
+                                        canManage ? "pr-1" : ""
+                                    } ${
+                                        haveDeployStatus &&
+                                        bgColorMap[
+                                            status as keyof typeof bgColorMap
+                                        ]
+                                    } ${
+                                        !haveDeployStatus
+                                            ? "opacity-50"
+                                            : "text-background"
+                                    }`}
+                                >
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <span className="cursor-default">
+                                                {service}
+                                            </span>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            {haveDeployStatus
+                                                ? `Status: ${status}`
+                                                : `No status available`}
+                                        </TooltipContent>
+                                    </Tooltip>
+                                    {canManage &&
+                                        (removingService === service ? (
+                                            <Loader2 className="animate-spin opacity-70" />
+                                        ) : (
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <button
+                                                        type="button"
+                                                        title={`Remove ${service}`}
+                                                        className="inline-flex size-4 items-center justify-center rounded-full opacity-50 transition hover:bg-destructive hover:text-destructive-foreground hover:opacity-100 cursor-pointer"
+                                                    >
+                                                        <X size={11} />
+                                                    </button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>
+                                                            Remove {service} from
+                                                            this server?
+                                                        </AlertDialogTitle>
+                                                        <AlertDialogDescription>
+                                                            This stops the{" "}
+                                                            {service} node on the
+                                                            host (if reachable)
+                                                            and removes it from
+                                                            tracking. The server
+                                                            and its other
+                                                            services are kept.
+                                                        </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel>
+                                                            Cancel
+                                                        </AlertDialogCancel>
+                                                        <AlertDialogAction
+                                                            onClick={() =>
+                                                                handleRemoveService(
+                                                                    service
+                                                                )
+                                                            }
+                                                            className="bg-destructive hover:bg-destructive/90 cursor-pointer"
+                                                        >
+                                                            Remove
+                                                        </AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
+                                        ))}
+                                </Badge>
                             );
                         })}
+                        {(myOperator === serverInfo.operator ||
+                            myOperator === "admin") &&
+                            (["liteNode", "bobNode"] as ServiceType[])
+                                .filter(
+                                    (s) => !serverInfo.services.includes(s)
+                                )
+                                .map((service) => (
+                                    <AlertDialog key={`add-${service}`}>
+                                        <AlertDialogTrigger asChild>
+                                            <button
+                                                type="button"
+                                                title={`Add ${service}`}
+                                                className="inline-flex items-center gap-0.5 rounded-md border border-dashed border-border px-1.5 py-0.5 text-xs text-muted-foreground hover:text-foreground hover:border-foreground cursor-pointer"
+                                            >
+                                                <Plus size={12} />
+                                                {service}
+                                            </button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>
+                                                    Add {service} to this
+                                                    server?
+                                                </AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                    Runs setup on the host
+                                                    (installs dependencies) and
+                                                    starts tracking {service}.
+                                                    Deploy the binary afterwards
+                                                    from the Deploy dialog.
+                                                </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel>
+                                                    Cancel
+                                                </AlertDialogCancel>
+                                                <AlertDialogAction
+                                                    onClick={() =>
+                                                        handleAddService(
+                                                            service
+                                                        )
+                                                    }
+                                                    className="cursor-pointer"
+                                                >
+                                                    Add
+                                                </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                ))}
                     </TableCell>
                     <TableCell>
                         <Tooltip>
