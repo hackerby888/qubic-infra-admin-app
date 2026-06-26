@@ -6,6 +6,7 @@ import { SidebarProvider } from "./components/ui/sidebar";
 import SideBar from "./components/sidebar/SideBar";
 import Nav from "./components/nav/Nav";
 import Operator from "./pages/operator-management/Operator";
+import SystemHealth from "./pages/operator-management/SystemHealth";
 import MyNodes from "./pages/node-management/MyNodes";
 import { Toaster } from "@/components/ui/sonner";
 import Auth from "./pages/node-management/Auth";
@@ -104,6 +105,12 @@ function App() {
                                                     <Route
                                                         path="/map"
                                                         element={<Map />}
+                                                    />
+                                                    <Route
+                                                        path="/system-health"
+                                                        element={
+                                                            <SystemHealth />
+                                                        }
                                                     />
                                                     <Route path="operator-management">
                                                         <Route

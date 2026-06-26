@@ -1,4 +1,5 @@
 import {
+    Activity,
     AlertTriangle,
     Ban,
     House,
@@ -258,6 +259,29 @@ export default function SideBar() {
                                                 />
                                             );
                                         }
+                                    )}
+                                    {isAdmin && (
+                                        <div
+                                            onClick={() =>
+                                                nagivateToRoute(
+                                                    "/system-health"
+                                                )
+                                            }
+                                            className={`${
+                                                location.pathname ===
+                                                "/system-health"
+                                                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                                                    : "hover:bg-sidebar-accent"
+                                            } p-2 rounded-sm cursor-pointer flex w-full`}
+                                        >
+                                            <Activity
+                                                size={20}
+                                                className="mr-2"
+                                            />
+                                            <span className="flex-1 text-left">
+                                                System Health
+                                            </span>
+                                        </div>
                                     )}
                                 </div>
                             </>
