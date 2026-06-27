@@ -17,6 +17,8 @@ type Instance = {
     snapshotAgeMs: number | null;
     lastSeenMs: number | null;
     stale: boolean;
+    commit: string | null;
+    startedAt: string | null;
 };
 type ReplicaMember = {
     name: string;
@@ -140,6 +142,7 @@ export default function SystemHealth() {
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Instance</TableHead>
+                                    <TableHead>Build</TableHead>
                                     <TableHead>Role</TableHead>
                                     <TableHead>Uptime</TableHead>
                                     <TableHead>Snapshot age</TableHead>
@@ -152,6 +155,17 @@ export default function SystemHealth() {
                                     <TableRow key={i.instanceId}>
                                         <TableCell className="font-mono text-xs">
                                             {i.instanceId.slice(0, 8)}
+                                        </TableCell>
+                                        <TableCell className="font-mono text-xs">
+                                            {i.commit || "—"}
+                                            {i.startedAt && (
+                                                <div className="text-muted-foreground font-sans">
+                                                    deployed{" "}
+                                                    {new Date(
+                                                        i.startedAt
+                                                    ).toLocaleString()}
+                                                </div>
+                                            )}
                                         </TableCell>
                                         <TableCell>
                                             {i.leader ? (
