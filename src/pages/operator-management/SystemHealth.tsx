@@ -8,21 +8,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import useGeneralPost, { useGeneralGet } from "@/networking/api";
-import { Button } from "@/components/ui/button";
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { toast } from "sonner";
-import { useQueryClient } from "@tanstack/react-query";
+import { useGeneralGet } from "@/networking/api";
 
 type Instance = {
     instanceId: string;
@@ -54,16 +40,6 @@ type SystemHealth = {
     replica: Replica | null;
     nodes: NodesSummary;
 };
-type DeployRun = {
-    id: number;
-    status: string; // queued | in_progress | completed
-    conclusion: string | null; // success | failure | cancelled | null
-    createdAt: string;
-    actor?: string;
-    event: string;
-    htmlUrl: string;
-};
-type DeployRuns = { configured: boolean; runs: DeployRun[] };
 
 const fmtDuration = (sec?: number | null) => {
     if (sec == null) return "—";
@@ -108,40 +84,12 @@ function stateBadge(state: string) {
     return <Badge variant="outline">{state}</Badge>;
 }
 
-function runBadge(r: DeployRun) {
-    if (r.status !== "completed")
-        return <Badge variant="secondary">{r.status}</Badge>;
-    if (r.conclusion === "success") return <Badge>success</Badge>;
-    return <Badge variant="destructive">{r.conclusion || "failed"}</Badge>;
-}
-
 export default function SystemHealth() {
     const { data, isLoading, isError, error } = useGeneralGet<SystemHealth>({
         queryKey: ["system-health"],
         path: "/system-health",
         refetchInterval: 5000,
     });
-
-    const queryClient = useQueryClient();
-    const { data: deploy } = useGeneralGet<DeployRuns>({
-        queryKey: ["deploy-runs"],
-        path: "/deploy-fleet/runs",
-        refetchInterval: 10000,
-    });
-    const { mutate: triggerDeploy, isPending: isDeploying } = useGeneralPost({
-        queryKey: ["deploy-fleet"],
-        path: "/deploy-fleet",
-    });
-    const handleDeploy = () => {
-        // No body → backend defaults the image tag to "latest".
-        triggerDeploy(undefined, {
-            onSuccess: (res: any) => {
-                toast.success(res?.message || "Deploy triggered.");
-                queryClient.invalidateQueries({ queryKey: ["deploy-runs"] });
-            },
-            onError: (e: any) => toast.error("Deploy failed: " + e.message),
-        });
-    };
 
     const instances = data?.instances || [];
     const leaderCount = instances.filter((i) => i.leader).length;
@@ -162,85 +110,6 @@ export default function SystemHealth() {
                         set, and the managed node fleet. Auto-refreshes every 5s.
                     </p>
                 </div>
-
-                {/* Deploy */}
-                <section className="accent-panel p-4 shadow-sm">
-                    <div className="flex items-start justify-between flex-wrap gap-3">
-                        <div>
-                            <h4 className="text-lg font-semibold">Deploy</h4>
-                            <p className="text-sm text-muted-foreground">
-                                Roll out the latest backend build to the whole
-                                fleet — rolling, one instance at a time, leader
-                                fails over automatically.
-                            </p>
-                        </div>
-                        <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <Button disabled={isDeploying}>
-                                    {isDeploying
-                                        ? "Triggering…"
-                                        : "Deploy latest build"}
-                                </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>
-                                        Deploy latest build to all instances?
-                                    </AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        Triggers the GitHub deploy workflow → a
-                                        rolling{" "}
-                                        <span className="font-mono">
-                                            docker service update
-                                        </span>{" "}
-                                        across the swarm, one instance at a time.
-                                        Reads stay up; the leader fails over in
-                                        ~15s.
-                                    </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel>
-                                        Cancel
-                                    </AlertDialogCancel>
-                                    <AlertDialogAction onClick={handleDeploy}>
-                                        Deploy
-                                    </AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
-                    </div>
-
-                    {deploy && !deploy.configured ? (
-                        <p className="text-xs text-muted-foreground mt-3">
-                            Deploy trigger not configured on the backend
-                            (DEPLOY_REPO / DEPLOY_GITHUB_TOKEN). You can still run
-                            the deploy workflow directly from GitHub.
-                        </p>
-                    ) : deploy && deploy.runs.length > 0 ? (
-                        <div className="mt-3 space-y-1">
-                            <div className="text-xs font-medium text-muted-foreground">
-                                Recent deploys
-                            </div>
-                            {deploy.runs.map((r) => (
-                                <a
-                                    key={r.id}
-                                    href={r.htmlUrl}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="flex items-center gap-2 text-xs hover:underline"
-                                >
-                                    {runBadge(r)}
-                                    <span className="text-muted-foreground">
-                                        {new Date(r.createdAt).toLocaleString()}
-                                    </span>
-                                    <span className="text-muted-foreground">
-                                        · {r.actor} · {r.event}
-                                    </span>
-                                </a>
-                            ))}
-                        </div>
-                    ) : null}
-                </section>
 
                 {isError && (
                     <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
