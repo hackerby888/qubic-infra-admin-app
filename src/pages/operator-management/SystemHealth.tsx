@@ -19,6 +19,7 @@ type Instance = {
     stale: boolean;
     commit: string | null;
     startedAt: string | null;
+    ip: string | null;
 };
 type ReplicaMember = {
     name: string;
@@ -142,6 +143,7 @@ export default function SystemHealth() {
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Instance</TableHead>
+                                    <TableHead>IP</TableHead>
                                     <TableHead>Build</TableHead>
                                     <TableHead>Role</TableHead>
                                     <TableHead>Uptime</TableHead>
@@ -155,6 +157,9 @@ export default function SystemHealth() {
                                     <TableRow key={i.instanceId}>
                                         <TableCell className="font-mono text-xs">
                                             {i.instanceId.slice(0, 8)}
+                                        </TableCell>
+                                        <TableCell className="font-mono text-xs">
+                                            {i.ip || "—"}
                                         </TableCell>
                                         <TableCell className="font-mono text-xs">
                                             {i.commit || "—"}
