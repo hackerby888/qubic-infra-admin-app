@@ -194,6 +194,30 @@ export interface CrashReport {
     timestamp: number;
 }
 
+export type SystemEventType =
+    | "node_down"
+    | "node_recovered"
+    | "node_lagging"
+    | "node_lag_recovered"
+    | "main_node_lagging"
+    | "main_node_recovered"
+    | "main_node_failover"
+    | "db_down"
+    | "db_recovered"
+    | "backend_started"
+    | "backend_stopped";
+
+export interface SystemEvent {
+    _id: string;
+    type: SystemEventType;
+    severity: "error" | "warn" | "info";
+    server: string | null;
+    service: string | null;
+    message: string;
+    details?: Record<string, unknown>;
+    timestamp: number;
+}
+
 export interface BlacklistedPeer {
     ip: string;
     note?: string;

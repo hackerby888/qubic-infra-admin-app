@@ -1,5 +1,6 @@
 import {
     Activity,
+    ScrollText,
     AlertTriangle,
     Ban,
     House,
@@ -280,6 +281,29 @@ export default function SideBar() {
                                             />
                                             <span className="flex-1 text-left">
                                                 System Health
+                                            </span>
+                                        </div>
+                                    )}
+                                    {isAdmin && (
+                                        <div
+                                            onClick={() =>
+                                                nagivateToRoute(
+                                                    "/system-events"
+                                                )
+                                            }
+                                            className={`${
+                                                location.pathname ===
+                                                "/system-events"
+                                                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                                                    : "hover:bg-sidebar-accent"
+                                            } p-2 rounded-sm cursor-pointer flex w-full`}
+                                        >
+                                            <ScrollText
+                                                size={20}
+                                                className="mr-2"
+                                            />
+                                            <span className="flex-1 text-left">
+                                                System Events
                                             </span>
                                         </div>
                                     )}

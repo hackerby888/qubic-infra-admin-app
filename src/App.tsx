@@ -7,6 +7,7 @@ import SideBar from "./components/sidebar/SideBar";
 import Nav from "./components/nav/Nav";
 import Operator from "./pages/operator-management/Operator";
 import SystemHealth from "./pages/operator-management/SystemHealth";
+import SystemEvents from "./pages/system-events/SystemEvents";
 import MyNodes from "./pages/node-management/MyNodes";
 import { Toaster } from "@/components/ui/sonner";
 import Auth from "./pages/node-management/Auth";
@@ -110,6 +111,12 @@ function App() {
                                                         path="/system-health"
                                                         element={
                                                             <SystemHealth />
+                                                        }
+                                                    />
+                                                    <Route
+                                                        path="/system-events"
+                                                        element={
+                                                            <SystemEvents />
                                                         }
                                                     />
                                                     <Route path="operator-management">
