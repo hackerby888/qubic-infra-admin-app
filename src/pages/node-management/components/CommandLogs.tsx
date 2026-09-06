@@ -124,6 +124,22 @@ export default memo(function CommandLogs({
         refetchInterval: isSelectedLogPending ? 1500 : false,
     });
 
+    // Overlay, never inline: anything that changes the terminal's content
+    // height re-triggers the scroll-to-top bug this component just fixed.
+    const refreshHint = (isFetchingCurrentCommandLogs ||
+        isSelectedLogPending) && (
+        <span className="absolute right-3 top-2 z-10 flex items-center gap-1.5 rounded bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+            <span
+                className={`h-1.5 w-1.5 rounded-full bg-primary ${
+                    isFetchingCurrentCommandLogs
+                        ? "animate-ping"
+                        : "animate-pulse"
+                }`}
+            />
+            {isFetchingCurrentCommandLogs ? "refreshing…" : "live"}
+        </span>
+    );
+
     const handleDeleteAllCommandLogs = () => {
         deleteAllCommandLogs({} as unknown as void, {
             onSuccess: () => {
@@ -275,27 +291,35 @@ export default memo(function CommandLogs({
                                     </TabsTrigger>
                                 </TabsList>
                                 <TabsContent value="stdout">
-                                    <LocalTerminal
-                                        text={
-                                            isFetchingCurrentCommandLogs ||
-                                            isLoadingCurrentCommandLogs
-                                                ? "Loading..."
-                                                : tripRemoveKeywords(
-                                                      currentCommandUuidLogs?.stdout
-                                                  ) || ""
-                                        }
-                                    />
+                                    <div className="relative">
+                                        {refreshHint}
+                                        {/* Only the first fetch swaps in the
+                                        placeholder: doing it on a background
+                                        poll collapses the box height and the
+                                        browser then clamps scrollTop to 0. */}
+                                        <LocalTerminal
+                                            text={
+                                                isLoadingCurrentCommandLogs
+                                                    ? "Loading..."
+                                                    : tripRemoveKeywords(
+                                                          currentCommandUuidLogs?.stdout
+                                                      ) || ""
+                                            }
+                                        />
+                                    </div>
                                 </TabsContent>
                                 <TabsContent value="stderr">
-                                    <LocalTerminal
-                                        text={
-                                            isFetchingCurrentCommandLogs ||
-                                            isLoadingCurrentCommandLogs
-                                                ? "Loading..."
-                                                : currentCommandUuidLogs?.stderr ||
-                                                  ""
-                                        }
-                                    />
+                                    <div className="relative">
+                                        {refreshHint}
+                                        <LocalTerminal
+                                            text={
+                                                isLoadingCurrentCommandLogs
+                                                    ? "Loading..."
+                                                    : currentCommandUuidLogs?.stderr ||
+                                                      ""
+                                            }
+                                        />
+                                    </div>
                                 </TabsContent>
                             </Tabs>
                         </DialogContent>
