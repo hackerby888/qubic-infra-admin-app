@@ -1,4 +1,4 @@
-import { ChevronsUpDown, RefreshCw, Rocket } from "lucide-react";
+import { ChevronsUpDown, Pencil, RefreshCw, Rocket } from "lucide-react";
 import {
     Dialog,
     DialogContent,
@@ -52,6 +52,172 @@ import {
 import { Checkbox } from "../ui/checkbox";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangleIcon } from "lucide-react";
+
+type PeerPreset = {
+    name: string;
+    peers: string;
+};
+
+// Saved combos are keyed per service: lite peers are raw IPs while bob peers are
+// bob:/BM: prefixed, so a combo saved on one tab is invalid on the other.
+function loadPeerPresets(service: ServiceType): PeerPreset[] {
+    try {
+        return JSON.parse(localStorage.getItem(`peer-presets-${service}`) || "[]");
+    } catch {
+        return [];
+    }
+}
+
+function savePeerPresets(service: ServiceType, presets: PeerPreset[]) {
+    try {
+        localStorage.setItem(`peer-presets-${service}`, JSON.stringify(presets));
+    } catch {
+        // Private mode / quota: presets are a convenience, never fail the form over them.
+    }
+}
+
+// Save the current peers string under an alias and click it back into the input
+// later. Aliases can be renamed inline. Stored in localStorage, per browser.
+function PeerPresets({
+    service,
+    peers,
+    setPeers,
+}: {
+    service: ServiceType;
+    peers: string;
+    setPeers: (peers: string) => void;
+}) {
+    let [presets, setPresets] = useState<PeerPreset[]>(() =>
+        loadPeerPresets(service)
+    );
+    let [newPresetName, setNewPresetName] = useState<string>("");
+    let [renamingPresetName, setRenamingPresetName] = useState<string>("");
+    let [renameDraft, setRenameDraft] = useState<string>("");
+
+    const updatePresets = (nextPresets: PeerPreset[]) => {
+        setPresets(nextPresets);
+        savePeerPresets(service, nextPresets);
+    };
+
+    const handleSavePreset = () => {
+        let name = newPresetName.trim();
+        let peersToSave = peers.trim();
+        if (!name) {
+            return toast.error("Please name the peers combo before saving.");
+        }
+        if (!peersToSave) {
+            return toast.error("Peers input is empty, nothing to save.");
+        }
+
+        // Saving under an existing alias overwrites it instead of adding a duplicate.
+        let otherPresets = presets.filter((preset) => preset.name !== name);
+        updatePresets([...otherPresets, { name: name, peers: peersToSave }]);
+        setNewPresetName("");
+        toast.success(`Saved peers combo "${name}"`);
+    };
+
+    const handleStartRename = (preset: PeerPreset) => {
+        setRenamingPresetName(preset.name);
+        setRenameDraft(preset.name);
+    };
+
+    const handleFinishRename = (oldName: string) => {
+        setRenamingPresetName("");
+
+        let newName = renameDraft.trim();
+        if (!newName || newName === oldName) {
+            return;
+        }
+        if (presets.some((preset) => preset.name === newName)) {
+            return toast.error(`A peers combo named "${newName}" already exists.`);
+        }
+
+        updatePresets(
+            presets.map((preset) =>
+                preset.name === oldName ? { ...preset, name: newName } : preset
+            )
+        );
+    };
+
+    const handleDeletePreset = (name: string) => {
+        updatePresets(presets.filter((preset) => preset.name !== name));
+    };
+
+    return (
+        <div className="space-y-2">
+            <div className="flex space-x-2 items-center">
+                <Input
+                    value={newPresetName}
+                    onChange={(e) => setNewPresetName(e.target.value)}
+                    onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                            handleSavePreset();
+                        }
+                    }}
+                    className="w-4/12"
+                    placeholder="Combo name"
+                />
+                <Button
+                    onClick={handleSavePreset}
+                    variant={"secondary"}
+                    className="cursor-pointer"
+                >
+                    Save current peers
+                </Button>
+            </div>
+            <ul className="flex flex-wrap gap-1 text-sm">
+                {presets.map((preset) => (
+                    <li key={preset.name}>
+                        {renamingPresetName === preset.name ? (
+                            <Input
+                                autoFocus
+                                value={renameDraft}
+                                onChange={(e) => setRenameDraft(e.target.value)}
+                                title="Press Enter to save the new name"
+                                onBlur={() => setRenamingPresetName("")}
+                                onKeyDown={(e) => {
+                                    // Enter commits, clicking away cancels. Escape is left to
+                                    // the dialog, which closes on it everywhere else too.
+                                    if (e.key === "Enter") {
+                                        handleFinishRename(preset.name);
+                                    }
+                                }}
+                                className="h-9 w-44 text-[12px]"
+                            />
+                        ) : (
+                            <>
+                                <Button
+                                    onClick={() => setPeers(preset.peers)}
+                                    variant={"outline"}
+                                    title={preset.peers}
+                                    className="cursor-pointer text-[12px] rounded-tr-none rounded-br-none"
+                                >
+                                    {preset.name}
+                                </Button>
+                                <Button
+                                    onClick={() => handleStartRename(preset)}
+                                    variant={"outline"}
+                                    title="Rename"
+                                    className="rounded-none border-l-0 border-r-0 text-[12px] px-2 cursor-pointer"
+                                >
+                                    <Pencil size={12} />
+                                </Button>
+                                <Button
+                                    onClick={() => handleDeletePreset(preset.name)}
+                                    variant={"outline"}
+                                    title="Remove"
+                                    className="rounded-tl-none rounded-bl-none text-[12px] px-2 cursor-pointer"
+                                >
+                                    X
+                                </Button>
+                            </>
+                        )}
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
+}
 
 // Dropdown for picking a specific release binary (avx2/avx512/arm/...).
 // Renders nothing when the selected tag has no downloadable assets, so deploy
@@ -628,6 +794,11 @@ export default function DeployManagement() {
                                                 )}
                                             </InputGroupAddon>
                                         </InputGroup>
+                                        <PeerPresets
+                                            service={currentService}
+                                            peers={peers}
+                                            setPeers={setPeers}
+                                        />
                                         <FieldDescription>
                                             Comma separated list of peer
                                             addresses (eg. 1.2.3.4,8.8.8.8)
@@ -850,6 +1021,11 @@ export default function DeployManagement() {
                                                 )}
                                             </InputGroupAddon>
                                         </InputGroup>
+                                        <PeerPresets
+                                            service={currentService}
+                                            peers={peers}
+                                            setPeers={setPeers}
+                                        />
                                         <FieldDescription className="space-y-1">
                                             <div>
                                                 Command separated peers,
